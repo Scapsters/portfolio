@@ -39,6 +39,9 @@ export default function Home() {
     )
 }
 
+/**
+ * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
+ */
 function Wheel({
     setProject,
 }: Readonly<{ setProject: (project: Project) => void }>) {
@@ -66,13 +69,12 @@ function Wheel({
         )
     })
 
-    return (
-        <div className="flex flex-col overflow-auto">
-            {items}
-        </div>
-    )
+    return <div className="flex flex-col overflow-auto">{items}</div>
 }
 
+/**
+ * Also serves as intro card (When no projects are selected)
+ */
 function ProjectCard({ project }: Readonly<{ project: Project | null }>) {
     return (
         <div className="absolute top-1/3 left-1/4 border-2 border-red-600">
