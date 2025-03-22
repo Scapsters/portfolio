@@ -8,6 +8,11 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "tabWidth": 4
+  },
   "dependencies": {
     "my-app": "file:",
     "next": "15.2.3",
