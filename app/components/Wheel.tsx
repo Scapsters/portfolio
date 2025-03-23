@@ -77,7 +77,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
         <div
             ref={itemRefs[index]}
             key={item + index}
-            style={{ width: itemWidth, right: -itemWidth / 2 + 40}}
+            style={{ width: itemWidth, right: -itemWidth / 2 + 40 }}
             className={`flex h-0 text-6xl absolute top-1/2`}
         >
             {headers.includes(item) ? (
@@ -109,7 +109,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
                     position: 'absolute',
                     right: `-${wheelSize / 2 + xOffset}px`,
                     top: `50%`,
-                    transform: 'translateY(-50%)'
+                    transform: 'translateY(-50%)',
                 }}
                 className="absolute"
             ></div>
