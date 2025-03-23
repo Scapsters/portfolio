@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { lexendExa } from "./typescript/css_constants";
+import { lexendExa } from './typescript/css_constants';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,7 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${lexendExa.variable} overflow-hidden antialiased`}
+        className={`overflow-hidden antialiased`}
+        style={lexendExa.style}
       >
         {children}
       </body>
