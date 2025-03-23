@@ -1,6 +1,4 @@
 const delta_t = 6
-const radius = 1500
-const phase = 180
 
 export function degree_to_radian(degree: number): number {
     return (degree * Math.PI) / 180
@@ -21,10 +19,4 @@ export function map_range(value: number, low1: number, high1: number, low2: numb
 }
 
 // Circular equations based off of https://www.desmos.com/calculator/cvaldk77ud, created by me
-export const circular_transform_x = (index: number, scroll: number): number =>
-    radius * Math.cos(degree_to_radian(index * delta_t - 90 * scroll + phase))
-
-export const circular_transform_y = (index: number, scroll: number): number =>
-    radius * Math.sin(degree_to_radian(index * delta_t - 90 * scroll + phase))
-
 export const circular_rotate = (index: number, scroll: number): number => delta_t * index - 90 * scroll

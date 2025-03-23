@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react"
 import { Project, projects } from "../typescript/project_card_info"
-import { circular_rotate, circular_transform_x, circular_transform_y, clamp, map_range } from "../typescript/math_helpers"
+import { circular_rotate, clamp, map_range } from "../typescript/math_helpers"
 import { headers, raw_items } from "@/typescript/wheel_info"
 
 const numItems = raw_items.length
 const itemHeight = 50 // Total guess but it works
 const maxScroll = numItems * itemHeight
 const scrollFactor = 0.3 // arbitrary
-const xOffset = 1200
 
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
@@ -24,10 +23,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
         for (let i = 0; i < raw_items.length; i++) {
             const item = itemRefs[i].current
             if (!item) continue
-            item.style.transform = `translate(
-				${circular_transform_x(i, scroll) + xOffset}px, 
-				${circular_transform_y(i, scroll)}px
-			) rotate(
+            item.style.transform = `rotate(
 			 	${circular_rotate(i, scroll)}deg
 			)`
         }
@@ -76,19 +72,19 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     })
 
     /**
-     * MAGIC NUMBER ALTERT.... tailwind w-100
+     * MAGIC NUMBER ALTERT.... size and position are important.
      * is to ensure that all list items are the same width to ensure consistent circular transformations
      */
     const items = raw_items.map((item, index) => (
-        <div ref={itemRefs[index]} key={item} className={`w-100 h-10 absolute text-right top-1/2 right-0 bg-orange-600/10`}>
+        <div ref={itemRefs[index]} key={item} className={`flex w-1000 h-10 absolute top-1/2 right--1000 bg-orange-600/10`}>
             {headers.includes(item) ? (
                 // If item is a header, render with different styling
-                <p key={`wheel ${item}`} className="text-red">
+                <p key={`wheel ${item}`} className="w-100 text-right text-red">
                     {item}
                 </p>
             ) : (
                 // Else, render with different styling and as a button
-                <button key={`wheel ${item}`} className="text-blue" onClick={() => setProject(projects[item])}>
+                <button key={`wheel ${item}`} className="w-100 text-right text-blue" onClick={() => setProject(projects[item])}>
                     {item}
                 </button>
             )}
