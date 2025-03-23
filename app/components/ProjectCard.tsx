@@ -1,21 +1,52 @@
-import { Project } from "../typescript/project_card_info"
+import { Project } from '../typescript/project_card_info'
+import { lexendExa, lexendGiga, lexendPeta } from '../typescript/css_constants'
+import Image from 'next/image'
 
 /**
  * Also serves as intro card (When no projects are selected)
  */
 export function ProjectCard({ project }: Readonly<{ project: Project | null }>) {
-    const common_css = 'absolute border-2 border-red-600'
+    const common_css = 'absolute'
     return project ? (
-        <div className={`top-1/2 left-1/4 ${common_css}`}>
-            <h1>{project.name}</h1>
-            <p>{project.description}</p>
-            <ul>
-                {project.technologies.map((technology) => (
-                    <li key={technology}>{technology}</li>
+        <div className={`z-2 top-30 left-30 w-1/2 ${common_css}`}>
+            <p style={lexendGiga.style} className="text-4xl mb-4">
+                {project.name}
+            </p>
+            <div className="bg-amber-600/10 w-1/1 p-4 m-2">
+                {project.description.map((description) => (
+                    <p className="m-4" key={description}>{description}</p>
                 ))}
-            </ul>
+            </div>
+            <div className="flex bg-amber-600/10 p-4 w-1/1 m-2">
+                <div className="bg-amber-600/10 w-2/3 m-2">
+                    {project.image ? (
+                        <Image
+                            alt="project images"
+                            src={project.image}
+                            width={project.imageDimensions!.width}
+                            height={project.imageDimensions!.height}
+                        />
+                    ) : null}
+                </div>
+                <ul className="bg-amber-600/10 p-4 m-2">
+                    <p className="text-2xl text-[#474749a9]">Tech Stack</p>
+                    {project.technologies.map((technology) => (
+                        <li key={technology}>{technology}</li>
+                    ))}
+                </ul>
+            </div>
         </div>
     ) : (
-        <div className={`top-1/4 left-1/4 ${common_css}`}>eweewewe</div>
+        <div className={`top-1/3 left-1/6 ${common_css}`}>
+            <p style={lexendPeta.style} className="text-8xl mb-4">
+                Welcome <span className="text-4xl">to</span>
+            </p>
+            <p style={lexendGiga.style} className="text-4xl mb-4">
+                Scott Happy&apos;s Portfolio
+            </p>
+            <p style={lexendExa.style} className="text-xl mb-2">
+                Yes, that&apos;s my name [:
+            </p>
+        </div>
     )
 }
