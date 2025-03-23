@@ -36,7 +36,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     // To allow for tracking of the parent div
     const parentRef = React.createRef<HTMLDivElement>()
 
-    // Track mousewheel events. Scale down delta y, Clamp to maxScroll and map to [-1, 1]
+    // Track mousewheel events and impart velocity onto the wheel
     useEffect(() => {
         const wheelHandler = (e: WheelEvent) => {
             if (!isHovered || !element) return
