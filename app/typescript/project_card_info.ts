@@ -8,19 +8,19 @@ export type Project = {
 }
 
 export const projects: { [index: string]: Project } = {
-    'Project 1': {
-        name: 'Project 1',
+    'furryslop.com': {
+        name: 'furryslop.com',
         description: 'nooo charlie its a magical leoploradon',
-        technologies: ['React', 'TypeScript'],
+        technologies: ['React', 'TypeScript', 'Express.js', 'PostgreSQL'],
     },
-    'Project 222222222222222': {
-        name: 'flint and steel',
+    'JSThread': {
+        name: 'JSThread: Java-style threading in Node.js',
         description: 'flint and steel',
-        technologies: ['React', 'TypeScript'],
+        technologies: ['Typescript', 'Node.js', 'Vite.js', 'Tailwind'],
     },
-    'Project 3': {
-        name: 'Project 3',
+    'YoLink Center': {
+        name: 'YoLink Center: Communication with commercial IoT devices',
         description: 'charlie oh nooooo not the poisonous fugu fish',
-        technologies: ['React', 'TypeScript'],
+        technologies: ['Python', 'Flask', 'MySQL'],
     },
 }
