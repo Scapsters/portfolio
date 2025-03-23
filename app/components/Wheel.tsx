@@ -1,24 +1,25 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Project, projects } from '../typescript/project_card_info'
-import { circular_rotate, clamp, map_range } from '../typescript/math_helpers'
+import { circular_rotate } from '../typescript/math_helpers'
 import { headers, raw_items } from '@/typescript/wheel_info'
 
 const wheelSize = 2800
 const xOffset = 1000
-const numItems = raw_items.length
-const itemHeight = 100 // Total guess but it works
 const itemWidth = wheelSize + 1200 // This gives 600px to the left and right of the wheel
-const maxScroll = numItems * itemHeight
-const scrollFactor = 1.6 // arbitrary
+
+const scrollVelocityFactor = .0001
 
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
  */
 export default function Wheel({ setProject }: Readonly<{ setProject: (project: Project) => void }>) {
     // Range from [-1, 1]
-    const [scroll, setScroll] = useState(0)
-    const [rawScroll, setRawScroll] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
+
+    // Wheel physics
+    const position = useRef(0)
+    const velocity = useRef(0)
+    const acceleration = useRef(0)
 
     // To allow for style manipulation for circular transform and rotate
     const itemRefs = raw_items.map(() => React.createRef<HTMLDivElement>())
@@ -27,10 +28,10 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
             const item = itemRefs[i].current
             if (!item) continue
             item.style.transform = `rotate(
-			 	${-circular_rotate(i, scroll)}deg
+			 	${-circular_rotate(i, position.current)}deg
 			)`
         }
-    }, [itemRefs, scroll])
+    }, [itemRefs, position])
 
     // To allow for tracking of the parent div
     const parentRef = React.createRef<HTMLDivElement>()
@@ -39,12 +40,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     useEffect(() => {
         const wheelHandler = (e: WheelEvent) => {
             if (!isHovered || !element) return
-            const newRawScroll = clamp(rawScroll + e.deltaY * scrollFactor, -maxScroll, maxScroll)
-            setRawScroll(newRawScroll)
-            setScroll(
-                // Do the clamping and mapping here. Neccesarily based off of raw scroll
-                map_range(newRawScroll, -maxScroll, maxScroll, -1, 1),
-            )
+            velocity.current += e.deltaY * scrollVelocityFactor
         }
 
         // Mount/unmount event listener
@@ -69,10 +65,33 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
         }
     })
 
-    /**
-     * MAGIC NUMBER ALTERT.... size and position are important.
-     * is to ensure that all list items are the same width to ensure consistent circular transformations
-     */
+    // Re-render every frame (for physics)
+    const lastRenderTime = useRef(0);
+    const [frame, setFrame] = useState(0);
+    useEffect(() => {
+      const updateFrame = (timestamp: number) => {
+        if (timestamp - lastRenderTime.current >= 16.67) { // ~60 FPS limit
+          lastRenderTime.current = timestamp;
+          setFrame((prev) => prev + 1);
+        }
+        requestAnimationFrame(updateFrame);
+      };
+  
+      const animationId = requestAnimationFrame(updateFrame);
+      return () => cancelAnimationFrame(animationId);
+    }, []);
+
+    useEffect(() => {
+        console.log(position)
+        // Physics
+        const friction = 0.9
+        velocity.current += acceleration.current
+        velocity.current *= friction
+        position.current += velocity.current
+
+        // Set scroll based off of position
+    }, [frame])
+
     const items = raw_items.map((item, index) => (
         <div
             ref={itemRefs[index]}

@@ -3,7 +3,6 @@
 :root {
   --background: #FFFAEF;
   --foreground: #474749;
-  --transition-duration: 0.3s;
 }
 
 * {
