@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react"
-import { Project, projects } from "../typescript/project_card_info"
-import { circular_rotate, clamp, map_range } from "../typescript/math_helpers"
-import { headers, raw_items } from "@/typescript/wheel_info"
+import React, { useEffect, useState } from 'react'
+import { Project, projects } from '../typescript/project_card_info'
+import { circular_rotate, clamp, map_range } from '../typescript/math_helpers'
+import { headers, raw_items } from '@/typescript/wheel_info'
 
 const numItems = raw_items.length
-const itemHeight = 50 // Total guess but it works
+const itemHeight = 100 // Total guess but it works
 const maxScroll = numItems * itemHeight
-const scrollFactor = 0.3 // arbitrary
+const scrollFactor = 0.6 // arbitrary
 
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
@@ -24,7 +24,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
             const item = itemRefs[i].current
             if (!item) continue
             item.style.transform = `rotate(
-			 	${circular_rotate(i, scroll)}deg
+			 	${-circular_rotate(i, scroll)}deg
 			)`
         }
     }, [itemRefs, scroll])
@@ -36,16 +36,10 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     useEffect(() => {
         const wheelHandler = (e: WheelEvent) => {
             if (!isHovered || !element) return
-            setRawScroll(rawScroll + e.deltaY * scrollFactor) // Set raw scroll and only change the factor
+            setRawScroll(clamp(rawScroll + e.deltaY * scrollFactor, -maxScroll, maxScroll)) // Set raw scroll and only change the factor and clamp
             setScroll(
                 // Do the clamping and mapping here. Neccesarily based off of raw scroll
-                map_range(
-                    clamp(rawScroll + e.deltaY * scrollFactor, -maxScroll, maxScroll),
-                    -maxScroll,
-                    maxScroll,
-                    -1,
-                    1,
-                ),
+                map_range(rawScroll, -maxScroll, maxScroll, -1, 1),
             )
         }
 
@@ -76,15 +70,19 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
      * is to ensure that all list items are the same width to ensure consistent circular transformations
      */
     const items = raw_items.map((item, index) => (
-        <div ref={itemRefs[index]} key={item} className={`flex w-1000 h-10 absolute top-1/2 right--1000 bg-orange-600/10`}>
+        <div ref={itemRefs[index]} key={item + index} className={`flex w-1000 h-10 text-6xl absolute top-1/2`}>
             {headers.includes(item) ? (
                 // If item is a header, render with different styling
-                <p key={`wheel ${item}`} className="w-100 text-right text-red">
+                <p key={`wheel ${item} ${index}`} className="w-150 font-light text-right text-[#646464]">
                     {item}
                 </p>
             ) : (
                 // Else, render with different styling and as a button
-                <button key={`wheel ${item}`} className="w-100 text-right text-blue" onClick={() => setProject(projects[item])}>
+                <button
+                    key={`wheel ${item} ${index}`}
+                    className="w-150 text-right text-[#393939]"
+                    onClick={() => setProject(projects[item])}
+                >
                     {item}
                 </button>
             )}
@@ -92,8 +90,19 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     ))
 
     return (
-        <div ref={parentRef} className="w-1/2 h-1/1 absolute right-0 flex bg-red-500/10 flex-col">
-            {items}
-        </div>
+        <>
+            <div
+                style={{
+                    width: '2800px',
+                    height: '2800px',
+                    borderRadius: '50%',
+                    backgroundColor: '#474749',
+                }}
+                className="absolute -right-630 -top-180"
+            ></div>
+            <div ref={parentRef} className="w-1/2 h-1/1 absolute -right-50 flex flex-col">
+                {items}
+            </div>
+        </>
     )
 }
