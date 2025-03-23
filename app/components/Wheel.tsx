@@ -4,10 +4,9 @@ import { circular_rotate } from '../typescript/math_helpers'
 import { headers, raw_items } from '@/typescript/wheel_info'
 
 const wheelSize = 2800
-const xOffset = 1000
 const itemWidth = wheelSize + 1200 // This gives 600px to the left and right of the wheel
 
-const scrollVelocityFactor = .0001
+const scrollVelocityFactor = 0.0001
 
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
@@ -15,6 +14,11 @@ const scrollVelocityFactor = .0001
 export default function Wheel({ setProject }: Readonly<{ setProject: (project: Project) => void }>) {
     // Range from [-1, 1]
     const [isHovered, setIsHovered] = useState(false)
+
+    const [xOffset, setxOffset] = useState(2000)
+    useEffect(() => {
+        setxOffset(1000)
+    }, [])
 
     // Wheel physics
     const position = useRef(0)
@@ -66,20 +70,21 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     })
 
     // Re-render every frame (for physics)
-    const lastRenderTime = useRef(0);
-    const [frame, setFrame] = useState(0);
+    const lastRenderTime = useRef(0)
+    const [frame, setFrame] = useState(0)
     useEffect(() => {
-      const updateFrame = (timestamp: number) => {
-        if (timestamp - lastRenderTime.current >= 16.67) { // ~60 FPS limit
-          lastRenderTime.current = timestamp;
-          setFrame((prev) => prev + 1);
+        const updateFrame = (timestamp: number) => {
+            if (timestamp - lastRenderTime.current >= 16.67) {
+                // ~60 FPS limit
+                lastRenderTime.current = timestamp
+                setFrame((prev) => prev + 1)
+            }
+            requestAnimationFrame(updateFrame)
         }
-        requestAnimationFrame(updateFrame);
-      };
-  
-      const animationId = requestAnimationFrame(updateFrame);
-      return () => cancelAnimationFrame(animationId);
-    }, []);
+
+        const animationId = requestAnimationFrame(updateFrame)
+        return () => cancelAnimationFrame(animationId)
+    }, [])
 
     useEffect(() => {
         console.log(position)
@@ -92,12 +97,20 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
         // Set scroll based off of position
     }, [frame])
 
+    useEffect(() => {
+        if(frame > 60) {
+            itemRefs.forEach((item) => {
+                item.current?.style.setProperty('transition', 'none')
+            })
+        }
+    }, [itemRefs, frame])
+
     const items = raw_items.map((item, index) => (
         <div
             ref={itemRefs[index]}
             key={item + index}
             style={{ width: itemWidth, right: -itemWidth / 2 + 40 }}
-            className={`flex h-0 text-6xl absolute top-1/2`}
+            className={`flex h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
         >
             {headers.includes(item) ? (
                 // If item is a header, render with different styling
@@ -128,13 +141,14 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
                     position: 'absolute',
                     right: `-${wheelSize / 2 + xOffset}px`,
                     top: `50%`,
+                    transition: 'right 1s ease-in-out',
                     transform: 'translateY(-50%)',
                 }}
                 className="absolute"
             ></div>
             <div
                 ref={parentRef}
-                style={{ position: 'absolute', right: `-${xOffset}px` }}
+                style={{ position: 'absolute', right: `-${xOffset}px`, transition: 'right 1s ease-in-out' }}
                 className="w-500 h-1/1 flex flex-col"
             >
                 {items}
