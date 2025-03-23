@@ -3,10 +3,13 @@ import { Project, projects } from '../typescript/project_card_info'
 import { circular_rotate, clamp, map_range } from '../typescript/math_helpers'
 import { headers, raw_items } from '@/typescript/wheel_info'
 
+const wheelSize = 2800
+const xOffset = 1000
 const numItems = raw_items.length
 const itemHeight = 100 // Total guess but it works
+const itemWidth = wheelSize + 1200 // This gives 600px to the left and right of the wheel
 const maxScroll = numItems * itemHeight
-const scrollFactor = 0.6 // arbitrary
+const scrollFactor = 1.6 // arbitrary
 
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
@@ -36,10 +39,11 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     useEffect(() => {
         const wheelHandler = (e: WheelEvent) => {
             if (!isHovered || !element) return
-            setRawScroll(clamp(rawScroll + e.deltaY * scrollFactor, -maxScroll, maxScroll)) // Set raw scroll and only change the factor and clamp
+            const newRawScroll = clamp(rawScroll + e.deltaY * scrollFactor, -maxScroll, maxScroll)
+            setRawScroll(newRawScroll)
             setScroll(
                 // Do the clamping and mapping here. Neccesarily based off of raw scroll
-                map_range(rawScroll, -maxScroll, maxScroll, -1, 1),
+                map_range(newRawScroll, -maxScroll, maxScroll, -1, 1),
             )
         }
 
@@ -70,7 +74,12 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
      * is to ensure that all list items are the same width to ensure consistent circular transformations
      */
     const items = raw_items.map((item, index) => (
-        <div ref={itemRefs[index]} key={item + index} className={`flex w-1000 h-10 text-6xl absolute top-1/2`}>
+        <div
+            ref={itemRefs[index]}
+            key={item + index}
+            style={{ width: itemWidth, right: -itemWidth / 2 + 40}}
+            className={`flex h-0 text-6xl absolute top-1/2`}
+        >
             {headers.includes(item) ? (
                 // If item is a header, render with different styling
                 <p key={`wheel ${item} ${index}`} className="w-150 font-light text-right text-[#646464]">
@@ -93,14 +102,22 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
         <>
             <div
                 style={{
-                    width: '2800px',
-                    height: '2800px',
+                    width: `${wheelSize}px`,
+                    height: `${wheelSize}px`,
                     borderRadius: '50%',
                     backgroundColor: '#474749',
+                    position: 'absolute',
+                    right: `-${wheelSize / 2 + xOffset}px`,
+                    top: `50%`,
+                    transform: 'translateY(-50%)'
                 }}
-                className="absolute -right-630 -top-180"
+                className="absolute"
             ></div>
-            <div ref={parentRef} className="w-1/2 h-1/1 absolute -right-50 flex flex-col">
+            <div
+                ref={parentRef}
+                style={{ position: 'absolute', right: `-${xOffset}px` }}
+                className="w-500 h-1/1 flex flex-col"
+            >
                 {items}
             </div>
         </>
