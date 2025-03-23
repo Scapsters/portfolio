@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --transition-duration: 0.3s;
+}
+
+* {
+  transition: all var(--transition-duration) ease-in-out;
 }
 
 @theme inline {

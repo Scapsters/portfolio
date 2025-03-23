@@ -80,7 +80,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
      * is to ensure that all list items are the same width to ensure consistent circular transformations
      */
     const items = raw_items.map((item, index) => (
-        <div ref={itemRefs[index]} key={item} className={`w-100 absolute text-right top-1/2 right-0 bg-orange-600/10`}>
+        <div ref={itemRefs[index]} key={item} className={`w-100 h-10 absolute text-right top-1/2 right-0 bg-orange-600/10`}>
             {headers.includes(item) ? (
                 // If item is a header, render with different styling
                 <p key={`wheel ${item}`} className="text-red">
