@@ -8,6 +8,19 @@
   --wheel-size: 2800px;
   --text-width: 600px;
   --item-width: calc(var(--wheel-size) + var(--text-width) * 2);
+  --circular-scroll: 0deg;
+  --wheel-item-offset: var(--item-width)
+}
+
+.wheel-container {
+}
+
+.wheel-item {
+  width: var(--wheel-item-width)
+}
+
+.circular-scroll {
+  transform: rotate(var(--circular-scroll))
 }
 
 .infocardslow {

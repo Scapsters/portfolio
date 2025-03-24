@@ -22,7 +22,7 @@ export default function Wheel({
     const [isHovered, setIsHovered] = useState(false)
 
     // Manages wheel offset. Performance impact negligible
-    const [xOffset, setxOffset] = useState(2000)
+    const [xOffset, setxOffset] = useState(1000)
 
     // Wheel physics. Performance impact medium
     const [position, setPosition] = useState(0)
@@ -45,7 +45,7 @@ export default function Wheel({
 
     const circleRef = React.createRef<HTMLDivElement>()
 
-    const items = raw_items.map((item, index) => (
+    const items = useMemo(() => raw_items.map((item, index) => (
         <div
             ref={itemRefs[index]}
             key={item + index}
@@ -57,7 +57,7 @@ export default function Wheel({
                 <p
                     key={`wheel ${item} ${index}`}
                     style={{ width: textWidth + textRadiusOffset.current }}
-                    className="font-light text-right text-[var(--light-text)]"
+                    className="wheel-item font-light wheel-text text-right text-[var(--light-text)]"
                 >
                     {item}
                 </p>
@@ -73,31 +73,35 @@ export default function Wheel({
                 </button>
             )}
         </div>
-    ))
+    )), [itemRefs, setProject])
 
-    // Set initial position. Performance impact negligible
     useEffect(() => {
-        setxOffset(1000)
+        document.documentElement.style.setProperty('--wheel-item-offset', `${textWidth + textRadiusOffset.current}`)
+    }, [textRadiusOffset])
+
+    //Set initial position. Performance impact negligible
+    useEffect(() => {
+        setxOffset(700)
     }, [])
 
     // Change transitions after loading. Performance impact minimal
     useEffect(() => {
-        if (frame > 40) {
+        if (frame > 60) {
             itemRefs.forEach((item) => {
                 item.current?.style.setProperty('transition', 'none')
             })
-            circleRef.current?.style.setProperty('transition', 'right .5s ease-out')
-            parentRef.current?.style.setProperty('transition', 'right .5s ease-out')
+            circleRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
+            parentRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
         }
     }, [itemRefs, circleRef, parentRef, frame])
 
-    // Move wheel on project selection toggle. Performance effect negligible
+    //Move wheel on project selection toggle. Performance effect negligible
     useEffect(() => {
         const handleProjectSelected = () => {
-            setxOffset(1200)
+            setxOffset(500)
         }
         const handleProjectDeselected = () => {
-            setxOffset(1000)
+            setxOffset(700)
         }
         if (isProjectSelected) {
             handleProjectSelected()
@@ -198,22 +202,29 @@ export default function Wheel({
     }, [frame])
 
     
+    useEffect(() => {
+        if (!circleRef.current) return
+        circleRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px)`);
+    }, [xOffset, circleRef]);
+
+    useEffect(() => {
+        if (!parentRef.current) return
+        parentRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px)`);
+    }, [xOffset, parentRef]);
+
+
     return (
-        <>
+        <div className="wheel-container absolute top-1/2 -right-900">
             <div
                 ref={circleRef}
-                style={{
-                    right: `-${wheelSize / 2 + xOffset}px`,
-                }}
-                className="transition-right transform -translate-y-1/2 duration-1000 ease-in-out top-1/2 w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] absolute bg-[var(--foreground)]"
+                className="transition-transform -right-200 transform -translate-y-1/2 duration-1000 ease-in-out top-1/2 w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] absolute bg-[var(--foreground)]"
             ></div>
             <div
                 ref={parentRef}
-                style={{ right: `-${xOffset}px`,}}
-                className="absolute w-500 h-1/1 flex flex-col transition-right duration-1000 ease-in-out"
+                className="absolute w-500 right-150 flex h-screen trasnform -translate-y-1/2 flex-col transition-transform duration-1000 ease-in-out"
             >
                 {items}
             </div>
-        </>
+        </div>
     )
 }
