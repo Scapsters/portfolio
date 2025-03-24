@@ -67,7 +67,7 @@ export default function Wheel({
                 <button
                     key={`wheel ${item} ${index}`}
                     style={{ transition: 'padding-right 0.2s ease-out' }}
-                    className="h-max text-right w-min left-0 relative text-[var(--dark-text)]"
+                    className="h-max text-right w-max left-0 relative text-[var(--dark-text)]"
                     onClick={() => setProject(projects[item])}
                 >
                     {item}
