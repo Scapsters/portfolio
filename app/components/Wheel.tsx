@@ -45,37 +45,47 @@ export default function Wheel({
 
     const circleRef = React.createRef<HTMLDivElement>()
 
-    const items = useMemo(() => raw_items.map((item, index) => (
-        <div
-            ref={itemRefs[index]}
-            key={item + index}
-            style={{ right: -itemWidth / 2 + 40 }}
-            className={`w-[var(--item-width)]  h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
-        >
-            <div style={{ width: textWidth + textRadiusOffset.current, transition: 'padding-right 0.2s ease-out' }} className= "flex justify-end">
-            {headers.includes(item) ? (
-                // If item is a header, render with different styling
-                <p
-                    key={`wheel ${item} ${index}`}
-                    style={{ transition: 'padding-right 0.2s ease-out' }}
-                    className="wheel-item font-light wheel-text text-right text-[var(--light-text)]"
+    const items = useMemo(
+        () =>
+            raw_items.map((item, index) => (
+                <div
+                    ref={itemRefs[index]}
+                    key={item + index}
+                    style={{ right: -itemWidth / 2 + 40 }}
+                    className={`w-[var(--item-width)]  h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
                 >
-                    {item}
-                </p>
-            ) : (
-                // Else, render with different styling and as a button
-                <button
-                    key={`wheel ${item} ${index}`}
-                    style={{ transition: 'padding-right 0.2s ease-out' }}
-                    className="h-max text-right w-max left-0 relative text-[var(--dark-text)]"
-                    onClick={() => setProject(projects[item])}
-                >
-                    {item}
-                </button>
-            )}
-            </div>
-        </div>
-    )), [itemRefs, setProject])
+                    <div
+                        style={{
+                            width: textWidth + textRadiusOffset.current,
+                            transition: 'padding-right 0.2s ease-out',
+                        }}
+                        className="flex justify-end"
+                    >
+                        {headers.includes(item) ? (
+                            // If item is a header, render with different styling
+                            <p
+                                key={`wheel ${item} ${index}`}
+                                style={{ transition: 'padding-right 0.2s ease-out' }}
+                                className="wheel-item font-light wheel-text text-right text-[var(--light-text)]"
+                            >
+                                {item}
+                            </p>
+                        ) : (
+                            // Else, render with different styling and as a button
+                            <button
+                                key={`wheel ${item} ${index}`}
+                                style={{ transition: 'padding-right 0.2s ease-out' }}
+                                className="h-max text-right w-max left-0 relative text-[var(--dark-text)]"
+                                onClick={() => setProject(projects[item])}
+                            >
+                                {item}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )),
+        [itemRefs, setProject],
+    )
 
     useEffect(() => {
         document.documentElement.style.setProperty('--wheel-item-offset', `${textWidth + textRadiusOffset.current}`)
@@ -205,17 +215,15 @@ export default function Wheel({
         textRadiusOffset.current = textRadiusOffset.current + (targetRadius - textRadiusOffset.current) * 0.1
     }, [frame])
 
-    
     useEffect(() => {
         if (!circleRef.current) return
-        circleRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px)`);
-    }, [xOffset, circleRef]);
+        circleRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px)`)
+    }, [xOffset, circleRef])
 
     useEffect(() => {
         if (!parentRef.current) return
-        parentRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px)`);
-    }, [xOffset, parentRef]);
-
+        parentRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px)`)
+    }, [xOffset, parentRef])
 
     return (
         <div className="wheel-container absolute top-1/2 -right-900">

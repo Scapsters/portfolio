@@ -12,4 +12,3 @@ export const lexendPeta = Lexend_Peta({
     variable: '--font-lexend-peta',
     subsets: ['latin'],
 })
-

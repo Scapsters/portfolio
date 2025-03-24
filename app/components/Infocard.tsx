@@ -20,7 +20,7 @@ export default function Infocard() {
                 anchorStyle.paddingTop = value
                 anchorContainerStyle.paddingTop = value
                 const isHovered = value === '80px'
-                if(isHovered) {
+                if (isHovered) {
                     anchorStyle.textDecoration = 'underline'
                 } else {
                     anchorStyle.textDecoration = 'none'

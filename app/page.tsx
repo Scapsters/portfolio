@@ -12,12 +12,7 @@ export default function Home() {
         <>
             <Wheel setProject={setProject} isProjectSelected={!!project}></Wheel>
             <ProjectCard project={project}></ProjectCard>
-			<Infocard></Infocard>
+            <Infocard></Infocard>
         </>
     )
 }
-
-
-
-
-

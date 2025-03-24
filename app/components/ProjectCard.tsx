@@ -14,7 +14,9 @@ export function ProjectCard({ project }: Readonly<{ project: Project | null }>) 
             </p>
             <div className="bg-amber-600/10 w-1/1 p-4 m-2">
                 {project.description.map((description) => (
-                    <p className="m-4" key={description}>{description}</p>
+                    <p className="m-4" key={description}>
+                        {description}
+                    </p>
                 ))}
             </div>
             <div className="flex bg-amber-600/10 p-4 w-1/1 m-2">
