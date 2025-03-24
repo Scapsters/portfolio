@@ -50,13 +50,14 @@ export default function Wheel({
             ref={itemRefs[index]}
             key={item + index}
             style={{ right: -itemWidth / 2 + 40 }}
-            className={`w-[var(--item-width)] flex h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
+            className={`w-[var(--item-width)]  h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
         >
+            <div style={{ width: textWidth + textRadiusOffset.current, transition: 'padding-right 0.2s ease-out' }} className= "flex justify-end">
             {headers.includes(item) ? (
                 // If item is a header, render with different styling
                 <p
                     key={`wheel ${item} ${index}`}
-                    style={{ width: textWidth + textRadiusOffset.current }}
+                    style={{ transition: 'padding-right 0.2s ease-out' }}
                     className="wheel-item font-light wheel-text text-right text-[var(--light-text)]"
                 >
                     {item}
@@ -65,13 +66,14 @@ export default function Wheel({
                 // Else, render with different styling and as a button
                 <button
                     key={`wheel ${item} ${index}`}
-                    style={{ width: textWidth + textRadiusOffset.current, transition: 'left 0.2s ease-out' }}
-                    className="text-right w-min left-0 relative text-[var(--dark-text)]"
+                    style={{ transition: 'padding-right 0.2s ease-out' }}
+                    className="h-max text-right w-min left-0 relative text-[var(--dark-text)]"
                     onClick={() => setProject(projects[item])}
                 >
                     {item}
                 </button>
             )}
+            </div>
         </div>
     )), [itemRefs, setProject])
 
@@ -123,7 +125,7 @@ export default function Wheel({
 
     // Track mousewheel events and add velocity. Changes are reflected in the frame loop. Performance impact negligible
     useEffect(() => {
-        console.log('hoveringer')
+        console.log('hoveringers my name, and hoveringings the game')
         const wheelHandler = (e: WheelEvent) => {
             if (!isHovered || !element) return
             velocity.current += e.deltaY * scrollVelocityFactor
@@ -170,22 +172,24 @@ export default function Wheel({
     useEffect(() => {
         const handleItemHover = (e: MouseEvent) => {
             const target = e.target as HTMLButtonElement
-            ;(target.children[0] as HTMLElement).style.setProperty('left', '-50px')
+            ;(target as HTMLElement).style.setProperty('padding-right', '50px')
         }
         const handleItemUnhover = (e: MouseEvent) => {
             const target = e.target as HTMLButtonElement
-            ;(target.children[0] as HTMLElement).style.setProperty('left', '0px')
+            ;(target as HTMLElement).style.setProperty('padding-right', '0px')
         }
 
-        const currentItemRefs = itemRefs
-        itemRefs.forEach((item) => {
-            item.current?.addEventListener('mouseenter', handleItemHover)
-            item.current?.addEventListener('mouseleave', handleItemUnhover)
+        const currentItemRefs = itemRefs.filter((item) => !headers.includes(item.current?.textContent ?? ''))
+        currentItemRefs.forEach((item) => {
+            const target = item.current?.children[0].children[0] as HTMLButtonElement
+            target.addEventListener('mouseenter', handleItemHover)
+            target.addEventListener('mouseleave', handleItemUnhover)
         })
         return () => {
             currentItemRefs.forEach((item) => {
-                item.current?.removeEventListener('mouseenter', handleItemHover)
-                item.current?.removeEventListener('mouseleave', handleItemUnhover)
+                const target = item.current?.children[0].children[0] as HTMLButtonElement
+                target.removeEventListener('mouseenter', handleItemHover)
+                target.removeEventListener('mouseleave', handleItemUnhover)
             })
         }
     }, [itemRefs])
