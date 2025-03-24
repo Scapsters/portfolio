@@ -87,7 +87,6 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     }, [])
 
     useEffect(() => {
-        console.log(position)
         // Physics
         const friction = 0.9
         velocity.current += acceleration.current
