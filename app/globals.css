@@ -3,6 +3,8 @@
 :root {
   --background: #FFFAEF;
   --foreground: #474749;
+  --light-text: #646464;
+  --dark-text: #393939;
 }
 
 .infocardslow {

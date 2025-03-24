@@ -29,7 +29,7 @@ export function ProjectCard({ project }: Readonly<{ project: Project | null }>) 
                     ) : null}
                 </div>
                 <ul className="bg-amber-600/10 p-4 m-2">
-                    <p className="text-2xl text-[#474749a9]">Tech Stack</p>
+                    <p className="text-2xl text-[var(--foreground)]">Tech Stack</p>
                     {project.technologies.map((technology) => (
                         <li key={technology}>{technology}</li>
                     ))}

@@ -13,7 +13,3 @@ export const lexendPeta = Lexend_Peta({
     subsets: ['latin'],
 })
 
-export const background = '#FFFAEF'
-export const wheel = '#474749'
-export const light_text = '#646464'
-export const dark_text = '#393939'

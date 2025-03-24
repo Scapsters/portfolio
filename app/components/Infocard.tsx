@@ -36,7 +36,7 @@ export default function Infocard() {
             &nbsp;&nbsp;
             <span ref={spanRefs[0]} className="infocardslow">
                 &nbsp;&nbsp;
-                <div className="border-l-2 ml-1 h-50 relative bottom-50 border-[#393939] infocardslow"></div>
+                <div className="border-l-2 ml-1 h-50 relative bottom-50 border-[var(--dark-text)] infocardslow"></div>
                 &nbsp;&nbsp;&nbsp;
             </span>
             <div ref={divRefs[1]} className="infocardfast max-h-[25]">
@@ -47,7 +47,7 @@ export default function Infocard() {
             &nbsp;&nbsp;
             <span ref={spanRefs[1]} className="infocardslow">
                 &nbsp;&nbsp;
-                <div className="border-l-2 ml-1 h-50 relative bottom-50 border-[#393939] infocardslow"></div>
+                <div className="border-l-2 ml-1 h-50 relative bottom-50 border-[var(--dark-text)] infocardslow"></div>
                 &nbsp;&nbsp;&nbsp;
             </span>
             <div ref={divRefs[2]} className="infocardfast max-h-[25]">
@@ -60,7 +60,7 @@ export default function Infocard() {
 
     return (
         <>
-            <div className="w-150 absolute h-5 z-3 bg-[#FFFAEF]"></div>
+            <div className="w-150 absolute h-5 z-3 bg-[var(--foreground)]"></div>
             <div className="w-max h-min absolute z-2">{info}</div>
         </>
     )

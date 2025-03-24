@@ -57,7 +57,7 @@ export default function Wheel({
                 <p
                     key={`wheel ${item} ${index}`}
                     style={{ width: textWidth + textRadiusOffset.current }}
-                    className="font-light text-right text-[#646464]"
+                    className="font-light text-right text-[var(--light-text)]"
                 >
                     {item}
                 </p>
@@ -66,7 +66,7 @@ export default function Wheel({
                 <button
                     key={`wheel ${item} ${index}`}
                     style={{ width: textWidth + textRadiusOffset.current, transition: 'left 0.2s ease-out' }}
-                    className="text-right w-min left-0 relative text-[#393939]"
+                    className="text-right w-min left-0 relative text-[var(--dark-text)]"
                     onClick={() => setProject(projects[item])}
                 >
                     {item}
@@ -205,14 +205,13 @@ export default function Wheel({
                     width: `${wheelSize}px`,
                     height: `${wheelSize}px`,
                     borderRadius: '50%',
-                    backgroundColor: '#474749',
                     position: 'absolute',
                     right: `-${wheelSize / 2 + xOffset}px`,
                     top: `50%`,
                     transition: 'right 1s ease-in-out',
                     transform: 'translateY(-50%)',
                 }}
-                className="absolute"
+                className="absolute bg-[var(--foreground)]"
             ></div>
             <div
                 ref={parentRef}
