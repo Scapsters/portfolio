@@ -49,8 +49,8 @@ export default function Wheel({
         <div
             ref={itemRefs[index]}
             key={item + index}
-            style={{ width: itemWidth, right: -itemWidth / 2 + 40 }}
-            className={`flex h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
+            style={{ right: -itemWidth / 2 + 40 }}
+            className={`w-[var(--item-width)] flex h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
         >
             {headers.includes(item) ? (
                 // If item is a header, render with different styling
@@ -202,21 +202,14 @@ export default function Wheel({
             <div
                 ref={circleRef}
                 style={{
-                    width: `${wheelSize}px`,
-                    height: `${wheelSize}px`,
-                    borderRadius: '50%',
-                    position: 'absolute',
                     right: `-${wheelSize / 2 + xOffset}px`,
-                    top: `50%`,
-                    transition: 'right 1s ease-in-out',
-                    transform: 'translateY(-50%)',
                 }}
-                className="absolute bg-[var(--foreground)]"
+                className="transition-right transform -translate-y-1/2 duration-1000 ease-in-out top-1/2 w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] absolute bg-[var(--foreground)]"
             ></div>
             <div
                 ref={parentRef}
-                style={{ position: 'absolute', right: `-${xOffset}px`, transition: 'right 1s ease-in-out' }}
-                className="w-500 h-1/1 flex flex-col"
+                style={{ right: `-${xOffset}px`,}}
+                className="absolute w-500 h-1/1 flex flex-col transition-right duration-1000 ease-in-out"
             >
                 {items}
             </div>

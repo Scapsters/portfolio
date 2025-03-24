@@ -5,6 +5,9 @@
   --foreground: #474749;
   --light-text: #646464;
   --dark-text: #393939;
+  --wheel-size: 2800px;
+  --text-width: 600px;
+  --item-width: calc(var(--wheel-size) + var(--text-width) * 2);
 }
 
 .infocardslow {
