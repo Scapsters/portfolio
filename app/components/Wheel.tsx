@@ -97,7 +97,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     }, [frame])
 
     useEffect(() => {
-        if(frame > 60) {
+        if (frame > 60) {
             itemRefs.forEach((item) => {
                 item.current?.style.setProperty('transition', 'none')
             })
