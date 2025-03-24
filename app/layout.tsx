@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`overflow-hidden antialiased`}
+        className={'overflow-hidden fixed l-0 w-1/1 h-1/1 antialiased'}
         style={lexendExa.style}
       >
         {children}

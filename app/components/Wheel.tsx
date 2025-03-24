@@ -82,7 +82,7 @@ export default function Wheel({
 
     // Change transitions after loading. Performance impact minimal
     useEffect(() => {
-        if (frame > 60) {
+        if (frame > 40) {
             itemRefs.forEach((item) => {
                 item.current?.style.setProperty('transition', 'none')
             })
@@ -197,6 +197,7 @@ export default function Wheel({
         textRadiusOffset.current = textRadiusOffset.current + (targetRadius - textRadiusOffset.current) * 0.1
     }, [frame])
 
+    
     return (
         <>
             <div
