@@ -4,9 +4,10 @@ import { circular_rotate } from '../typescript/math_helpers'
 import { headers, raw_items } from '@/typescript/wheel_info'
 
 const wheelSize = 2800
-const itemWidth = wheelSize + 1200 // This gives 600px to the left and right of the wheel
-
+const textWidth = 600
+const itemWidth = wheelSize + textWidth * 2 // This gives textWidth to the left and right of the wheel
 const scrollVelocityFactor = 0.0001
+const centrifugalForceCoefficient = 1000
 
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
@@ -17,6 +18,8 @@ export default function Wheel({
 }: Readonly<{ setProject: (project: Project) => void; isProjectSelected: boolean }>) {
     // Range from [-1, 1]
     const [isHovered, setIsHovered] = useState(false)
+
+    console.log('render')
 
     const [xOffset, setxOffset] = useState(2000)
     useEffect(() => {
@@ -103,6 +106,8 @@ export default function Wheel({
         return () => cancelAnimationFrame(animationId)
     }, [])
 
+    const [textRadiusOffset, setTextRadiusOffset] = useState(0)
+
     useEffect(() => {
         // Physics
         const friction = 0.9
@@ -110,7 +115,8 @@ export default function Wheel({
         velocity.current *= friction
         position.current += velocity.current
 
-        // Set scroll based off of position
+        const targetRadius = -Math.abs(velocity.current) * centrifugalForceCoefficient
+        setTextRadiusOffset(current => current + (targetRadius - current) * 0.1)
     }, [frame])
 
     const circleRef = React.createRef<HTMLDivElement>()
@@ -120,8 +126,8 @@ export default function Wheel({
             itemRefs.forEach((item) => {
                 item.current?.style.setProperty('transition', 'none')
             })
-            circleRef.current?.style.setProperty('transition', 'right .5s ease-in-out')
-            parentRef.current?.style.setProperty('transition', 'right .5s ease-in-out')
+            circleRef.current?.style.setProperty('transition', 'right .5s ease-out')
+            parentRef.current?.style.setProperty('transition', 'right .5s ease-out')
         }
     }, [itemRefs, circleRef, parentRef, frame])
 
@@ -134,14 +140,19 @@ export default function Wheel({
         >
             {headers.includes(item) ? (
                 // If item is a header, render with different styling
-                <p key={`wheel ${item} ${index}`} className="w-150 font-light text-right text-[#646464]">
+                <p
+                    key={`wheel ${item} ${index}`}
+                    style={{ width: textWidth + textRadiusOffset }}
+                    className="font-light text-right text-[#646464]"
+                >
                     {item}
                 </p>
             ) : (
                 // Else, render with different styling and as a button
                 <button
                     key={`wheel ${item} ${index}`}
-                    className="w-150 text-right text-[#393939]"
+                    style={{ width: textWidth + textRadiusOffset }}
+                    className="text-right text-[#393939]"
                     onClick={() => setProject(projects[item])}
                 >
                     {item}
