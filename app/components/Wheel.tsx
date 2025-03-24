@@ -147,7 +147,7 @@ export default function Wheel({
         }
     }, [parentRef])
 
-    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact medium
+    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
     useEffect(() => {
         const updateFrame = (timestamp: number) => {
             if (timestamp - lastRenderTime.current >= 16.67) {
