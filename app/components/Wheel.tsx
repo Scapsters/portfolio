@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Project, projects } from '../typescript/project_card_info'
 import { circular_rotate } from '../typescript/math_helpers'
 import { headers, raw_items } from '@/typescript/wheel_info'
@@ -16,16 +16,82 @@ export default function Wheel({
     setProject,
     isProjectSelected,
 }: Readonly<{ setProject: (project: Project) => void; isProjectSelected: boolean }>) {
-    // Range from [-1, 1]
-    const [isHovered, setIsHovered] = useState(false)
-
     console.log('render')
 
+    // Manages wheel hover state. Performance impact negligible
+    const [isHovered, setIsHovered] = useState(false)
+
+    // Manages wheel offset. Performance impact negligible
     const [xOffset, setxOffset] = useState(2000)
+
+    // Wheel physics. Performance impact medium
+    const [position, setPosition] = useState(0)
+    const velocity = useRef(0)
+    const acceleration = useRef(0)
+
+    // To allow for style manipulation for circular transform and rotate. Performance impact negligible TODO: verify
+    const itemRefs = useMemo(
+        () => raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>),
+        [],
+    )
+
+    // To allow for tracking of the parent div
+    const parentRef = useRef<HTMLDivElement>(null)
+
+    const lastRenderTime = useRef(0)
+    const [frame, setFrame] = useState(0)
+
+    const textRadiusOffset = useRef(0)
+
+    const circleRef = React.createRef<HTMLDivElement>()
+
+    const items = raw_items.map((item, index) => (
+        <div
+            ref={itemRefs[index]}
+            key={item + index}
+            style={{ width: itemWidth, right: -itemWidth / 2 + 40 }}
+            className={`flex h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
+        >
+            {headers.includes(item) ? (
+                // If item is a header, render with different styling
+                <p
+                    key={`wheel ${item} ${index}`}
+                    style={{ width: textWidth + textRadiusOffset.current }}
+                    className="font-light text-right text-[#646464]"
+                >
+                    {item}
+                </p>
+            ) : (
+                // Else, render with different styling and as a button
+                <button
+                    key={`wheel ${item} ${index}`}
+                    style={{ width: textWidth + textRadiusOffset.current, transition: 'left 0.2s ease-out' }}
+                    className="text-right w-min left-0 relative text-[#393939]"
+                    onClick={() => setProject(projects[item])}
+                >
+                    {item}
+                </button>
+            )}
+        </div>
+    ))
+
+    // Set initial position. Performance impact negligible
     useEffect(() => {
         setxOffset(1000)
     }, [])
 
+    // Change transitions after loading. Performance impact minimal
+    useEffect(() => {
+        if (frame > 60) {
+            itemRefs.forEach((item) => {
+                item.current?.style.setProperty('transition', 'none')
+            })
+            circleRef.current?.style.setProperty('transition', 'right .5s ease-out')
+            parentRef.current?.style.setProperty('transition', 'right .5s ease-out')
+        }
+    }, [itemRefs, circleRef, parentRef, frame])
+
+    // Move wheel on project selection toggle. Performance effect negligible
     useEffect(() => {
         const handleProjectSelected = () => {
             setxOffset(1200)
@@ -40,19 +106,10 @@ export default function Wheel({
         }
     }, [isProjectSelected])
 
-    // Wheel physics
-    const [position, setPosition] = useState(0)
-    const velocity = useRef(0)
-    const acceleration = useRef(0)
-
-    // To allow for style manipulation for circular transform and rotate
-    const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>(
-        raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>)
-    )
-
+    // Rotate items on position change. Performance impact medium
     useEffect(() => {
         for (let i = 0; i < raw_items.length; i++) {
-            const item = itemRefs.current[i].current
+            const item = itemRefs[i].current
             if (!item) continue
             item.style.transform = `rotate(
 			 	${-circular_rotate(i, position)}deg
@@ -60,11 +117,9 @@ export default function Wheel({
         }
     }, [itemRefs, position])
 
-    // To allow for tracking of the parent div
-    const parentRef = useRef<HTMLDivElement>(null)
-
-    // Track mousewheel events and impart velocity onto the wheel
+    // Track mousewheel events and add velocity. Changes are reflected in the frame loop. Performance impact negligible
     useEffect(() => {
+        console.log('hoveringer')
         const wheelHandler = (e: WheelEvent) => {
             if (!isHovered || !element) return
             velocity.current += e.deltaY * scrollVelocityFactor
@@ -78,7 +133,7 @@ export default function Wheel({
         }
     }, [parentRef, isHovered])
 
-    // Track hovering over the wheel
+    // Track hovering over the wheel. Performance impact negligible
     useEffect(() => {
         const element = parentRef.current
         const mouseEnterHandler = () => setIsHovered(true)
@@ -92,9 +147,7 @@ export default function Wheel({
         }
     }, [parentRef])
 
-    // Re-render every frame (for physics)
-    const lastRenderTime = useRef(0)
-    const [frame, setFrame] = useState(0)
+    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact medium
     useEffect(() => {
         const updateFrame = (timestamp: number) => {
             if (timestamp - lastRenderTime.current >= 16.67) {
@@ -109,61 +162,40 @@ export default function Wheel({
         return () => cancelAnimationFrame(animationId)
     }, [])
 
-    const [textRadiusOffset, setTextRadiusOffset] = useState(0)
-
+    // Hover effect for buttons on wheel. Performance impact negligible
     useEffect(() => {
-        // Physics
+        const handleItemHover = (e: MouseEvent) => {
+            const target = e.target as HTMLButtonElement
+            ;(target.children[0] as HTMLElement).style.setProperty('left', '-50px')
+        }
+        const handleItemUnhover = (e: MouseEvent) => {
+            const target = e.target as HTMLButtonElement
+            ;(target.children[0] as HTMLElement).style.setProperty('left', '0px')
+        }
+
+        const currentItemRefs = itemRefs
+        itemRefs.forEach((item) => {
+            item.current?.addEventListener('mouseenter', handleItemHover)
+            item.current?.addEventListener('mouseleave', handleItemUnhover)
+        })
+        return () => {
+            currentItemRefs.forEach((item) => {
+                item.current?.removeEventListener('mouseenter', handleItemHover)
+                item.current?.removeEventListener('mouseleave', handleItemUnhover)
+            })
+        }
+    }, [itemRefs])
+
+    // Physics loop for wheel. Performance impact medium
+    useEffect(() => {
         const friction = 0.9
         velocity.current += acceleration.current
         velocity.current *= friction
-        setPosition(p => p + velocity.current)
+        setPosition((p) => p + velocity.current)
 
         const targetRadius = -Math.abs(velocity.current) * centrifugalForceCoefficient
-        setTextRadiusOffset((current) => current + (targetRadius - current) * 0.1)
+        textRadiusOffset.current = textRadiusOffset.current + (targetRadius - textRadiusOffset.current) * 0.1
     }, [frame])
-
-    const circleRef = React.createRef<HTMLDivElement>()
-
-    useEffect(() => {
-        if (frame > 60) {
-            itemRefs.current.forEach((item) => {
-                item.current?.style.setProperty('transition', 'none')
-            })
-            circleRef.current?.style.setProperty('transition', 'right .5s ease-out')
-            parentRef.current?.style.setProperty('transition', 'right .5s ease-out')
-        }
-    }, [itemRefs, circleRef, parentRef, frame])
-
-    const items = raw_items.map((item, index) => (
-        <div
-            ref={itemRefs.current[index]
-}
-            key={item + index}
-            style={{ width: itemWidth, right: -itemWidth / 2 + 40 }}
-            className={`flex h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
-        >
-            {headers.includes(item) ? (
-                // If item is a header, render with different styling
-                <p
-                    key={`wheel ${item} ${index}`}
-                    style={{ width: textWidth + textRadiusOffset }}
-                    className="font-light text-right text-[#646464]"
-                >
-                    {item}
-                </p>
-            ) : (
-                // Else, render with different styling and as a button
-                <button
-                    key={`wheel ${item} ${index}`}
-                    style={{ width: textWidth + textRadiusOffset }}
-                    className="text-right text-[#393939]"
-                    onClick={() => setProject(projects[item])}
-                >
-                    {item}
-                </button>
-            )}
-        </div>
-    ))
 
     return (
         <>
