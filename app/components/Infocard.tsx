@@ -60,7 +60,7 @@ export default function Infocard() {
 
     return (
         <>
-            <div className="w-150 absolute h-5 z-3 bg-[var(--foreground)]"></div>
+            <div className="w-150 absolute h-5 z-3 bg-[var(--background)]"></div>
             <div className="w-max h-min absolute z-2">{info}</div>
         </>
     )
