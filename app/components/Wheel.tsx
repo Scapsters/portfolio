@@ -11,7 +11,10 @@ const scrollVelocityFactor = 0.0001
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
  */
-export default function Wheel({ setProject }: Readonly<{ setProject: (project: Project) => void }>) {
+export default function Wheel({
+    setProject,
+    isProjectSelected,
+}: Readonly<{ setProject: (project: Project) => void; isProjectSelected: boolean }>) {
     // Range from [-1, 1]
     const [isHovered, setIsHovered] = useState(false)
 
@@ -19,6 +22,20 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     useEffect(() => {
         setxOffset(1000)
     }, [])
+
+    useEffect(() => {
+        const handleProjectSelected = () => {
+            setxOffset(1200)
+        }
+        const handleProjectDeselected = () => {
+            setxOffset(1000)
+        }
+        if (isProjectSelected) {
+            handleProjectSelected()
+        } else {
+            handleProjectDeselected()
+        }
+    }, [isProjectSelected])
 
     // Wheel physics
     const position = useRef(0)
@@ -96,13 +113,17 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
         // Set scroll based off of position
     }, [frame])
 
+    const circleRef = React.createRef<HTMLDivElement>()
+
     useEffect(() => {
         if (frame > 60) {
             itemRefs.forEach((item) => {
                 item.current?.style.setProperty('transition', 'none')
             })
+            circleRef.current?.style.setProperty('transition', 'right .5s ease-in-out')
+            parentRef.current?.style.setProperty('transition', 'right .5s ease-in-out')
         }
-    }, [itemRefs, frame])
+    }, [itemRefs, circleRef, parentRef, frame])
 
     const items = raw_items.map((item, index) => (
         <div
@@ -132,6 +153,7 @@ export default function Wheel({ setProject }: Readonly<{ setProject: (project: P
     return (
         <>
             <div
+                ref={circleRef}
                 style={{
                     width: `${wheelSize}px`,
                     height: `${wheelSize}px`,
