@@ -41,24 +41,27 @@ export default function Wheel({
     }, [isProjectSelected])
 
     // Wheel physics
-    const position = useRef(0)
+    const [position, setPosition] = useState(0)
     const velocity = useRef(0)
     const acceleration = useRef(0)
 
     // To allow for style manipulation for circular transform and rotate
-    const itemRefs = raw_items.map(() => React.createRef<HTMLDivElement>())
+    const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>(
+        raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>)
+    )
+
     useEffect(() => {
         for (let i = 0; i < raw_items.length; i++) {
-            const item = itemRefs[i].current
+            const item = itemRefs.current[i].current
             if (!item) continue
             item.style.transform = `rotate(
-			 	${-circular_rotate(i, position.current)}deg
+			 	${-circular_rotate(i, position)}deg
 			)`
         }
     }, [itemRefs, position])
 
     // To allow for tracking of the parent div
-    const parentRef = React.createRef<HTMLDivElement>()
+    const parentRef = useRef<HTMLDivElement>(null)
 
     // Track mousewheel events and impart velocity onto the wheel
     useEffect(() => {
@@ -73,7 +76,7 @@ export default function Wheel({
         return () => {
             element?.removeEventListener('wheel', wheelHandler)
         }
-    })
+    }, [parentRef, isHovered])
 
     // Track hovering over the wheel
     useEffect(() => {
@@ -87,7 +90,7 @@ export default function Wheel({
             element?.removeEventListener('mouseenter', mouseEnterHandler)
             element?.removeEventListener('mouseleave', mouseLeaveHandler)
         }
-    })
+    }, [parentRef])
 
     // Re-render every frame (for physics)
     const lastRenderTime = useRef(0)
@@ -113,17 +116,17 @@ export default function Wheel({
         const friction = 0.9
         velocity.current += acceleration.current
         velocity.current *= friction
-        position.current += velocity.current
+        setPosition(p => p + velocity.current)
 
         const targetRadius = -Math.abs(velocity.current) * centrifugalForceCoefficient
-        setTextRadiusOffset(current => current + (targetRadius - current) * 0.1)
+        setTextRadiusOffset((current) => current + (targetRadius - current) * 0.1)
     }, [frame])
 
     const circleRef = React.createRef<HTMLDivElement>()
 
     useEffect(() => {
         if (frame > 60) {
-            itemRefs.forEach((item) => {
+            itemRefs.current.forEach((item) => {
                 item.current?.style.setProperty('transition', 'none')
             })
             circleRef.current?.style.setProperty('transition', 'right .5s ease-out')
@@ -133,7 +136,8 @@ export default function Wheel({
 
     const items = raw_items.map((item, index) => (
         <div
-            ref={itemRefs[index]}
+            ref={itemRefs.current[index]
+}
             key={item + index}
             style={{ width: itemWidth, right: -itemWidth / 2 + 40 }}
             className={`flex h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
