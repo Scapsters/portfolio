@@ -14,7 +14,18 @@ export default function Infocard() {
             spans.forEach((span) => {
                 if (span?.current) span.current.style.paddingTop = value
             })
-            if (anchor) anchor.style.paddingTop = value
+            if (anchor) {
+                const anchorContainerStyle = anchor.style
+                const anchorStyle = (anchor.children[0] as HTMLElement).style
+                anchorStyle.paddingTop = value
+                anchorContainerStyle.paddingTop = value
+                const isHovered = value === '80px'
+                if(isHovered) {
+                    anchorStyle.textDecoration = 'underline'
+                } else {
+                    anchorStyle.textDecoration = 'none'
+                }
+            }
         }
 
         const mouseEnterHandler = (e: MouseEvent) => updateStyles(e, '80px')
@@ -28,7 +39,7 @@ export default function Infocard() {
 
     const info = (
         <div className="p-4 text-xl flex" style={lexendPeta.style}>
-            <div ref={divRefs[0]} className="infocardfast  max-h-[25]">
+            <div ref={divRefs[0]} className="infocardfast h-min">
                 <a href="tel:1-603-213-3404" className="infocardfast">
                     603-213-3404
                 </a>
