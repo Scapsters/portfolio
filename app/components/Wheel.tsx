@@ -217,23 +217,23 @@ export default function Wheel({
 
     useEffect(() => {
         if (!circleRef.current) return
-        circleRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px)`)
+        circleRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px) translateY(-50%)`)
     }, [xOffset, circleRef])
 
     useEffect(() => {
         if (!parentRef.current) return
-        parentRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px)`)
+        parentRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px) translateY(-50%)`)
     }, [xOffset, parentRef])
 
     return (
         <div className="wheel-container absolute top-1/2 -right-900">
             <div
                 ref={circleRef}
-                className="transition-transform -right-200 transform -translate-y-1/2 duration-1000 ease-in-out top-1/2 w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] absolute bg-[var(--foreground)]"
+                className="transition-transform -right-200 transform -translate-y-1/2 top-1/2 duration-1000 ease-in-out w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] absolute bg-[var(--foreground)]"
             ></div>
             <div
                 ref={parentRef}
-                className="absolute w-500 right-150 flex h-screen trasnform -translate-y-1/2 flex-col transition-transform duration-1000 ease-in-out"
+                className="absolute w-500 right-150 flex h-screen transform -translate-y-1/2 top-1/2 flex-col transition-transform duration-1000 ease-in-out"
             >
                 {items}
             </div>
