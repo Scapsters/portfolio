@@ -29,7 +29,7 @@ export default function Wheel({
     const velocity = useRef(0)
     const acceleration = useRef(0)
 
-    // To allow for style manipulation for circular transform and rotate. Performance impact negligible TODO: verify
+    // To allow for style manipulation for circular transform and rotate. Performance impact negligible
     const itemRefs = useMemo(
         () => raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>),
         [],
