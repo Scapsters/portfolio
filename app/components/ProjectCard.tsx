@@ -24,9 +24,9 @@ export function ProjectCard({ project }: Readonly<{ project: Project | null }>) 
                     {project.image ? (
                         <Image
                             alt="project images"
-                            src={project.image}
-                            width={project.imageDimensions!.width}
-                            height={project.imageDimensions!.height}
+                            src={project.image.url}
+                            width={project.image.width}
+                            height={project.image.height}
                         />
                     ) : null}
                 </div>
