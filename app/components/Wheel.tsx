@@ -16,7 +16,6 @@ export default function Wheel({
     setProject,
     isProjectSelected,
 }: Readonly<{ setProject: (project: Project) => void; isProjectSelected: boolean }>) {
-    console.log('render')
 
     // Manages wheel hover state. Performance impact negligible
     const [isHovered, setIsHovered] = useState(false)
@@ -229,11 +228,11 @@ export default function Wheel({
         <div className="wheel-container absolute top-1/2 -right-900">
             <div
                 ref={circleRef}
-                className="transition-transform -right-200 transform -translate-y-1/2 top-1/2 duration-1000 ease-in-out w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] absolute bg-[var(--foreground)]"
+                className="transition-transform -right-200 transform duration-1000 ease-in-out w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] absolute bg-[var(--foreground)]"
             ></div>
             <div
                 ref={parentRef}
-                className="absolute w-500 right-150 flex h-screen transform -translate-y-1/2 top-1/2 flex-col transition-transform duration-1000 ease-in-out"
+                className="absolute w-500 right-150 flex h-screen transform  flex-col transition-transform duration-1000 ease-in-out"
             >
                 {items}
             </div>
