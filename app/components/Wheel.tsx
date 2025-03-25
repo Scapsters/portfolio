@@ -41,7 +41,7 @@ export default function Wheel({
     const lastRenderTime = useRef(0)
     const [frame, setFrame] = useState(0)
 
-    const textRadiusOffset = useRef(0)
+    const [textRadiusOffset, setTextRadiusOffset] = useState(0)
 
     const circleRef = React.createRef<HTMLDivElement>()
 
@@ -52,11 +52,11 @@ export default function Wheel({
                     ref={itemRefs[index]}
                     key={item + index}
                     style={{ right: -itemWidth / 2 + 40 }}
-                    className={`w-[var(--item-width)]  h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
+                    className={`w-[var(--item-width)] h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
                 >
                     <div
                         style={{
-                            width: textWidth + textRadiusOffset.current,
+                            width: textWidth + textRadiusOffset,
                             transition: 'padding-right 0.2s ease-out',
                         }}
                         className="flex justify-end"
@@ -84,11 +84,11 @@ export default function Wheel({
                     </div>
                 </div>
             )),
-        [itemRefs, setProject],
+        [itemRefs, setProject, textRadiusOffset],
     )
 
     useEffect(() => {
-        document.documentElement.style.setProperty('--wheel-item-offset', `${textWidth + textRadiusOffset.current}`)
+        document.documentElement.style.setProperty('--wheel-item-offset', `${textWidth + textRadiusOffset}`)
     }, [textRadiusOffset])
 
     //Set initial position. Performance impact negligible
@@ -212,7 +212,7 @@ export default function Wheel({
         setPosition((p) => p + velocity.current)
 
         const targetRadius = -Math.abs(velocity.current) * centrifugalForceCoefficient
-        textRadiusOffset.current = textRadiusOffset.current + (targetRadius - textRadiusOffset.current) * 0.1
+        setTextRadiusOffset(offset => offset + (targetRadius - offset) * 0.1)
     }, [frame])
 
     useEffect(() => {
