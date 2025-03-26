@@ -1,8 +1,8 @@
 import { raw_items } from './wheel_info'
 
-const delta_t = 5
+const delta_t = 4
 const phase = -90
-const prephase = 90 // This affects the position of the wheel when loading
+const prephase = 70 // This affects the position of the wheel when loading
 
 // Circular equations based off of https://www.desmos.com/calculator/cvaldk77ud, created by me
 export const circular_rotate = (index: number, scroll: number): number =>

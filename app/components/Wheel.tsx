@@ -52,7 +52,7 @@ export default function Wheel({
                     ref={itemRefs[index]}
                     key={item + index}
                     style={{ right: -itemWidth / 2 + 40 }}
-                    className={`w-[var(--item-width)] h-0 text-6xl transition duration-1000 ease-in-out absolute top-1/2`}
+                    className={`w-[var(--item-width)] h-0 text-4xl transition duration-1000 ease-in-out absolute top-1/2`}
                 >
                     <div
                         style={{
@@ -93,7 +93,7 @@ export default function Wheel({
 
     //Set initial position. Performance impact negligible
     useEffect(() => {
-        setxOffset(700)
+        setxOffset(1200)
     }, [])
 
     // Change transitions after loading. Performance impact minimal
@@ -110,10 +110,10 @@ export default function Wheel({
     //Move wheel on project selection toggle. Performance effect negligible
     useEffect(() => {
         const handleProjectSelected = () => {
-            setxOffset(500)
+            setxOffset(1100)
         }
         const handleProjectDeselected = () => {
-            setxOffset(700)
+            setxOffset(1200)
         }
         if (isProjectSelected) {
             handleProjectSelected()

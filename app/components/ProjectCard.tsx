@@ -8,7 +8,7 @@ import Image from 'next/image'
 export function ProjectCard({ project }: Readonly<{ project: Project | null }>) {
     const common_css = 'absolute'
     return project ? (
-        <div className={`z-2 top-30 left-30 w-1/2 ${common_css}`}>
+        <div className={`z-2 top-50 left-30 w-2/3 ${common_css}`}>
             <p style={lexendGiga.style} className="text-4xl mb-4">
                 {project.name}
             </p>
@@ -49,11 +49,11 @@ export function ProjectCard({ project }: Readonly<{ project: Project | null }>) 
             </div>
         </div>
     ) : (
-        <div className={`top-1/3 left-1/6 ${common_css}`}>
-            <p style={lexendPeta.style} className="text-8xl mb-4">
+        <div className={`top-1/3 left-1/7 ${common_css}`}>
+            <p style={lexendPeta.style} className="text-6xl mb-4">
                 Welcome <span className="text-4xl">to</span>
             </p>
-            <p style={lexendGiga.style} className="text-4xl mb-4">
+            <p style={lexendGiga.style} className="text-3xl mb-4">
                 Scott Happy&apos;s Portfolio
             </p>
             <p style={lexendExa.style} className="text-xl mb-2">
