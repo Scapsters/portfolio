@@ -31,18 +31,18 @@ export function ProjectCard({ project }: Readonly<{ project: Project | null }>) 
                     ) : null}
                 </div>
                 <ul className="bg-amber-600/10 p-4 m-2 grow">
-                    <p className="text-2xl text-[var(--foreground)]">Tech Stack</p>
+                    <p className="text-3xl text-[var(--foreground)]">Tech Stack</p>
                     {project.technologies.map((technology) => (
-                        <div key={technology + ' container'} className="flex items-center">
+                        <div key={technology + ' container'} className="flex text-2xl text-right items-center m-4">
                             {/*TODO: remove */
                             /* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 key={technology + ' logo'}
                                 alt={technology}
                                 src={'/logos/' + technology.replace('.', '') + '.png'}
-                                className={'w-10 h-10'}
+                                className={'h-20 aspect-auto'}
                             />
-                            <li key={technology}>{technology}</li>
+                            <li className="grow" key={technology}>{technology}</li>
                         </div>
                     ))}
                 </ul>
