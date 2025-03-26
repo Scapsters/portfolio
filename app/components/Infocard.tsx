@@ -3,33 +3,23 @@ import { useEffect, useRef } from 'react'
 
 export default function Infocard() {
     const divRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)]
-    const spanRefs = [useRef<HTMLElement>(null), useRef<HTMLElement>(null)]
+    const spanRefs = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)]
+    const translate = useRef('-80px')
 
     useEffect(() => {
         const updateStyles = (e: MouseEvent, value: string) => {
             const anchorIndex = divRefs.findIndex((ref) => ref.current === e.target)
             const anchor = divRefs[anchorIndex].current
-            const spans = [spanRefs[anchorIndex - 1], spanRefs[anchorIndex]]
-
-            spans.forEach((span) => {
-                if (span?.current) span.current.style.paddingTop = value
-            })
-            if (anchor) {
-                const anchorContainerStyle = anchor.style
-                const anchorStyle = (anchor.children[0] as HTMLElement).style
-                anchorStyle.paddingTop = value
-                anchorContainerStyle.paddingTop = value
-                const isHovered = value === '80px'
-                if (isHovered) {
-                    anchorStyle.textDecoration = 'underline'
-                } else {
-                    anchorStyle.textDecoration = 'none'
-                }
+            const spans = [spanRefs[anchorIndex], spanRefs[anchorIndex - 1]].map((ref) => ref?.current)
+            const targetElements = [anchor, ...spans]
+            for (const element of targetElements) {
+                // translate y to value
+                element?.style.setProperty('transform', `translateY(${value})`)
             }
         }
 
-        const mouseEnterHandler = (e: MouseEvent) => updateStyles(e, '80px')
-        const mouseExitHandler = (e: MouseEvent) => updateStyles(e, '0px')
+        const mouseEnterHandler = (e: MouseEvent) => updateStyles(e, '0px')
+        const mouseExitHandler = (e: MouseEvent) => updateStyles(e, translate.current)
 
         divRefs.forEach((anchor) => {
             anchor.current?.addEventListener('mouseenter', mouseEnterHandler)
@@ -37,42 +27,46 @@ export default function Infocard() {
         })
     })
 
+    function makeSpan(index: number) {
+        return (
+            <span
+                ref={spanRefs[index]}
+                style={{ transform: `translateY(${translate.current})` }}
+                className={`transition duration-400 border-l-2 ml-5 mr-5 h-28 border-[var(--dark-text)]`}
+            ></span>
+        )
+    }
+
+    function makeAnchor(index: number, href: string, text: string) {
+        return (
+            <div
+                ref={divRefs[index]}
+                style={{ transform: `translateY(${translate.current})` }}
+                className={`transition duration-400 flex flex-col h-min hover:underline`}
+            >
+                {Array.from({ length: 4 }).map((_, index) => (
+                    <a key={index + 'gh'} href={href}>
+                        {text}
+                    </a>
+                ))}
+            </div>
+        )
+    }
+
     const info = (
         <div className="p-4 text-xl flex" style={lexendPeta.style}>
-            <div ref={divRefs[0]} className="infocardfast h-min">
-                <a href="tel:1-603-213-3404" className="infocardfast">
-                    603-213-3404
-                </a>
-            </div>
-            &nbsp;&nbsp;
-            <span ref={spanRefs[0]} className="infocardslow">
-                &nbsp;&nbsp;
-                <div className="border-l-2 ml-1 h-50 relative bottom-50 border-[var(--dark-text)] infocardslow"></div>
-                &nbsp;&nbsp;&nbsp;
-            </span>
-            <div ref={divRefs[1]} className="infocardfast max-h-[25]">
-                <a href="https://github.com/Scapsters" className="infocardfast">
-                    github.com/Scapsters
-                </a>
-            </div>
-            &nbsp;&nbsp;
-            <span ref={spanRefs[1]} className="infocardslow">
-                &nbsp;&nbsp;
-                <div className="border-l-2 ml-1 h-50 relative bottom-50 border-[var(--dark-text)] infocardslow"></div>
-                &nbsp;&nbsp;&nbsp;
-            </span>
-            <div ref={divRefs[2]} className="infocardfast max-h-[25]">
-                <a href="mailto:scotty.happy@gmail.com" className="infocardfast">
-                    scotty.happy@gmail.com
-                </a>
-            </div>
+            {makeAnchor(0, 'tel:1-603-213-3404', '603-213-3404')}
+            {makeSpan(0)}
+            {makeAnchor(1, 'https://github.com/Scapsters', 'github.com/Scapsters')}
+            {makeSpan(1)}
+            {makeAnchor(2, 'mailto:scotty.happy@gmail.com', 'scotty.happy@gmail.com')}
         </div>
     )
 
     return (
         <>
-            <div className="w-150 absolute h-5 z-3 bg-[var(--background)]"></div>
-            <div className="w-max h-min absolute z-2">{info}</div>
+            <div className="w-240 absolute h-5 z-3 bg-[var(--background)]"></div>
+            <div className="w-max absolute z-2">{info}</div>
         </>
     )
 }
