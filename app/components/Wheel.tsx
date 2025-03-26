@@ -7,7 +7,7 @@ const wheelSize = 2800
 const textWidth = 600
 const itemWidth = wheelSize + textWidth * 2 // This gives textWidth to the left and right of the wheel
 const scrollVelocityFactor = 0.0001
-const centrifugalForceCoefficient = 1000
+const centrifugalForceCoefficient = 100
 
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
@@ -212,7 +212,7 @@ export default function Wheel({
         setPosition((p) => p + velocity.current)
 
         const targetRadius = -Math.abs(velocity.current) * centrifugalForceCoefficient
-        setTextRadiusOffset(offset => offset + (targetRadius - offset) * 0.1)
+        setTextRadiusOffset(offset => offset + (targetRadius - offset) * 0.7)
     }, [frame])
 
     useEffect(() => {
