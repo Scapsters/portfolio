@@ -109,10 +109,10 @@ export default function Wheel({
     //Move wheel on project selection toggle. Performance effect negligible
     useEffect(() => {
         const handleProjectSelected = () => {
-            setxOffset(1100)
+            setxOffset(1800)
         }
         const handleProjectDeselected = () => {
-            setxOffset(1200)
+            setxOffset(2000)
         }
         if (isProjectSelected) {
             handleProjectSelected()

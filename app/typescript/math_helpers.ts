@@ -1,6 +1,6 @@
 import { raw_items } from './wheel_info'
 
-const delta_t = 4
+const delta_t = 6
 const phase = -90
 const prephase = 70 // This affects the position of the wheel when loading
 
