@@ -5,14 +5,11 @@
     --foreground: #474749;
     --light-text: #646464;
     --dark-text: #393939;
-    --wheel-size: 2000px;
+    --wheel-size: 1000px;
     --text-width: 600px;
-    --item-width: calc(var(--wheel-size) + var(--text-width) * 2);
+    --item-width: calc(40px + var(--wheel-size) + var(--text-width) * 2);
     --circular-scroll: 0deg;
     --wheel-item-offset: var(--item-width);
-}
-
-.wheel-container {
 }
 
 .wheel-item {

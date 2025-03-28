@@ -16,9 +16,10 @@ export default function Wheel({
     setProject,
     isProjectSelected,
 }: Readonly<{ setProject: (project: Project) => void; isProjectSelected: boolean }>) {
-
     // Manages wheel hover state. Performance impact negligible
     const [isHovered, setIsHovered] = useState(false)
+
+    const wheelHoverRef = useRef<HTMLDivElement>(null)
 
     // Manages wheel offset. Performance impact negligible
     const [xOffset, setxOffset] = useState(1000)
@@ -50,8 +51,8 @@ export default function Wheel({
                 <div
                     ref={itemRefs[index]}
                     key={item + index}
-                    style={{ right: -itemWidth / 2 + 40 }}
-                    className={`w-[var(--item-width)] h-0 text-4xl transition duration-1000 ease-in-out absolute top-1/2`}
+                    style={{ right: -itemWidth / 2 }}
+                    className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
                 >
                     <div
                         style={{
@@ -109,10 +110,10 @@ export default function Wheel({
     //Move wheel on project selection toggle. Performance effect negligible
     useEffect(() => {
         const handleProjectSelected = () => {
-            setxOffset(1800)
+            setxOffset(550)
         }
         const handleProjectDeselected = () => {
-            setxOffset(2000)
+            setxOffset(650)
         }
         if (isProjectSelected) {
             handleProjectSelected()
@@ -141,16 +142,16 @@ export default function Wheel({
         }
 
         // Mount/unmount event listener
-        const element = parentRef.current
+        const element = wheelHoverRef.current
         element?.addEventListener('wheel', wheelHandler)
         return () => {
             element?.removeEventListener('wheel', wheelHandler)
         }
-    }, [parentRef, isHovered])
+    }, [wheelHoverRef, isHovered])
 
     // Track hovering over the wheel. Performance impact negligible
     useEffect(() => {
-        const element = parentRef.current
+        const element = wheelHoverRef.current
         const mouseEnterHandler = () => setIsHovered(true)
         const mouseLeaveHandler = () => setIsHovered(false)
 
@@ -160,7 +161,7 @@ export default function Wheel({
             element?.removeEventListener('mouseenter', mouseEnterHandler)
             element?.removeEventListener('mouseleave', mouseLeaveHandler)
         }
-    }, [parentRef])
+    }, [wheelHoverRef])
 
     // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
     useEffect(() => {
@@ -211,31 +212,29 @@ export default function Wheel({
         setPosition((p) => p + velocity.current)
 
         const targetRadius = -Math.abs(velocity.current) * centrifugalForceCoefficient
-        setTextRadiusOffset(offset => offset + (targetRadius - offset) * 0.7)
+        setTextRadiusOffset((offset) => offset + (targetRadius - offset) * 0.7)
     }, [frame])
 
     useEffect(() => {
         if (!circleRef.current) return
-        circleRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px) translateY(-50%)`)
+        circleRef.current.style.setProperty('transform', `translateX(-${xOffset}px)`)
     }, [xOffset, circleRef])
 
     useEffect(() => {
         if (!parentRef.current) return
-        parentRef.current.style.setProperty('transform', `translateX(-${wheelSize / 2 + xOffset}px) translateY(-50%)`)
+        parentRef.current.style.setProperty('transform', `translateX(-${xOffset}px)`)
     }, [xOffset, parentRef])
 
     return (
-        <div className="wheel-container absolute top-1/2 -right-900">
+        <>
             <div
                 ref={circleRef}
-                className="transition-transform -right-200 duration-1000 ease-in-out w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] absolute bg-[var(--foreground)]"
+                className="absolute top-1/2 right-0 translate-x-350 -translate-y-1/2 transition-transform duration-1000 ease-in-out w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] bg-[var(--foreground)]"
             ></div>
-            <div
-                ref={parentRef}
-                className="absolute w-500 right-150 flex h-screen flex-col transition-transform duration-1000 ease-in-out"
-            >
-                {items}
+            <div ref={wheelHoverRef} className="absolute w-500 -right-300 flex h-screen flex-col transition-transform  duration-1000 ease-in-out">
+            <div ref={parentRef} className="absolute top-1/2 translate-x-140 transition-transform duration-1000 ease-in-out">{items}</div>
             </div>
-        </div>
+            
+        </>
     )
 }
