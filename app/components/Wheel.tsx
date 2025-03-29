@@ -3,9 +3,7 @@ import { Project, projects } from '../typescript/project_card_info'
 import { circular_rotate } from '../typescript/math_helpers'
 import { headers, raw_items } from '@/typescript/wheel_info'
 
-const wheelSize = 2800
 const textWidth = 600
-const itemWidth = wheelSize + textWidth * 2 // This gives textWidth to the left and right of the wheel
 const scrollVelocityFactor = 0.0001
 const centrifugalForceCoefficient = 100
 
