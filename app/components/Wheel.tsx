@@ -113,7 +113,7 @@ export default function Wheel({
             setxOffset(550)
         }
         const handleProjectDeselected = () => {
-            setxOffset(650)
+            setxOffset(700)
         }
         if (isProjectSelected) {
             handleProjectSelected()
