@@ -10,7 +10,7 @@ export default function Home() {
     const [project, setProject] = useState<Project | null>(null)
     return (
         <>
-            <Wheel setProject={setProject} isProjectSelected={!!project}></Wheel>
+            <Wheel setProject={setProject} isProjectSelected={!!project} project={project}></Wheel>
             <ProjectCard project={project}></ProjectCard>
             <Infocard></Infocard>
         </>

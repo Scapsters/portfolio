@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Project, projects } from '../typescript/project_card_info'
-import { circular_rotate } from '../typescript/math_helpers'
+import { circular_rotate } from '../typescript/math_helpers';
 import { headers, raw_items } from '@/typescript/wheel_info'
 
 const wheelSize = 2800
@@ -15,9 +15,12 @@ const centrifugalForceCoefficient = 100
 export default function Wheel({
     setProject,
     isProjectSelected,
-}: Readonly<{ setProject: (project: Project) => void; isProjectSelected: boolean }>) {
+    project,
+}: Readonly<{ setProject: (project: Project) => void; isProjectSelected: boolean; project: Project| null }>) {
     // Manages wheel hover state. Performance impact negligible
     const [isHovered, setIsHovered] = useState(false)
+
+    const [scrollSinceSelection, setScrollSinceSelection] = useState(false)
 
     const wheelHoverRef = useRef<HTMLDivElement>(null)
 
@@ -27,7 +30,6 @@ export default function Wheel({
     // Wheel physics. Performance impact medium
     const [position, setPosition] = useState(0)
     const velocity = useRef(0)
-    const acceleration = useRef(0)
 
     // To allow for style manipulation for circular transform and rotate. Performance impact negligible
     const itemRefs = useMemo(
@@ -76,7 +78,10 @@ export default function Wheel({
                                 key={`wheel ${item} ${index}`}
                                 style={{ transition: 'padding-right 0.2s ease-out' }}
                                 className="h-max text-right w-max left-0 relative text-[var(--dark-text)]"
-                                onClick={() => setProject(projects[item])}
+                                onClick={() => {
+                                    setScrollSinceSelection(false)
+                                    setProject(projects[item])
+                                }}
                             >
                                 {item}
                             </button>
@@ -139,6 +144,7 @@ export default function Wheel({
         const wheelHandler = (e: WheelEvent) => {
             if (!isHovered || !element) return
             velocity.current += e.deltaY * scrollVelocityFactor
+            setScrollSinceSelection(true)
         }
 
         // Mount/unmount event listener
@@ -207,13 +213,26 @@ export default function Wheel({
     // Physics loop for wheel. Performance impact medium
     useEffect(() => {
         const friction = 0.9
-        velocity.current += acceleration.current
         velocity.current *= friction
         setPosition((p) => p + velocity.current)
 
         const targetRadius = -Math.abs(velocity.current) * centrifugalForceCoefficient
         setTextRadiusOffset((offset) => offset + (targetRadius - offset) * 0.7)
     }, [frame])
+
+    useEffect(() => {
+        if (!project) return
+        if (scrollSinceSelection) return
+
+        const project_index = raw_items.indexOf(project.name.split(":")[0])
+        const current_angle = circular_rotate(project_index, position)
+        const target_angle = circular_rotate(0, 0)
+
+        const delta_angle = current_angle - target_angle - 20 
+        velocity.current += Math.tanh(delta_angle) * .0016
+
+
+    }, [position, project, scrollSinceSelection])
 
     useEffect(() => {
         if (!circleRef.current) return
@@ -231,10 +250,17 @@ export default function Wheel({
                 ref={circleRef}
                 className="absolute top-1/2 right-0 translate-x-350 -translate-y-1/2 transition-transform duration-1000 ease-in-out w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] bg-[var(--foreground)]"
             ></div>
-            <div ref={wheelHoverRef} className="absolute w-500 -right-300 flex h-screen flex-col transition-transform  duration-1000 ease-in-out">
-            <div ref={parentRef} className="absolute top-1/2 translate-x-140 transition-transform duration-1000 ease-in-out">{items}</div>
+            <div
+                ref={wheelHoverRef}
+                className="absolute w-500 -right-300 flex h-screen flex-col transition-transform  duration-1000 ease-in-out"
+            >
+                <div
+                    ref={parentRef}
+                    className="absolute top-1/2 translate-x-140 transition-transform duration-1000 ease-in-out"
+                >
+                    {items}
+                </div>
             </div>
-            
         </>
     )
 }
