@@ -45,14 +45,47 @@ export const projects: { [index: string]: Project } = {
     },
     'YoLink Center': {
         name: 'YoLink Center: Leveraging IoT API',
+        description: [
+            'A framework for interacting with YoLink IoT devices through their API. Enables users to read more data from their sensors than possible through YoLink\'s app.',
+            'While I gained much experience in this python-based tech stack, this fledgling project is mostly incomplete and lacks a public demo (api keys are private).'
+        ],
+        features: [
+            'Worked with experts from SoCore and Oracle to design an effective denormalized database for data storage',
+        ],
         date: 'November 2024 - December 2024',
-        description: ['charlie oh nooooo not the poisonous fugu fish'],
+        github: 'https://github.com/Scapsters/YoLink',
+        image: [ { original: '/yolink/sensors.png' }, { original: '/yolink/thsensors.png' } ], //TODO:
         technologies: ['Python', 'Flask', 'MySQL'],
     },
     'Portfolio': {
         name: 'Portfolio',
-        date: 'March 22, 2025 - March 24, 2025',
-        description: ['charlie oh nooooo not the poisonous fugu fish'],
+        date: 'March 22, 2025 - March 28, 2025',
+        description: [
+            'My first time really challenging myself with how fast I could develop a unique app. Was rushed to prepare for an interview and made this in about a week over ~20 hours of work.',
+            'I learned about tradeoffs with in development and sought to leverage the limited scope of the project to make incredibly efficient, if unsound, development decisions.'
+        ],
+        features: [
+            'Rigorously optimized physics-based side nav',
+            'Wireframed in Figma to speed up initial design'
+        ],
+        demo: 'https://scotthappy.com',
+        github: "https://github.com/Scapsters/portfolio",
+        image: [ { original: '/portfolio/portfolio.png'} ],
         technologies: ['Next.js', 'TypeScript', 'Tailwind'],
+    },
+    'DinDin': {
+        name: 'DinDin: Share Your Food With the World',
+        date: 'January 2025 - May 2025',
+        description: [
+            "Semester-long group project designing a product from the ground up. Our product: A social media platform, but for food. Quickly share recipies with your friends and view engaging content from home chefs.",
+            "Though this is a class project, it's been a unique experience to dive this far into what makes UX tick."
+        ],
+        features: [
+            '60+ Page design documentation sheet',
+            'Appealing and user-friendly UI built in Figma',
+            'Artifacts such as WAADs and HTA'
+        ],
+        image: [ { original: '/dindin/main.png'}, { original: '/dindin/profile.png'}, { original: '/dindin/waad.png'}, { original: '/dindin/themes.png'}, { original: '/dindin/guidelines.png'}, { original: '/dindin/tutorial.png'} ],
+        technologies: [ 'Figma', 'Draw.io' ]
     }
 }

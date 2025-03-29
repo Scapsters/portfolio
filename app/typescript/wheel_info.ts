@@ -10,6 +10,8 @@ export const raw_items = [
     'furryslop.com',
     'JSThread',
     'YoLink Center',
+    'Portfolio',
+    'DinDin',
     '',
     'Frameworks',
     'React',
