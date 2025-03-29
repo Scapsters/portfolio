@@ -11,3 +11,8 @@ export const circular_rotate = (index: number, scroll: number): number =>
 function mod(n: number, m: number) {
     return ((n % m) + m) % m
 }
+
+export function roundTo(value: number, n: number): number {
+    const factor = Math.pow(10, n);
+    return Math.round(value * factor) / factor;
+}
