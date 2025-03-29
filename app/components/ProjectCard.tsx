@@ -41,11 +41,11 @@ export function ProjectCard({ project }: Readonly<{ project: Project | null }>) 
                     <></>
                 )}
             </div>
-            <p style={lexendGiga.style} className="pb-1 text-4xl">
+            <p style={lexendGiga.style} className="pb-1 border-b-3 text-4xl">
                 {project.name}
             </p>
             <div className="overflow-y-scroll h-1/1">
-                <div className="w-1/1 p-4 rounded-b-xl border-t-3 bg-orange-100">
+                <div className="w-1/1 p-4 rounded-b-xl bg-orange-100">
                     {project.description.map((description) => (
                         <p className="m-4" key={description}>
                             {description}
