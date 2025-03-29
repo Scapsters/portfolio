@@ -44,22 +44,16 @@ export default function Wheel({
                 <div
                     ref={itemRefs[index]}
                     key={item + index}
-                    style={{ right: -itemWidth / 2 }}
                     className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
                 >
                     <div
-                        style={{
-                            width: textWidth + textRadiusOffset,
-                            transition: 'padding-right 0.2s ease-out',
-                        }}
-                        className="flex justify-end"
+                        className="flex justify-end transition-[padding-right] duration-200 ease-out"
                     >
                         {headers.includes(item) ? (
                             // If item is a header, render with different styling
                             <p
                                 key={`wheel ${item} ${index}`}
-                                style={{ transition: 'padding-right 0.2s ease-out' }}
-                                className="wheel-item font-light wheel-text text-right text-[var(--light-text)]"
+                                className="wheel-item font-light wheel-text text-right text-[var(--light-text)] transition-[padding-right] duration-200 ease-out"
                             >
                                 {item}
                             </p>
@@ -67,8 +61,7 @@ export default function Wheel({
                             // Else, render with different styling and as a button
                             <button
                                 key={`wheel ${item} ${index}`}
-                                style={{ transition: 'padding-right 0.2s ease-out' }}
-                                className="h-max text-right w-max left-0 relative text-[var(--dark-text)]"
+                                className="h-max text-right w-max left-0 relative text-[var(--dark-text)] transition-[padding-right] duration-200 ease-out"
                                 onClick={() => {
                                     setScrollSinceSelection(false)
                                     setProject(projects[item])
@@ -80,27 +73,38 @@ export default function Wheel({
                     </div>
                 </div>
             )),
-        [itemRefs, setProject, textRadiusOffset],
+        [itemRefs, setProject],
     )
 
     // Move items away from the wheel as they travel quickly. Performance impact likely high but unknown.
     useEffect(() => {
-        document.documentElement.style.setProperty('--wheel-item-offset', `${textWidth + textRadiusOffset}`)
-    }, [textRadiusOffset])
+        itemRefs.forEach((item) => {
+            (item.current.children[0] as HTMLElement).style.setProperty('width', `calc(${textWidth}px + ${textRadiusOffset.toFixed(2)}px)`)
+        })
+    }, [itemRefs, textRadiusOffset])
 
     //Set initial position. Performance impact negligible
     useEffect(() => {
         setxOffset(1200)
     }, [])
 
+    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
+    useAnimationFrames(lastRenderTime, setFrame)
+
+    // Physics loop for wheel. Performance impact high
+    useWheelPhysics(frame, velocity, setPosition, setTextRadiusOffset)
+
+    // Push the wheel towards the currently selected project. Performance impact high
+    usePushWheelToSelectedProject(position, velocity, project, scrollSinceSelection)
+
+    // Rotate items on position change. Performance impact high
+    useUpdateItemRotations(raw_items, itemRefs, position)
+
     // Change transitions after loading. Performance impact minimal
-    useModifyAnimationsWhileLoading(itemRefs, circleRef, parentRef, frame)
+    useModifyAnimationsWhileLoading(frame, itemRefs, circleRef, parentRef)
 
     //Move wheel on project selection toggle. Performance effect negligible
     useShiftOnProjectSelect(isProjectSelected, setxOffset)
-
-    // Rotate items on position change. Performance impact medium
-    useUpdateItemRotations(raw_items, itemRefs, position)
 
     // Track mousewheel events and add velocity. Changes are reflected in the frame loop. Performance impact negligible
     useImpartVelocityOnScroll(wheelHoverRef, isHovered, velocity, setScrollSinceSelection)
@@ -108,20 +112,11 @@ export default function Wheel({
     // Track hovering over the wheel. Performance impact negligible
     useHoverOverWheel(wheelHoverRef, setIsHovered)
 
-    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
-    useAnimationFrames(lastRenderTime, setFrame)
-
     // Hover effect for buttons on wheel. Performance impact negligible
     useHoverEffectOnItems(itemRefs)
 
-    // Physics loop for wheel. Performance impact medium
-    useWheelPhysics(frame, velocity, setPosition, setTextRadiusOffset)
-
-    // Push the wheel towards the currently selected project. Performance impact high
-    usePushWheelToSelectedProject(project, scrollSinceSelection, position, velocity)
-
     // Sets the wheels to their current xOffset. Performance impact negligible
-    useMoveWheelsToXOffset(circleRef, xOffset, parentRef)
+    useMoveWheelsToXOffset(xOffset, circleRef, parentRef)
 
     return (
         <>
@@ -276,10 +271,10 @@ function useWheelPhysics(
 }
 
 function useModifyAnimationsWhileLoading(
+    frame: number,
     itemRefs: React.RefObject<HTMLDivElement>[],
     circleRef: React.RefObject<HTMLDivElement | null>,
     parentRef: React.RefObject<HTMLDivElement | null>,
-    frame: number,
 ) {
     useEffect(() => {
         if (frame > 60) {
@@ -293,10 +288,10 @@ function useModifyAnimationsWhileLoading(
 }
 
 function usePushWheelToSelectedProject(
-    project: Project | null,
-    scrollSinceSelection: boolean,
     position: number,
     velocity: React.RefObject<number>,
+    project: Project | null,
+    scrollSinceSelection: boolean,
 ) {
     useEffect(() => {
         if (!project) return
@@ -312,8 +307,8 @@ function usePushWheelToSelectedProject(
 }
 
 function useMoveWheelsToXOffset(
-    circleRef: React.RefObject<HTMLDivElement | null>,
     xOffset: number,
+    circleRef: React.RefObject<HTMLDivElement | null>,
     parentRef: React.RefObject<HTMLDivElement | null>,
 ) {
     useEffect(() => {
