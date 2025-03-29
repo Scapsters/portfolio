@@ -97,7 +97,7 @@ export function ProjectCard({ project }: Readonly<{ project: Project | null }>) 
             </div>
         </div>
     ) : (
-        <div className={`top-1/3 left-1/w7 ${common_css}`}>
+        <div className={`top-1/3 left-1/7 ${common_css}`}>
             <p style={lexendPeta.style} className="text-5xl mb-4">
                 Welcome <span className="text-2xl">to</span>
             </p>
