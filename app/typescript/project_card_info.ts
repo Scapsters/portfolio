@@ -365,7 +365,7 @@ export const projects: { [index: string]: Project } = {
         ],
         date: 'November 2024 - December 2024',
         github: 'https://github.com/Scapsters/YoLink',
-        image: [{ original: '/yolink/sensors.png' }, { original: '/yolink/thsensors.png' }], //TODO:
+        image: [{ original: '/yolink/sensors.png' }, { original: '/yolink/thsensors.png' }],
         technologies: ['Python', 'Flask', 'MySQL'],
     },
     Portfolio: {
