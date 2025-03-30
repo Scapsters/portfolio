@@ -15,15 +15,18 @@ export default function Wheel({
     isSelected,
     selected,
     setIsProject,
+    scrollSinceSelection,
+    setScrollSinceSelection,
 }: Readonly<{
     setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null>>
     isSelected: boolean
     selected: Project | Tool | null
     setIsProject: React.Dispatch<React.SetStateAction<boolean>>
+    scrollSinceSelection: boolean
+    setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>
 }>) {
     // Changed by events. Performance impact low
     const [isHovered, setIsHovered] = useState(false)
-    const [scrollSinceSelection, setScrollSinceSelection] = useState(false)
     const [xOffset, setxOffset] = useState(700)
 
     // Refs. Performance impact negligible

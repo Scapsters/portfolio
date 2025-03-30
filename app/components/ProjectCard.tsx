@@ -12,11 +12,13 @@ export function ProjectCard({
     setSelected,
     setIsProject,
     isProject,
+    setScrollSinceSelection,
 }: Readonly<{
     selected: Project | Tool | null
     setSelected: React.Dispatch<SetStateAction<Project | Tool | null>>
     setIsProject: React.Dispatch<SetStateAction<boolean>>
     isProject: boolean
+    setScrollSinceSelection: React.Dispatch<SetStateAction<boolean>>
 }>) {
     const galleryRef = useRef<ImageGallery>(null)
 
@@ -107,6 +109,7 @@ export function ProjectCard({
                                             onClick={() => {
                                                 setIsProject(false)
                                                 setSelected(tools[technology])
+                                                setScrollSinceSelection(false)
                                             }}
                                         >
                                             <div className="flex justify-center">
@@ -182,6 +185,7 @@ export function ProjectCard({
                                             onClick={() => {
                                                 setIsProject(true)
                                                 setSelected(projects[project])
+                                                setScrollSinceSelection(false)
                                             }}
                                         >
                                             <span className="text-2xl">↗</span> {projects[project].name}

@@ -9,6 +9,7 @@ import Infocard from './components/Infocard'
 export default function Home() {
     const [selected, setSelected] = useState<Project | Tool | null>(null)
     const [isProject, setIsProject] = useState(true)
+    const [scrollSinceSelection, setScrollSinceSelection] = useState(false)
 
     return (
         <>
@@ -19,12 +20,15 @@ export default function Home() {
                     setSelected={setSelected}
                     setIsProject={setIsProject}
                     isProject={isProject}
+                    setScrollSinceSelection={setScrollSinceSelection}
                 ></ProjectCard>
                 <Wheel
                     setSelected={setSelected}
                     isSelected={!!selected}
                     selected={selected}
                     setIsProject={setIsProject}
+                    scrollSinceSelection={scrollSinceSelection}
+                    setScrollSinceSelection={setScrollSinceSelection}
                 ></Wheel>
             </div>
         </>
