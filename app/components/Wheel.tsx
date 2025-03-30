@@ -113,7 +113,7 @@ export default function Wheel({
     useWheelPhysics(frame, velocity, deltaTime, setPosition, setTextRadiusOffset)
 
     // Push the wheel towards the currently selected project. Performance impact high
-    usePushWheelToSelectedProject(position, velocity, selected, scrollSinceSelection)
+    usePushWheelToSelectedProject(position, velocity, selected, scrollSinceSelection, deltaTime)
 
     // Rotate items on position change. Performance impact high
     useUpdateItemRotations(raw_items, itemRefs, position)
@@ -337,6 +337,7 @@ function usePushWheelToSelectedProject(
     velocity: React.RefObject<number>,
     project: Project | Tool | null,
     scrollSinceSelection: boolean,
+    deltaTime: React.RefObject<number>,
 ) {
     useEffect(() => {
         if (!project) return
@@ -347,8 +348,8 @@ function usePushWheelToSelectedProject(
         const target_angle = circular_rotate(0, 0)
 
         const delta_angle = current_angle - target_angle - 20 // 20 is target phase
-        velocity.current += Math.pow(Math.tanh(delta_angle), 3) * 0.0004
-    }, [position, project, scrollSinceSelection, velocity])
+        velocity.current = velocity.current + (Math.pow(Math.tanh(delta_angle), 3) * 0.0004) * (deltaTime.current / 4)
+    }, [position, project, scrollSinceSelection, velocity, deltaTime])
 }
 
 function useMoveWheelsToXOffset(
