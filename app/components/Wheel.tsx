@@ -24,7 +24,7 @@ export default function Wheel({
     // Changed by events. Performance impact low
     const [isHovered, setIsHovered] = useState(false)
     const [scrollSinceSelection, setScrollSinceSelection] = useState(false)
-    const [xOffset, setxOffset] = useState(1000)
+    const [xOffset, setxOffset] = useState(700)
 
     // Refs. Performance impact negligible
     const parentRef = useRef<HTMLDivElement>(null)
@@ -65,7 +65,7 @@ export default function Wheel({
                             // Else, render with different styling and as a button
                             <button
                                 key={`wheel ${item} ${index}`}
-                                className="h-max text-right w-max left-0 relative text-[var(--dark-text)] transition-[padding-right] duration-200 ease-out"
+                                className="h-max p-3 text-right w-max left-0  text-[var(--dark-text)] transition-[padding-right] duration-200 ease-out"
                                 onClick={() => {
                                     setScrollSinceSelection(false)
 
@@ -106,11 +106,6 @@ export default function Wheel({
         })
     }, [itemRefs, textRadiusOffset])
 
-    //Set initial position. Performance impact negligible
-    useEffect(() => {
-        setxOffset(1200)
-    }, [])
-
     // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
     useAnimationFrames(deltaTime, lastRenderTime, totalTime, setFrame)
 
@@ -149,7 +144,7 @@ export default function Wheel({
             ></div>
             <div
                 ref={wheelHoverRef}
-                className="absolute w-500 -right-300 flex h-screen flex-col transition-transform  duration-1000 ease-in-out"
+                className="absolute w-500 align-end -right-300 h-screen transition-transform  duration-1000 ease-in-out"
             >
                 <div
                     ref={parentRef}
@@ -201,12 +196,10 @@ function useImpartVelocityOnScroll(
         console.log('hoveringers my name, and hoveringings the game')
         const wheelHandler = (e: WheelEvent) => {
             if (!isHovered || !element) return
-            console.log(deltaTime.current)
-            velocity.current += e.deltaY * scrollVelocityFactor * (deltaTime.current / 33)
+            velocity.current += +e.deltaY * scrollVelocityFactor * (deltaTime.current / 33)
             setScrollSinceSelection(true)
         }
 
-        // Mount/unmount event listener
         const element = wheelHoverRef.current
         element?.addEventListener('wheel', wheelHandler)
         return () => {
@@ -267,17 +260,40 @@ function useAnimationFrames(
     setFrame: React.Dispatch<React.SetStateAction<number>>,
 ) {
     useEffect(() => {
+        let animationId: number | null = null;
+        let running = true; // Track if animation is active
+
         const updateFrame = (timestamp: number) => {
-            delta_time.current = timestamp - lastRendertime.current
-            lastRendertime.current = timestamp
-            totalTime.current += delta_time.current
+            if (!running) return;
+            
+            delta_time.current = timestamp - lastRendertime.current;
+            lastRendertime.current = timestamp;
+            totalTime.current = totalTime.current + delta_time.current;
 
-            setFrame((prev) => prev + 1)
-            requestAnimationFrame(updateFrame)
-        }
+            setFrame((prev) => prev + 1);
 
-        const animationId = requestAnimationFrame(updateFrame)
-        return () => cancelAnimationFrame(animationId)
+            animationId = requestAnimationFrame(updateFrame);
+        };
+
+        const tabOutHandler = () => {
+            if (document.hidden) {
+                running = false;
+                if (animationId) cancelAnimationFrame(animationId);
+            } else {
+                running = true;
+                lastRendertime.current = performance.now(); // Reset timestamp to avoid time jumps
+                requestAnimationFrame(updateFrame);
+            }
+        };
+
+        lastRendertime.current = performance.now();
+        animationId = requestAnimationFrame(updateFrame);
+        document.addEventListener('visibilitychange', tabOutHandler);
+
+        return () => {
+            if (animationId) cancelAnimationFrame(animationId);
+            document.removeEventListener('visibilitychange', tabOutHandler);
+        };
     }, [delta_time, lastRendertime, setFrame, totalTime])
 }
 
