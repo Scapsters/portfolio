@@ -29,7 +29,7 @@ export function ProjectCard({
                         {project.demo ? (
                             <>
                                 <a
-                                    className="flex hover:underline text-blue-500 "
+                                    className="flex text-blue-500 hover:underline"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     href={project.demo}
@@ -44,7 +44,7 @@ export function ProjectCard({
                         {project.github ? (
                             <>
                                 <a
-                                    className="flex hover:underline text-blue-500 "
+                                    className="flex text-blue-500 hover:underline"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     href={project.github}
@@ -57,7 +57,7 @@ export function ProjectCard({
                         )}
                         {project.date ? (
                             <>
-                                <p className="grow text-right justify-end">{project.date}</p>{' '}
+                                <p className="justify-end text-right grow">{project.date}</p>{' '}
                             </>
                         ) : (
                             <></>
@@ -66,14 +66,14 @@ export function ProjectCard({
                     <p style={lexendGiga.style} className="pb-1 border-b-3 text-4xl">
                         {project.name}
                     </p>
-                    <div className="overflow-y-auto h-1/1">
-                        <div className="w-1/1 p-4 rounded-b-xl bg-orange-100">
+                    <div className="h-1/1 overflow-y-auto">
+                        <div className="bg-orange-100 p-4 rounded-b-xl w-1/1">
                             {project.description.map((description) => (
                                 <p className="m-4" key={description}>
                                     {description}
                                 </p>
                             ))}
-                            <p className="text-xl m-4"> Features </p>
+                            <p className="m-4 text-xl"> Features </p>
                             <div>
                                 {project.features?.map((feature) => (
                                     <p className="m-2" key={feature}>
@@ -84,7 +84,7 @@ export function ProjectCard({
                             </div>
                         </div>
                         <div className="flex w-1/1">
-                            <div className="w-2/3 p-4 mt-4 mr-2 rounded-xl bg-orange-100">
+                            <div className="bg-orange-100 mt-4 mr-2 p-4 rounded-xl w-2/3">
                                 {project.image ? (
                                     <ImageGallery
                                         ref={galleryRef}
@@ -97,13 +97,13 @@ export function ProjectCard({
                                     />
                                 ) : null}
                             </div>
-                            <ul className="grow rounded-xl p-4 pr-8 mt-4 ml-2 bg-orange-100">
-                                <p className="text-3xl p-2 text-[var(--foreground)]">Tech Stack</p>
+                            <ul className="bg-orange-100 mt-4 ml-2 p-4 pr-8 rounded-xl grow">
+                                <p className="p-2 text-[var(--foreground)] text-3xl">Tech Stack</p>
                                 {project.technologies.map((technology) =>
                                     tools[technology] ? (
                                         <button
                                             key={technology + 'container'}
-                                            className="flex text-2xl m-2 bg-orange-200/40 hover:bg-orange-200 rounded-xl w-full duration-200 text-right items-center p-2"
+                                            className="flex items-center bg-orange-200/40 hover:bg-orange-200 m-2 p-2 rounded-xl w-full text-2xl text-right duration-200"
                                             onClick={() => {
                                                 setIsProject(false)
                                                 setSelected(tools[technology])
@@ -126,7 +126,7 @@ export function ProjectCard({
                                     ) : (
                                         <button
                                             key={technology + ' container'}
-                                            className="flex text-2xl rounded-xl w-full duration-200 text-right items-center p-4"
+                                            className="flex items-center p-4 rounded-xl w-full text-2xl text-right duration-200"
                                         >
                                             <div className="flex justify-center">
                                                 {/*TODO: remove */
@@ -157,27 +157,27 @@ export function ProjectCard({
                         <p style={lexendGiga.style} className="pb-1 text-4xl">
                             {tool.name}
                         </p>
-                        <div className="flex flex-col-reverse h-12 items-center justify-evenly">
+                        <div className="flex flex-col-reverse justify-evenly items-center h-12">
                             <p> Proficiency: {tool.proficiency} </p>
                             {tool.usedOften ? (
-                                <p className="bold bg-amber-200 pr-1 pl-1 rounded-md self-start">Used Often!</p>
+                                <p className="self-start bg-amber-200 pr-1 pl-1 rounded-md bold">Used Often!</p>
                             ) : (
                                 <></>
                             )}
                         </div>
                     </div>
 
-                    <div className="overflow-y-auto h-1/1">
-                        <div className="w-1/1 p-4 rounded-b-xl bg-orange-100">
+                    <div className="h-1/1 overflow-y-auto">
+                        <div className="bg-orange-100 p-4 rounded-b-xl w-1/1">
                             {tool.notes.map((note) => (
                                 <p className="p-2 pt-4 pb-4" key={note}>{note}</p>
                             ))}
-                            {tool.projects.length > 0 ? <p className="text-3xl m-4"> Used in: </p> : <></>}
+                            {tool.projects.length > 0 ? <p className="m-4 text-3xl"> Used in: </p> : <></>}
                             <div className="">
                                 {tool.projects?.map((project) =>
                                     projects[project] ? (
                                         <button
-                                            className="m-2 p-4 text-xl block hover:underline bg-orange-200/40 hover:bg-orange-200 duration-200 rounded-xl"
+                                            className="block bg-orange-200/40 hover:bg-orange-200 m-2 p-4 rounded-xl text-xl hover:underline duration-200"
                                             key={project}
                                             onClick={() => {
                                                 setIsProject(true)
@@ -188,7 +188,7 @@ export function ProjectCard({
                                         </button>
                                     ) : (
                                         <button
-                                            className="m-2 p-4 text-xl block   duration-200 rounded-xl"
+                                            className="block m-2 p-4 rounded-xl text-xl duration-200"
                                             key={project}
                                         >
                                             - {project}
@@ -204,13 +204,13 @@ export function ProjectCard({
     } else {
         return (
             <div className={`top-1/3 left-1/7 absolute`}>
-                <p style={lexendPeta.style} className="text-5xl mb-4">
+                <p style={lexendPeta.style} className="mb-4 text-5xl">
                     Welcome <span className="text-2xl">to</span>
                 </p>
-                <p style={lexendGiga.style} className="text-2xl mb-4">
+                <p style={lexendGiga.style} className="mb-4 text-2xl">
                     Scott Happy&apos;s Portfolio
                 </p>
-                <p style={lexendExa.style} className="text-l mb-2">
+                <p style={lexendExa.style} className="mb-2 text-l">
                     Yes, that&apos;s my name [:
                 </p>
             </div>

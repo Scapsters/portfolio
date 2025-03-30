@@ -57,7 +57,7 @@ export default function Wheel({
                             // If item is a header, render with different styling
                             <p
                                 key={`wheel ${item} ${index}`}
-                                className="wheel-item font-light wheel-text text-right text-[var(--light-text)] transition-[padding-right] duration-200 ease-out"
+                                className="font-light text-[var(--light-text)] text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
                             >
                                 {item}
                             </p>
@@ -65,7 +65,7 @@ export default function Wheel({
                             // Else, render with different styling and as a button
                             <button
                                 key={`wheel ${item} ${index}`}
-                                className="h-max p-3 text-right w-max left-0  text-[var(--dark-text)] transition-[padding-right] duration-200 ease-out"
+                                className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right] duration-200 ease-out"
                                 onClick={() => {
                                     setScrollSinceSelection(false)
 
@@ -140,15 +140,15 @@ export default function Wheel({
         <>
             <div
                 ref={circleRef}
-                className="absolute top-1/2 right-0 translate-x-350 -translate-y-1/2 transition-transform duration-1000 ease-in-out w-[var(--wheel-size)] rounded-[50%] h-[var(--wheel-size)] bg-[var(--foreground)]"
+                className="top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
             ></div>
             <div
                 ref={wheelHoverRef}
-                className="absolute w-500 align-end -right-300 h-screen transition-transform  duration-1000 ease-in-out"
+                className="-right-300 absolute w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
             >
                 <div
                     ref={parentRef}
-                    className="absolute top-1/2 translate-x-140 transition-transform duration-1000 ease-in-out"
+                    className="top-1/2 absolute transition-transform translate-x-140 duration-1000 ease-in-out"
                 >
                     {items}
                 </div>
