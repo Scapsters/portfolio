@@ -1,4 +1,4 @@
-import { Project, projects, Tool } from '../typescript/project_card_info'
+import { Project, projects, Tool, tools } from '../typescript/project_card_info'
 import { lexendExa, lexendGiga, lexendPeta } from '../typescript/css_constants'
 import ImageGallery from 'react-image-gallery'
 import 'react-image-gallery/styles/css/image-gallery.css'
@@ -24,11 +24,16 @@ export function ProjectCard({
         if (isProject) {
             const project = selected as Project
             return (
-                <div className={`z-2 top-40 left-30 h-3/4 w-2/3 absolute`}>
+                <div className={`absolute z-2 top-40 left-1/30 h-3/4 w-2/3 `}>
                     <div className="flex">
                         {project.demo ? (
                             <>
-                                <a className="hover:underline text-blue-500" href={project.demo}>
+                                <a
+                                    className="flex hover:underline text-blue-500 "
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={project.demo}
+                                >
                                     View Live Project
                                 </a>{' '}
                                 <span className="mx-4">|</span>
@@ -38,7 +43,12 @@ export function ProjectCard({
                         )}
                         {project.github ? (
                             <>
-                                <a className="hover:underline text-blue-500" href={project.github}>
+                                <a
+                                    className="flex hover:underline text-blue-500 "
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={project.github}
+                                >
                                     GitHub
                                 </a>{' '}
                             </>
@@ -87,26 +97,53 @@ export function ProjectCard({
                                     />
                                 ) : null}
                             </div>
-                            <ul className="grow rounded-xl p-4 mt-4 ml-2 bg-orange-100">
-                                <p className="text-3xl text-[var(--foreground)]">Tech Stack</p>
-                                {project.technologies.map((technology) => (
-                                    <div
-                                        key={technology + ' container'}
-                                        className="flex text-2xl text-right items-center m-4"
-                                    >
-                                        {/*TODO: remove */
-                                        /* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            key={technology + ' logo'}
-                                            alt={technology}
-                                            src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
-                                            className={'h-13 aspect-auto'}
-                                        />
-                                        <li className="grow" key={technology}>
-                                            {technology}
-                                        </li>
-                                    </div>
-                                ))}
+                            <ul className="grow rounded-xl p-4 pr-8 mt-4 ml-2 bg-orange-100">
+                                <p className="text-3xl p-2 text-[var(--foreground)]">Tech Stack</p>
+                                {project.technologies.map((technology) =>
+                                    tools[technology] ? (
+                                        <button
+                                            key={technology + 'container'}
+                                            className="flex text-2xl m-2 bg-orange-200/40 hover:bg-orange-200 rounded-xl w-full duration-200 text-right items-center p-2"
+                                            onClick={() => {
+                                                setIsProject(false)
+                                                setSelected(tools[technology])
+                                            }}
+                                        >
+                                            <div className="flex justify-center">
+                                                {/*TODO: remove */
+                                                /* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    key={technology + ' logo'}
+                                                    alt={technology}
+                                                    src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
+                                                    className={'h-13 aspect-auto'}
+                                                />
+                                            </div>
+                                            <li className="grow" key={technology}>
+                                                {technology} ↗
+                                            </li>
+                                        </button>
+                                    ) : (
+                                        <button
+                                            key={technology + ' container'}
+                                            className="flex text-2xl rounded-xl w-full duration-200 text-right items-center p-4"
+                                        >
+                                            <div className="flex justify-center">
+                                                {/*TODO: remove */
+                                                /* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    key={technology + ' logo'}
+                                                    alt={technology}
+                                                    src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
+                                                    className={'h-13 aspect-auto'}
+                                                />
+                                            </div>
+                                            <li className="grow" key={technology}>
+                                                {technology}
+                                            </li>
+                                        </button>
+                                    ),
+                                )}
                             </ul>
                         </div>
                     </div>
@@ -115,37 +152,46 @@ export function ProjectCard({
         } else {
             const tool = selected as Tool
             return (
-                <div className={`z-2 top-40 left-30 h-3/4 w-2/3 absolute`}>
+                <div className={`absolute z-2 top-40 left-1/30 h-3/4 w-2/3 `}>
                     <div className="flex items-end gap-10 border-b-3">
                         <p style={lexendGiga.style} className="pb-1 text-4xl">
                             {tool.name}
                         </p>
-                        <p> Proficiency: {tool.proficiency} </p>
-                        {tool.usedOften ? <p className="bold">Used Often!</p> : <></>}
+                        <div className="flex flex-col-reverse h-12 items-center justify-evenly">
+                            <p> Proficiency: {tool.proficiency} </p>
+                            {tool.usedOften ? (
+                                <p className="bold bg-amber-200 pr-1 pl-1 rounded-md self-start">Used Often!</p>
+                            ) : (
+                                <></>
+                            )}
+                        </div>
                     </div>
 
                     <div className="overflow-y-auto h-1/1">
                         <div className="w-1/1 p-4 rounded-b-xl bg-orange-100">
                             {tool.notes}
-                            <p className="text-xl m-4"> Used in: </p>
+                            {tool.projects.length > 0 ? <p className="text-3xl m-4"> Used in: </p> : <></>}
                             <div className="">
-                                {tool.projects?.map((project) => 
+                                {tool.projects?.map((project) =>
                                     projects[project] ? (
                                         <button
-                                            className="m-2 block hover:underline"
+                                            className="m-2 p-4 text-xl block hover:underline bg-orange-200/40 hover:bg-orange-200 duration-200 rounded-xl"
                                             key={project}
                                             onClick={() => {
                                                 setIsProject(true)
                                                 setSelected(projects[project])
                                             }}
                                         >
-                                            - {projects[project].name}
+                                            <span className="text-2xl">↗</span> {projects[project].name}
                                         </button>
                                     ) : (
-                                        <p className="m-2 block" key={project}>
+                                        <button
+                                            className="m-2 p-4 text-xl block   duration-200 rounded-xl"
+                                            key={project}
+                                        >
                                             - {project}
-                                        </p>
-                                    )
+                                        </button>
+                                    ),
                                 )}
                             </div>
                         </div>
