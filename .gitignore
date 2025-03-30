@@ -43,3 +43,6 @@ next-env.d.ts
 
 # VSC Config
 /.vscode
+
+# Internal bat
+run_portfolio_client.bat
