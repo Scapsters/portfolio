@@ -27,7 +27,7 @@ export const tools: { [index: string]: Tool } = {
         notes: 'TypeScript is one of my favorite languages, due to its ubiquity, its first-class handling of functions, and I think Promises/callbacks are neat!',
         proficiency: 'Advanced',
         usedOften: true,
-        projects: ['furryslop.com', 'JSThread', 'Portfolio'],
+        projects: ['furryslop.com', 'JSThread', 'Portfolio', 'Personal Proxy'],
     },
     React: {
         key_name: 'React',
@@ -51,7 +51,7 @@ export const tools: { [index: string]: Tool } = {
         notes: "Next.js is a very theoretically intriguing app! To me, it's React if it was optimizable and had complex routing. While you can optimize it, it's not necessarily done for you. The more elegant handling of loading and alternate page states is really useful for cleaning up components, especially ones that have lots of loading. Though in practice, Next.js is harder to use than it looks. While this portfolio uses Next.js, it barely leverages it. But, since create-react-app is deprecated, maybe this is the new base React.",
         proficiency: 'Novice',
         usedOften: false,
-        projects: ['Portfolio'],
+        projects: ['Portfolio', 'Personal Proxy'],
     },
     Bootstrap: {
         key_name: 'Bootstrap',
