@@ -12,9 +12,21 @@ export default function Home() {
 
     return (
         <>
-            <Wheel setSelected={setSelected} isSelected={!!selected} selected={selected} setIsProject={setIsProject}></Wheel>
-            <ProjectCard selected={selected} setSelected={setSelected} setIsProject={setIsProject} isProject={isProject}></ProjectCard>
             <Infocard></Infocard>
+            <div className="flex">
+                <ProjectCard
+                    selected={selected}
+                    setSelected={setSelected}
+                    setIsProject={setIsProject}
+                    isProject={isProject}
+                ></ProjectCard>
+                <Wheel
+                    setSelected={setSelected}
+                    isSelected={!!selected}
+                    selected={selected}
+                    setIsProject={setIsProject}
+                ></Wheel>
+            </div>
         </>
     )
 }
