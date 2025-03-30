@@ -169,7 +169,9 @@ export function ProjectCard({
 
                     <div className="overflow-y-auto h-1/1">
                         <div className="w-1/1 p-4 rounded-b-xl bg-orange-100">
-                            {tool.notes}
+                            {tool.notes.map((note) => (
+                                <p className="p-2 pt-4 pb-4" key={note}>{note}</p>
+                            ))}
                             {tool.projects.length > 0 ? <p className="text-3xl m-4"> Used in: </p> : <></>}
                             <div className="">
                                 {tool.projects?.map((project) =>
