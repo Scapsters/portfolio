@@ -142,7 +142,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Intermediate',
         usedOften: false,
-        projects: ['furryslop.com'],
+        projects: ['furryslop.com', 'Chat App'],
     },
     AWS: {
         key_name: 'AWS',
@@ -195,17 +195,6 @@ export const tools: { [index: string]: Tool } = {
         notes: [
             'My knowledge about Scrum comes from practical experience in long-term group projects. Everything from backlog refinement to planning poker.',
             'I’ve heard that in practice, while teams may be assigned a methodology, they only have to pick a few of the things that help them the most. I believe that overusing a methodology is possible, and that a methodology is only as useful as the time it saves.'
-        ],
-        proficiency: 'Intermediate',
-        usedOften: false,
-        projects: [],
-    },
-    Agile: {
-        key_name: 'Agile',
-        name: 'Agile',
-        notes: [
-            'Agile is a theoretically sound methodology. While I don’t have extensive experience, I understand its principles.',
-            'Agile can be adapted to fit a team’s needs, making it a flexible and effective approach for many projects.'
         ],
         proficiency: 'Intermediate',
         usedOften: false,
@@ -387,7 +376,7 @@ export const projects: { [index: string]: Project } = {
         name: 'DinDin: Share Your Food With the World',
         date: 'January 2025 - May 2025',
         description: [
-            'Semester-long group project designing a product from the ground up. Our product: A social media platform, but for food. Quickly share recipies with your friends and view engaging content from home chefs.',
+            'Semester-long group project designing a product\'s UX from the ground up. Our product: A social media platform, but for food. Quickly share recipies with your friends and view engaging content from home chefs.',
             "Though this is a class project, it's been a unique experience to dive this far into what makes UX tick.",
         ],
         features: [
