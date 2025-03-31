@@ -154,7 +154,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Novice',
         usedOften: false,
-        projects: [],
+        projects: ['Portfolio'],
     },
     Amplify: {
         key_name: 'Amplify',
@@ -165,7 +165,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Novice',
         usedOften: false,
-        projects: [],
+        projects: ['Portfolio'],
     },
     Terraform: {
         key_name: 'Terraform',
@@ -369,7 +369,7 @@ export const projects: { [index: string]: Project } = {
         demo: 'https://scotthappy.com',
         github: 'https://github.com/Scapsters/portfolio',
         image: [{ original: '/portfolio/portfolio.png' }],
-        technologies: ['Next.js', 'TypeScript', 'Tailwind'],
+        technologies: ['Next.js', 'TypeScript', 'Tailwind', 'AWS', 'Amplify'],
     },
     DinDin: {
         key_name: 'DinDin',
