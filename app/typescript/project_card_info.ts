@@ -160,7 +160,8 @@ export const tools: { [index: string]: Tool } = {
         key_name: 'Amplify',
         name: 'Amplify',
         notes: [
-            'While I am familiar with Amplify, I certainly dislike it. But, through the times I\'ve struggled with it, I learned important lessons on using it, as well as formed strong opinions about what good documentation means.',
+            'Amplify provides some useful shortcuts if you are looking to host a static website. Even with using a third-party DNS, I was able to acquire an ssl certificate and have a basic firewall provided to my website.',
+            'While it has its uses, I certainly dislike it. But, through the times I\'ve struggled with it, I learned important lessons on using it, as well as formed strong opinions about what good documentation means.',
             'I\'ve never seen worse documentation in any piece of technology, other than other tools from AWS. After finding out that Amazon recommends the usage of generative AI for learning Lex, I\'ve decided that Amazon couldn\'t care less about its developers. Absolutely atrocious.'
         ],
         proficiency: 'Novice',
@@ -365,7 +366,7 @@ export const projects: { [index: string]: Project } = {
             'My first time really challenging myself with how fast I could develop a unique app. Was rushed to prepare for an interview and made this in about a week over ~40 hours of work.',
             'I learned about tradeoffs with in development and sought to leverage the limited scope of the project to make incredibly efficient, if unsound, development decisions.',
         ],
-        features: ['Rigorously optimized physics-based side navigation bar', 'Wireframed in Figma to speed up initial design'],
+        features: ['Rigorously optimized physics-based side navigation bar', 'Wireframed in Figma to speed up initial design', 'SSR hosted with AWS Amplify'],
         demo: 'https://scotthappy.com',
         github: 'https://github.com/Scapsters/portfolio',
         image: [{ original: '/portfolio/portfolio.png' }],
