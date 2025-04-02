@@ -175,14 +175,15 @@ function useDragToSpin(
         const element = wheelHoverRef.current;
         if (!element) return;
 
-        const onMouseDown = (e: MouseEvent) => {
+        const onMouseDown = (e: MouseEvent | TouchEvent) => {
             isDragging.current = true;
-            lastDragY.current = e.clientY;
+            lastDragY.current = 'touches' in e ? e.touches[0].clientY : e.clientY;
         };
 
-        const onMouseMove = (e: MouseEvent) => {
-            const deltaY = e.clientY - lastDragY.current;
-            lastDragY.current = e.clientY;
+        const onMouseMove = (e: MouseEvent | TouchEvent) => {
+            const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+            const deltaY = clientY - lastDragY.current;
+            lastDragY.current = clientY;
             console.log(deltaY)
             if (!isDragging.current) return;
 
@@ -197,6 +198,11 @@ function useDragToSpin(
         element.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
+
+        element.addEventListener('touchstart', onMouseDown);
+        window.addEventListener('touchmove', onMouseMove);
+        window.addEventListener('touchend', onMouseUp);
+        window.addEventListener('touchcancel', onMouseUp);
 
         return () => {
             element.removeEventListener('mousedown', onMouseDown);
