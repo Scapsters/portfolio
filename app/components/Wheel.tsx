@@ -96,7 +96,7 @@ export default function Wheel({
                     </div>
                 </div>
             )),
-        [itemRefs, selected?.key_name, setIsProject, setSelected],
+        [itemRefs, selected?.key_name, setIsProject, setScrollSinceSelection, setSelected],
     )
 
     // Move items away from the wheel as they travel quickly. Performance impact likely high but unknown.
@@ -140,7 +140,7 @@ export default function Wheel({
     useMoveWheelsToXOffset(xOffset, circleRef, parentRef)
 
     // Allows wheel to be dragged. Performance impact low
-    useDragToSpin(wheelHoverRef, velocity, setScrollSinceSelection);
+    useDragToSpin(wheelHoverRef, velocity, setScrollSinceSelection)
 
     return (
         <>
@@ -168,48 +168,48 @@ function useDragToSpin(
     velocity: React.RefObject<number>,
     setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
-    const isDragging = useRef(false);
-    const lastDragY = useRef(0);
+    const isDragging = useRef(false)
+    const lastDragY = useRef(0)
 
     useEffect(() => {
-        const element = wheelHoverRef.current;
-        if (!element) return;
+        const element = wheelHoverRef.current
+        if (!element) return
 
         const onMouseDown = (e: MouseEvent | TouchEvent) => {
-            isDragging.current = true;
-            lastDragY.current = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        };
+            isDragging.current = true
+            lastDragY.current = 'touches' in e ? e.touches[0].clientY : e.clientY
+        }
 
         const onMouseMove = (e: MouseEvent | TouchEvent) => {
-            const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-            const deltaY = clientY - lastDragY.current;
-            lastDragY.current = clientY;
+            const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+            const deltaY = clientY - lastDragY.current
+            lastDragY.current = clientY
             console.log(deltaY)
-            if (!isDragging.current) return;
+            if (!isDragging.current) return
 
-            velocity.current -= deltaY * scrollVelocityFactor * .4; // Adjust multiplier for sensitivity
-            setScrollSinceSelection(true);
-        };
+            velocity.current -= deltaY * scrollVelocityFactor * 0.4 // Adjust multiplier for sensitivity
+            setScrollSinceSelection(true)
+        }
 
         const onMouseUp = () => {
-            isDragging.current = false;
-        };
+            isDragging.current = false
+        }
 
-        element.addEventListener('mousedown', onMouseDown);
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
+        element.addEventListener('mousedown', onMouseDown)
+        window.addEventListener('mousemove', onMouseMove)
+        window.addEventListener('mouseup', onMouseUp)
 
-        element.addEventListener('touchstart', onMouseDown);
-        window.addEventListener('touchmove', onMouseMove);
-        window.addEventListener('touchend', onMouseUp);
-        window.addEventListener('touchcancel', onMouseUp);
+        element.addEventListener('touchstart', onMouseDown)
+        window.addEventListener('touchmove', onMouseMove)
+        window.addEventListener('touchend', onMouseUp)
+        window.addEventListener('touchcancel', onMouseUp)
 
         return () => {
-            element.removeEventListener('mousedown', onMouseDown);
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
-        };
-    }, [wheelHoverRef, velocity, setScrollSinceSelection]);
+            element.removeEventListener('mousedown', onMouseDown)
+            window.removeEventListener('mousemove', onMouseMove)
+            window.removeEventListener('mouseup', onMouseUp)
+        }
+    }, [wheelHoverRef, velocity, setScrollSinceSelection])
 }
 
 function useShiftOnProjectSelect(isSelected: boolean, setxOffset: React.Dispatch<React.SetStateAction<number>>) {
@@ -315,40 +315,40 @@ function useAnimationFrames(
     setFrame: React.Dispatch<React.SetStateAction<number>>,
 ) {
     useEffect(() => {
-        let animationId: number | null = null;
-        let running = true; // Track if animation is active
+        let animationId: number | null = null
+        let running = true // Track if animation is active
 
         const updateFrame = (timestamp: number) => {
-            if (!running) return;
-            
-            delta_time.current = timestamp - lastRendertime.current;
-            lastRendertime.current = timestamp;
-            totalTime.current = totalTime.current + delta_time.current;
+            if (!running) return
 
-            setFrame((prev) => prev + 1);
+            delta_time.current = timestamp - lastRendertime.current
+            lastRendertime.current = timestamp
+            totalTime.current = totalTime.current + delta_time.current
 
-            animationId = requestAnimationFrame(updateFrame);
-        };
+            setFrame((prev) => prev + 1)
+
+            animationId = requestAnimationFrame(updateFrame)
+        }
 
         const tabOutHandler = () => {
             if (document.hidden) {
-                running = false;
-                if (animationId) cancelAnimationFrame(animationId);
+                running = false
+                if (animationId) cancelAnimationFrame(animationId)
             } else {
-                running = true;
-                lastRendertime.current = performance.now(); // Reset timestamp to avoid time jumps
-                requestAnimationFrame(updateFrame);
+                running = true
+                lastRendertime.current = performance.now() // Reset timestamp to avoid time jumps
+                requestAnimationFrame(updateFrame)
             }
-        };
+        }
 
-        lastRendertime.current = performance.now();
-        animationId = requestAnimationFrame(updateFrame);
-        document.addEventListener('visibilitychange', tabOutHandler);
+        lastRendertime.current = performance.now()
+        animationId = requestAnimationFrame(updateFrame)
+        document.addEventListener('visibilitychange', tabOutHandler)
 
         return () => {
-            if (animationId) cancelAnimationFrame(animationId);
-            document.removeEventListener('visibilitychange', tabOutHandler);
-        };
+            if (animationId) cancelAnimationFrame(animationId)
+            document.removeEventListener('visibilitychange', tabOutHandler)
+        }
     }, [delta_time, lastRendertime, setFrame, totalTime])
 }
 
@@ -403,7 +403,7 @@ function usePushWheelToSelectedProject(
         const target_angle = circular_rotate(0, 0)
 
         const delta_angle = current_angle - target_angle - 20 // 20 is target phase
-        velocity.current = velocity.current + (Math.pow(Math.tanh(delta_angle), 3) * 0.0004) * (deltaTime.current / 4)
+        velocity.current = velocity.current + Math.pow(Math.tanh(delta_angle), 3) * 0.0004 * (deltaTime.current / 4)
     }, [position, project, scrollSinceSelection, velocity, deltaTime])
 }
 
