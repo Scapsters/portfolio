@@ -139,6 +139,9 @@ export default function Wheel({
     // Sets the wheels to their current xOffset. Performance impact negligible
     useMoveWheelsToXOffset(xOffset, circleRef, parentRef)
 
+    // Allows wheel to be dragged. Performance impact low
+    useDragToSpin(wheelHoverRef, velocity, setScrollSinceSelection);
+
     return (
         <>
             <div
@@ -158,6 +161,49 @@ export default function Wheel({
             </div>
         </>
     )
+}
+
+function useDragToSpin(
+    wheelHoverRef: React.RefObject<HTMLDivElement | null>,
+    velocity: React.RefObject<number>,
+    setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
+) {
+    const isDragging = useRef(false);
+    const lastDragY = useRef(0);
+
+    useEffect(() => {
+        const element = wheelHoverRef.current;
+        if (!element) return;
+
+        const onMouseDown = (e: MouseEvent) => {
+            isDragging.current = true;
+            lastDragY.current = e.clientY;
+        };
+
+        const onMouseMove = (e: MouseEvent) => {
+            const deltaY = e.clientY - lastDragY.current;
+            lastDragY.current = e.clientY;
+            console.log(deltaY)
+            if (!isDragging.current) return;
+
+            velocity.current -= deltaY * scrollVelocityFactor * .4; // Adjust multiplier for sensitivity
+            setScrollSinceSelection(true);
+        };
+
+        const onMouseUp = () => {
+            isDragging.current = false;
+        };
+
+        element.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+
+        return () => {
+            element.removeEventListener('mousedown', onMouseDown);
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+        };
+    }, [wheelHoverRef, velocity, setScrollSinceSelection]);
 }
 
 function useShiftOnProjectSelect(isSelected: boolean, setxOffset: React.Dispatch<React.SetStateAction<number>>) {
