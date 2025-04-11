@@ -29,7 +29,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Advanced',
         usedOften: true,
-        projects: ['furryslop.com', 'JSThread', 'Portfolio', 'Personal Proxy'],
+        projects: ['ScrapStack', 'JSThread', 'Portfolio', 'Personal Proxy'],
     },
     React: {
         key_name: 'React',
@@ -39,7 +39,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Advanced',
         usedOften: true,
-        projects: ['furryslop.com', 'Portfolio', 'Chess App'],
+        projects: ['ScrapStack', 'Portfolio', 'Chess App'],
     },
     Tailwind: {
         key_name: 'Tailwind',
@@ -50,7 +50,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Advanced',
         usedOften: true,
-        projects: ['furryslop.com', 'JSThread', 'Portfolio'],
+        projects: ['ScrapStack', 'JSThread', 'Portfolio'],
     },
     'Next.js': {
         key_name: 'Next.js',
@@ -84,7 +84,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Intermediate',
         usedOften: true,
-        projects: ['furryslop.com', 'Personal Proxy'],
+        projects: ['ScrapStack', 'Personal Proxy'],
     },
     Java: {
         key_name: 'Java',
@@ -119,7 +119,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Intermediate',
         usedOften: false,
-        projects: ['furryslop.com', 'Portfolio'],
+        projects: ['ScrapStack', 'Portfolio'],
     },
     HTML: {
         key_name: 'HTML',
@@ -131,7 +131,7 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Intermediate',
         usedOften: false,
-        projects: ['furryslop.com', 'JSThread', 'Portfolio'],
+        projects: ['ScrapStack', 'JSThread', 'Portfolio'],
     },
     PostgreSQL: {
         key_name: 'PostgreSQL',
@@ -142,14 +142,14 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Intermediate',
         usedOften: false,
-        projects: ['furryslop.com', 'Chat App'],
+        projects: ['ScrapStack', 'Chat App'],
     },
     AWS: {
         key_name: 'AWS',
         name: 'AWS',
         notes: [
             'AWS has an ever so slightly steep learning curve. Despite this, I\'ve made some good strides in understanding its usage and place in the internet.',
-            'One place where I wanted to use it was in furryslop.com, but after finding out that my query-heavy application would cost me likely $15 a month, I decided that was a lot worse than free.',
+            'One place where I wanted to use it was in ScrapStack, but after finding out that my query-heavy application would cost me likely $15 a month, I decided that was a lot worse than free.',
             'I have spent some time with API Gateway, Route 53, DynamoDB, and of course Lambdas and S3.'
         ],
         proficiency: 'Novice',
@@ -299,14 +299,14 @@ export const tools: { [index: string]: Tool } = {
         ],
         proficiency: 'Advanced',
         usedOften: true,
-        projects: ['furryslop.com'],
+        projects: ['ScrapStack'],
     },
 }
 
 export const projects: { [index: string]: Project } = {
-    'furryslop.com': {
-        key_name: 'furryslop.com',
-        name: 'furryslop.com: Self-hosted Twitter Media Viewer',
+    'ScrapStack': {
+        key_name: 'ScrapStack',
+        name: 'ScrapStack: Self-hosted Twitter Media Viewer',
         description: [
             'Created as a way to view my 6000 liked posts. Utilized a web scraper to collect back-end tweet data for every post and enter it into a database. Currently, only random images may be displayed.',
         ],
@@ -318,7 +318,7 @@ export const projects: { [index: string]: Project } = {
         ],
         technologies: ['React', 'TypeScript', 'Tailwind', 'Express.js', 'PostgreSQL'],
         date: 'December 2024 - Present',
-        demo: 'https://furryslop.com',
+        demo: 'https://ScrapStack.net',
         github: 'https://github.com/Scapsters/Furry-Slop',
         image: [
             { original: '/furryslop/preview.png' },

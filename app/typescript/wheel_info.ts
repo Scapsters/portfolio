@@ -7,7 +7,7 @@
 
 export const raw_items = [
     'Projects',
-    'furryslop.com',
+    'ScrapStack',
     'JSThread',
     'YoLink Center',
     'Portfolio',
