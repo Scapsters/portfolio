@@ -27,6 +27,18 @@ export default function Infocard() {
         })
     })
 
+    const ref = useRef<HTMLDivElement>(null)
+    useEffect(() => {
+        ref.current
+            ?.animate([{ transform: 'translateY(0px)' }, { transform: 'translateY(80px)' }], {
+                duration: 800,
+                delay: 1000,
+                easing: 'ease-in-out',
+                fill: 'forwards',
+            })
+            .play()
+    }, [ref])
+
     function makeSpan(index: number) {
         return (
             <span
@@ -64,9 +76,9 @@ export default function Infocard() {
     )
 
     return (
-        <>
+        <div ref={ref} className="transform translate-y-[-80px]">
             <div className="w-240 absolute h-5 z-3 bg-[var(--background)]"></div>
             <div className="w-max absolute z-2">{info}</div>
-        </>
+        </div>
     )
 }

@@ -14,16 +14,22 @@ export default function Wheel({
     setSelected,
     isSelected,
     selected,
+    isProject,
     setIsProject,
     scrollSinceSelection,
     setScrollSinceSelection,
+    setPreviousSelected,
+    setIsPreviousProject,
 }: Readonly<{
-    setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null>>
+    setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
     isSelected: boolean
-    selected: Project | Tool | null
+    selected: Project | Tool | null | undefined
+    isProject: boolean
     setIsProject: React.Dispatch<React.SetStateAction<boolean>>
     scrollSinceSelection: boolean
     setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>
+    setPreviousSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
+    setIsPreviousProject: React.Dispatch<React.SetStateAction<boolean>>
 }>) {
     // Changed by events. Performance impact low
     const [isHovered, setIsHovered] = useState(false)
@@ -72,6 +78,9 @@ export default function Wheel({
                                 onClick={() => {
                                     setScrollSinceSelection(false)
 
+                                    setPreviousSelected(selected)
+                                    setIsPreviousProject(isProject)
+
                                     // If clicking on the same thing twice, deselect
                                     if (selected?.key_name == item) {
                                         setSelected(null)
@@ -82,11 +91,9 @@ export default function Wheel({
                                     if (Object.keys(projects).includes(item)) {
                                         setSelected(projects[item])
                                         setIsProject(true)
-                                        console.log(projects[item])
                                     } else {
                                         setSelected(tools[item])
                                         setIsProject(false)
-                                        console.log(tools[item])
                                     }
                                 }}
                             >
@@ -184,7 +191,6 @@ function useDragToSpin(
             const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
             const deltaY = clientY - lastDragY.current
             lastDragY.current = clientY
-            console.log(deltaY)
             if (!isDragging.current) return
 
             velocity.current -= deltaY * scrollVelocityFactor * 0.4 // Adjust multiplier for sensitivity
@@ -390,7 +396,7 @@ function useModifyAnimationsWhileLoading(
 function usePushWheelToSelectedProject(
     position: number,
     velocity: React.RefObject<number>,
-    project: Project | Tool | null,
+    project: Project | Tool | null | undefined,
     scrollSinceSelection: boolean,
     deltaTime: React.RefObject<number>,
 ) {
