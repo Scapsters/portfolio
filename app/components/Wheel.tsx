@@ -74,7 +74,7 @@ export default function Wheel({
                             // Else, render with different styling and as a button
                             <button
                                 key={`wheel ${item} ${index}`}
-                                
+                                style={{color: getItemColor(item)}}
                                 className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
                                 onClick={() => {
                                     setScrollSinceSelection(false)
@@ -116,7 +116,6 @@ export default function Wheel({
         console.log('hio')
         itemRefs.forEach((item) => {
             const element = item.current.children[0].children[0] as HTMLButtonElement
-            element.style.setProperty('color', getItemColor(element.textContent ?? ''))
 
             if (selected?.key_name == element.textContent) {
                 element.style.setProperty('text-decoration', 'underline')
