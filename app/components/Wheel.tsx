@@ -55,7 +55,7 @@ export default function Wheel({
                     key={item + index}
                     className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
                 >
-                    <div className="flex justify-end transition-[padding-right] duration-200 ease-out">
+                    <div className="flex select-none justify-end transition-[padding-right] duration-200 ease-out">
                         {headers.includes(item) ? (
                             // If item is a header, render with different styling
                             <p
