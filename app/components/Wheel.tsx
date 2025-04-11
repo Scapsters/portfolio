@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Project, projects, Tool, tools } from '../typescript/project_card_info'
 import { circular_rotate } from '../typescript/math_helpers'
-import { headers, raw_items } from '@/typescript/wheel_info'
+import { getItemColor, headers, raw_items } from '@/typescript/wheel_info'
 
 const textWidth = 600
 const scrollVelocityFactor = 0.0002
@@ -74,7 +74,8 @@ export default function Wheel({
                             // Else, render with different styling and as a button
                             <button
                                 key={`wheel ${item} ${index}`}
-                                className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right] duration-200 ease-out"
+                                
+                                className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
                                 onClick={() => {
                                     setScrollSinceSelection(false)
 
@@ -103,8 +104,30 @@ export default function Wheel({
                     </div>
                 </div>
             )),
-        [itemRefs, selected?.key_name, setIsProject, setScrollSinceSelection, setSelected],
+        [isProject, itemRefs, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected],
     )
+
+    // style={{ 
+    //     textDecoration: selected?.key_name == item ? 'underline' : 'none',
+    //     fontWeight: selected?.key_name == item ? 'bold' : 'normal',
+    //     color: getItemColor(item),
+    // }}
+    useEffect(() => {
+        console.log('hio')
+        itemRefs.forEach((item) => {
+            const element = item.current.children[0].children[0] as HTMLButtonElement
+            element.style.setProperty('color', getItemColor(element.textContent ?? ''))
+
+            if (selected?.key_name == element.textContent) {
+                element.style.setProperty('text-decoration', 'underline')
+                element.style.setProperty('font-weight', 'bold')
+            }
+            else {
+                element.style.setProperty('text-decoration', 'none')
+                element.style.setProperty('font-weight', 'normal')
+            }
+        })
+    }, [itemRefs, selected])
 
     // Move items away from the wheel as they travel quickly. Performance impact likely high but unknown.
     useEffect(() => {
