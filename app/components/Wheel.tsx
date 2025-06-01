@@ -105,11 +105,6 @@ export default function Wheel({
         [isProject, itemRefs, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected],
     )
 
-    // style={{ 
-    //     textDecoration: selected?.key_name == item ? 'underline' : 'none',
-    //     fontWeight: selected?.key_name == item ? 'bold' : 'normal',
-    //     color: getItemColor(item),
-    // }}
     useEffect(() => {
         console.log('hio')
         itemRefs.forEach((item) => {
