@@ -5,29 +5,29 @@
 // Tools: Proficient in Git, CLI, PostgreSQL, AWS, Amplify, Terraform, MySQL, Scrum, Agile
 // Applications: Proficient in VS Code, Google Sheets, Docker, Git Bash, GitHub, AWS Console, Figma
 
-export const raw_items = [
-    'Projects',
+export const projects = [
     'ScrapStack',
     'JSThread',
     'YoLink Center',
     'Portfolio',
     'DinDin',
-    '',
-    'Frameworks',
-    'React',
-    'Tailwind',
-    'Next.js',
-    'Bootstrap',
-    'Express.js',
-    '',
-    'Languages',
+]
+
+export const languages = [
     'TypeScript',
     'Java',
     'Python',
     'CSS',
     'HTML',
-    '',
-    'Tools',
+]
+export const frameworks = [
+    'React',
+    'Tailwind',
+    'Next.js',
+    'Bootstrap',
+    'Express.js',
+]
+export const tools = [
     'Git',
     'PostgreSQL',
     'MySQL',
@@ -35,8 +35,8 @@ export const raw_items = [
     'AWS',
     'Amplify',
     'Terraform',
-    '',
-    'Applications',
+]
+export const applications = [
     'Figma',
     'Draw.io',
     'GitHub',
@@ -46,4 +46,33 @@ export const raw_items = [
     'Git Bash',
     'AWS Console',
 ]
+
+export const raw_items = [
+    'Projects',
+    ...projects,
+    '',
+    'Frameworks',
+    ...frameworks,
+    '',
+    'Languages',
+    ...languages,
+    '',
+    'Tools',
+    ...tools,
+    '',
+    'Applications',
+    ...applications
+]
+
+export function getItemColor(item: string) {
+    if (projects.includes(item)) return 'oklch(0.5 0.2 210deg)'
+    if (languages.includes(item)) return 'oklch(0.5 0.1 240deg)'
+    if (frameworks.includes(item)) return 'oklch(0.5 0.1 300deg)'
+    if (tools.includes(item)) return 'oklch(0.5 0.1 60deg)'
+    if (applications.includes(item)) return 'oklch(0.5 0.1 180deg)'
+    return ''
+}
+
+
+
 export const headers = ['Projects', 'Languages', 'Frameworks', 'Tools', 'Applications']

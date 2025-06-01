@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Project, projects, Tool, tools } from '../typescript/project_card_info'
 import { circular_rotate } from '../typescript/math_helpers'
-import { headers, raw_items } from '@/typescript/wheel_info'
+import { getItemColor, headers, raw_items } from '@/typescript/wheel_info'
 
 const textWidth = 600
 const scrollVelocityFactor = 0.0002
@@ -14,16 +14,22 @@ export default function Wheel({
     setSelected,
     isSelected,
     selected,
+    isProject,
     setIsProject,
     scrollSinceSelection,
     setScrollSinceSelection,
+    setPreviousSelected,
+    setIsPreviousProject,
 }: Readonly<{
-    setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null>>
+    setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
     isSelected: boolean
-    selected: Project | Tool | null
+    selected: Project | Tool | null | undefined
+    isProject: boolean
     setIsProject: React.Dispatch<React.SetStateAction<boolean>>
     scrollSinceSelection: boolean
     setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>
+    setPreviousSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
+    setIsPreviousProject: React.Dispatch<React.SetStateAction<boolean>>
 }>) {
     // Changed by events. Performance impact low
     const [isHovered, setIsHovered] = useState(false)
@@ -68,9 +74,13 @@ export default function Wheel({
                             // Else, render with different styling and as a button
                             <button
                                 key={`wheel ${item} ${index}`}
-                                className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right] duration-200 ease-out"
+                                style={{color: getItemColor(item)}}
+                                className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
                                 onClick={() => {
                                     setScrollSinceSelection(false)
+
+                                    setPreviousSelected(selected)
+                                    setIsPreviousProject(isProject)
 
                                     // If clicking on the same thing twice, deselect
                                     if (selected?.key_name == item) {
@@ -82,11 +92,9 @@ export default function Wheel({
                                     if (Object.keys(projects).includes(item)) {
                                         setSelected(projects[item])
                                         setIsProject(true)
-                                        console.log(projects[item])
                                     } else {
                                         setSelected(tools[item])
                                         setIsProject(false)
-                                        console.log(tools[item])
                                     }
                                 }}
                             >
@@ -96,8 +104,29 @@ export default function Wheel({
                     </div>
                 </div>
             )),
-        [itemRefs, selected?.key_name, setIsProject, setScrollSinceSelection, setSelected],
+        [isProject, itemRefs, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected],
     )
+
+    // style={{ 
+    //     textDecoration: selected?.key_name == item ? 'underline' : 'none',
+    //     fontWeight: selected?.key_name == item ? 'bold' : 'normal',
+    //     color: getItemColor(item),
+    // }}
+    useEffect(() => {
+        console.log('hio')
+        itemRefs.forEach((item) => {
+            const element = item.current.children[0].children[0] as HTMLButtonElement
+
+            if (selected?.key_name == element.textContent) {
+                element.style.setProperty('text-decoration', 'underline')
+                element.style.setProperty('font-weight', 'bold')
+            }
+            else {
+                element.style.setProperty('text-decoration', 'none')
+                element.style.setProperty('font-weight', 'normal')
+            }
+        })
+    }, [itemRefs, selected])
 
     // Set the width of each item based on the text width. Performance impact near-zero
     useEffect(() => {
@@ -179,7 +208,6 @@ function useDragToSpin(
             const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
             const deltaY = clientY - lastDragY.current
             lastDragY.current = clientY
-            console.log(deltaY)
             if (!isDragging.current) return
 
             velocity.current -= deltaY * scrollVelocityFactor * 0.4 // Adjust multiplier for sensitivity
@@ -385,7 +413,7 @@ function useModifyAnimationsWhileLoading(
 function usePushWheelToSelectedProject(
     position: number,
     velocity: React.RefObject<number>,
-    project: Project | Tool | null,
+    project: Project | Tool | null | undefined,
     scrollSinceSelection: boolean,
     deltaTime: React.RefObject<number>,
 ) {
