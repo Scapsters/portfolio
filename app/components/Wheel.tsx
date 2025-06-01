@@ -38,7 +38,6 @@ export default function Wheel({
     const circleRef = React.createRef<HTMLDivElement>()
 
     // Animation related. Performance impact high
-    const [frame, setFrame] = useState(0)
     const [position, setPosition] = useState(0)
     const deltaTime = useRef(0)
     const lastRenderTime = useRef(0)
@@ -124,17 +123,17 @@ export default function Wheel({
         itemRefs.forEach((item) => (item.current.children[0] as HTMLElement).style.setProperty('width', `calc(${textWidth}px)`))
     }, [itemRefs])
 
-    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
-    useAnimationFrames(deltaTime, lastRenderTime, totalTime, setFrame)
-
-    // Physics loop for wheel. Performance impact high
-    useWheelPhysics(frame, velocity, deltaTime, setPosition)
-
     // Push the wheel towards the currently selected project. Performance impact high
     usePushWheelToSelectedProject(position, velocity, selected, scrollSinceSelection, deltaTime)
 
     // Rotate items on position change. Performance impact high
     useUpdateItemRotations(raw_items, itemRefs, position)
+
+    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
+    const frame = useAnimationFrames(deltaTime, lastRenderTime, totalTime)
+
+    // Physics loop for wheel. Performance impact high
+    useWheelPhysics(frame, velocity, deltaTime, setPosition)
 
     // Change transitions after loading. Performance impact minimal
     useModifyAnimationsWhileLoading(frame, totalTime, itemRefs, circleRef, parentRef)
@@ -338,8 +337,9 @@ function useAnimationFrames(
     delta_time: React.RefObject<number>,
     lastRendertime: React.RefObject<number>,
     totalTime: React.RefObject<number>,
-    setFrame: React.Dispatch<React.SetStateAction<number>>,
 ) {
+    const [frame, setFrame] = useState(0)
+
     useEffect(() => {
         let animationId: number | null = null
         let running = true // Track if animation is active
@@ -376,6 +376,8 @@ function useAnimationFrames(
             document.removeEventListener('visibilitychange', tabOutHandler)
         }
     }, [delta_time, lastRendertime, setFrame, totalTime])
+
+    return frame
 }
 
 function useWheelPhysics(
