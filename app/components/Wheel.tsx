@@ -38,60 +38,55 @@ export default function Wheel({
     const circleRef = React.createRef<HTMLDivElement>()
 
     const itemRefs = useMemo(
-        () => raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>), [],
+        () => raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>), []
     )
 
-    const items = useMemo(
-        () =>
-            raw_items.map((item, index) => (
-                <div
-                    ref={itemRefs[index]}
-                    key={item + index}
-                    className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
-                >
-                    <div className="flex select-none justify-end transition-[padding-right] duration-200 ease-out">
-                        {headers.includes(item) ? (
-                            // If item is a header, render with different styling
-                            <p
-                                key={`wheel ${item} ${index}`}
-                                className="font-light text-[var(--light-text)] text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
-                            >
-                                {item}
-                            </p>
-                        ) : (
-                            // Else, render with different styling and as a button
-                            <button
-                                key={`wheel ${item} ${index}`}
-                                style={{color: getItemColor(item)}}
-                                className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
-                                onClick={() => {
-                                    setScrollSinceSelection(false)
+    const items = useMemo(() =>
+        raw_items.map((item, index) => (
+            <div
+                ref={itemRefs[index]}
+                key={item + index}
+                className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
+            >
+                <div className="flex select-none justify-end transition-[padding-right] duration-200 ease-out">
+                    {headers.includes(item) ? (
+                        // If item is a header, render with different styling
+                        <p
+                            key={`wheel ${item} ${index}`}
+                            className="font-light text-[var(--light-text)] text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
+                        >{item}</p>
+                    ) : (
+                        // Else, render with different styling and as a button
+                        <button
+                            key={`wheel ${item} ${index}`}
+                            style={{color: getItemColor(item)}}
+                            className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
+                            onClick={() => {
+                                setScrollSinceSelection(false)
 
-                                    setPreviousSelected(selected)
-                                    setIsPreviousProject(isProject)
+                                setPreviousSelected(selected)
+                                setIsPreviousProject(isProject)
 
-                                    // If clicking on the same thing twice, deselect
-                                    if (selected?.key_name == item) {
-                                        setSelected(null)
-                                        return
-                                    }
+                                // If clicking on the same thing twice, deselect
+                                if (selected?.key_name == item) {
+                                    setSelected(null)
+                                    return
+                                }
 
-                                    // Depends on whether the selected item is a project or not
-                                    if (Object.keys(projects).includes(item)) {
-                                        setSelected(projects[item])
-                                        setIsProject(true)
-                                    } else {
-                                        setSelected(tools[item])
-                                        setIsProject(false)
-                                    }
-                                }}
-                            >
-                                {item}
-                            </button>
-                        )}
-                    </div>
+                                // Depends on whether the selected item is a project or not
+                                if (Object.keys(projects).includes(item)) {
+                                    setSelected(projects[item])
+                                    setIsProject(true)
+                                } else {
+                                    setSelected(tools[item])
+                                    setIsProject(false)
+                                }
+                            }}
+                        >{item}</button>
+                    )}
                 </div>
-            )),
+            </div>
+        )),
         [isProject, itemRefs, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected],
     )
 
