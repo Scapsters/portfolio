@@ -99,15 +99,10 @@ export default function Wheel({
         [itemRefs, selected?.key_name, setIsProject, setScrollSinceSelection, setSelected],
     )
 
-    // Move items away from the wheel as they travel quickly. Performance impact likely high but unknown.
+    // Set the width of each item based on the text width. Performance impact near-zero
     useEffect(() => {
-        itemRefs.forEach((item) => {
-            ;(item.current.children[0] as HTMLElement).style.setProperty(
-                'width',
-                `calc(${textWidth}px + ${textRadiusOffset.toFixed(2)}px)`,
-            )
-        })
-    }, [itemRefs, textRadiusOffset])
+        itemRefs.forEach((item) => (item.current.children[0] as HTMLElement).style.setProperty('width', `calc(${textWidth}px)`))
+    }, [itemRefs])
 
     // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
     useAnimationFrames(deltaTime, lastRenderTime, totalTime, setFrame)
