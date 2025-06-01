@@ -31,13 +31,11 @@ export default function Wheel({
     setIsPreviousProject: React.Dispatch<React.SetStateAction<boolean>>
 }>) {
     // Changed by events. Performance impact low
-    const [isHovered, setIsHovered] = useState(false)
     const [xOffset, setxOffset] = useState(700)
 
     // Refs. Performance impact negligible
     const parentRef = useRef<HTMLDivElement>(null)
     const circleRef = React.createRef<HTMLDivElement>()
-    const wheelHoverRef = useRef<HTMLDivElement>(null)
 
     // Animation related. Performance impact high
     const [frame, setFrame] = useState(0)
@@ -48,9 +46,9 @@ export default function Wheel({
     const velocity = useRef(0)
 
     const itemRefs = useMemo(
-        () => raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>),
-        [],
+        () => raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>), [],
     )
+
     const items = useMemo(
         () =>
             raw_items.map((item, index) => (
@@ -144,21 +142,15 @@ export default function Wheel({
     //Move wheel on project selection toggle. Performance effect negligible
     useShiftOnProjectSelect(isSelected, setxOffset)
 
-    // Track mousewheel events and add velocity. Changes are reflected in the frame loop. Performance impact negligible
-    useImpartVelocityOnScroll(wheelHoverRef, isHovered, velocity, deltaTime, setScrollSinceSelection)
-
-    // Track hovering over the wheel. Performance impact negligible
-    useHoverOverWheel(wheelHoverRef, setIsHovered)
+    // Handles wheel-specific interaction. Performance impact low
+    const wheelHoverRef = useWheelInteraction(velocity, deltaTime, setScrollSinceSelection)
 
     // Hover effect for buttons on wheel. Performance impact negligible
     useHoverEffectOnItems(itemRefs)
 
-    // Sets the wheels to their current xOffset. Performance impact negligible
+    // Ensure correct offsets, especially on page load. Performance impact negligible
     useMoveWheelsToXOffset(xOffset, circleRef, parentRef)
-
-    // Allows wheel to be dragged. Performance impact low
-    useDragToSpin(wheelHoverRef, velocity, setScrollSinceSelection)
-
+    
     return (
         <>
             <div
@@ -179,6 +171,24 @@ export default function Wheel({
         </>
     )
 }
+
+function useWheelInteraction(
+        velocity: React.RefObject<number>,
+        deltaTime: React.RefObject<number>,
+        setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
+    ) {
+        const wheelHoverRef = useRef<HTMLDivElement>(null)
+        const [isHovered, setIsHovered] = useState(false)
+
+        // Track mousewheel events and add velocity. Changes are reflected in the frame loop. Performance impact negligible
+        useImpartVelocityOnScroll(wheelHoverRef, isHovered, velocity, deltaTime, setScrollSinceSelection)
+        // Allows wheel to be dragged. Performance impact low
+        useDragToSpin(wheelHoverRef, velocity, setScrollSinceSelection)
+        // Sets the wheels to their current xOffset. Performance impact negligible
+        useHoverOverWheel(wheelHoverRef, setIsHovered)
+
+        return wheelHoverRef
+    }
 
 function useDragToSpin(
     wheelHoverRef: React.RefObject<HTMLDivElement | null>,
