@@ -5,7 +5,6 @@ import { getItemColor, headers, raw_items } from '@/typescript/wheel_info'
 
 const textWidth = 600
 const scrollVelocityFactor = 0.0002
-const centrifugalForceCoefficient = 100
 
 /**
  * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
@@ -43,7 +42,6 @@ export default function Wheel({
     // Animation related. Performance impact high
     const [frame, setFrame] = useState(0)
     const [position, setPosition] = useState(0)
-    const [textRadiusOffset, setTextRadiusOffset] = useState(0)
     const deltaTime = useRef(0)
     const lastRenderTime = useRef(0)
     const totalTime = useRef(0)
@@ -137,7 +135,7 @@ export default function Wheel({
     useAnimationFrames(deltaTime, lastRenderTime, totalTime, setFrame)
 
     // Physics loop for wheel. Performance impact high
-    useWheelPhysics(frame, velocity, deltaTime, setPosition, setTextRadiusOffset)
+    useWheelPhysics(frame, velocity, deltaTime, setPosition)
 
     // Push the wheel towards the currently selected project. Performance impact high
     usePushWheelToSelectedProject(position, velocity, selected, scrollSinceSelection, deltaTime)
@@ -380,16 +378,12 @@ function useWheelPhysics(
     velocity: React.RefObject<number>,
     deltaTime: React.RefObject<number>,
     setPosition: React.Dispatch<React.SetStateAction<number>>,
-    setTextRadiusOffset: React.Dispatch<React.SetStateAction<number>>,
 ) {
     useEffect(() => {
         const friction = 0.8
         velocity.current -= (velocity.current - friction * velocity.current) * (deltaTime.current / 33)
         setPosition((p) => p + velocity.current)
-
-        const targetRadius = -Math.abs(velocity.current) * centrifugalForceCoefficient
-        setTextRadiusOffset((offset) => offset + (targetRadius - offset) * 0.7)
-    }, [deltaTime, frame, setPosition, setTextRadiusOffset, velocity])
+    }, [deltaTime, frame, setPosition, velocity])
 }
 
 function useModifyAnimationsWhileLoading(
