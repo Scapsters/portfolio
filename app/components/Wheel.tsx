@@ -37,13 +37,6 @@ export default function Wheel({
     const parentRef = useRef<HTMLDivElement>(null)
     const circleRef = React.createRef<HTMLDivElement>()
 
-    // Animation related. Performance impact high
-    const [position, setPosition] = useState(0)
-    const deltaTime = useRef(0)
-    const lastRenderTime = useRef(0)
-    const totalTime = useRef(0)
-    const velocity = useRef(0)
-
     const itemRefs = useMemo(
         () => raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>), [],
     )
@@ -102,53 +95,23 @@ export default function Wheel({
         [isProject, itemRefs, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected],
     )
 
-    useEffect(() => {
-        console.log('hio')
-        itemRefs.forEach((item) => {
-            const element = item.current.children[0].children[0] as HTMLButtonElement
-
-            if (selected?.key_name == element.textContent) {
-                element.style.setProperty('text-decoration', 'underline')
-                element.style.setProperty('font-weight', 'bold')
-            }
-            else {
-                element.style.setProperty('text-decoration', 'none')
-                element.style.setProperty('font-weight', 'normal')
-            }
-        })
-    }, [itemRefs, selected])
-
     // Set the width of each item based on the text width. Performance impact near-zero
     useEffect(() => {
         itemRefs.forEach((item) => (item.current.children[0] as HTMLElement).style.setProperty('width', `calc(${textWidth}px)`))
     }, [itemRefs])
 
-    // Push the wheel towards the currently selected project. Performance impact high
-    usePushWheelToSelectedProject(position, velocity, selected, scrollSinceSelection, deltaTime)
+    const wheelHoverRef = usePhysics(
+        selected,
+        itemRefs, 
+        scrollSinceSelection, setScrollSinceSelection, 
+        circleRef, 
+        parentRef,
+    )
 
-    // Rotate items on position change. Performance impact high
-    useUpdateItemRotations(raw_items, itemRefs, position)
-
-    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
-    const frame = useAnimationFrames(deltaTime, lastRenderTime, totalTime)
-
-    // Physics loop for wheel. Performance impact high
-    useWheelPhysics(frame, velocity, deltaTime, setPosition)
-
-    // Change transitions after loading. Performance impact minimal
-    useModifyAnimationsWhileLoading(frame, totalTime, itemRefs, circleRef, parentRef)
-
-    //Move wheel on project selection toggle. Performance effect negligible
-    useShiftOnProjectSelect(isSelected, setxOffset)
-
-    // Handles wheel-specific interaction. Performance impact low
-    const wheelHoverRef = useWheelInteraction(velocity, deltaTime, setScrollSinceSelection)
-
-    // Hover effect for buttons on wheel. Performance impact negligible
-    useHoverEffectOnItems(itemRefs)
-
-    // Ensure correct offsets, especially on page load. Performance impact negligible
-    useMoveWheelsToXOffset(xOffset, circleRef, parentRef)
+    useBoldSelected(itemRefs, selected)                     // Bold the selected items
+    useShiftOnProjectSelect(isSelected, setxOffset)         // Move wheel on project selection toggle. Performance effect negligible
+    useHoverEffectOnItems(itemRefs)                         // Hover effect for buttons on wheel. Performance impact negligible
+    useMoveWheelToXOffset(xOffset, circleRef, parentRef)    // Ensure correct offsets, especially on page load. Performance impact negligible
     
     return (
         <>
@@ -171,6 +134,33 @@ export default function Wheel({
     )
 }
 
+function usePhysics(
+        selected: Project | Tool | null | undefined,
+        itemRefs: React.RefObject<HTMLDivElement>[],
+        scrollSinceSelection: boolean,
+        setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
+        circleRef: React.RefObject<HTMLDivElement | null>,
+        parentRef: React.RefObject<HTMLDivElement | null>,
+    ) {
+        const velocity = useRef(0)
+        const deltaTime = useRef(0)
+
+        const wheelHoverRef = useWheelInteraction(velocity, deltaTime, setScrollSinceSelection)         // Handles wheel-specific interaction. Performance impact low
+        const [position, setPosition] = useState(0)
+        
+        usePushWheelToSelectedProject(position, velocity, selected, scrollSinceSelection, deltaTime) // Push the wheel towards the currently selected project. Performance impact high
+        useUpdateItemRotations(raw_items, itemRefs, position)                                        // Rotate items on position change. Performance impact high
+
+        const totalTime = useRef(0)
+        const lastRenderTime = useRef(0)
+
+        const frame = useAnimationFrames(deltaTime, lastRenderTime, totalTime)              // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
+        useWheelPhysics(frame, velocity, deltaTime, setPosition)                            // Physics loop for wheel. Performance impact high
+        useModifyAnimationsWhileLoading(frame, totalTime, itemRefs, circleRef, parentRef)   // Change transitions after loading. Performance impact minimal
+
+        return wheelHoverRef
+    }
+
 function useWheelInteraction(
         velocity: React.RefObject<number>,
         deltaTime: React.RefObject<number>,
@@ -179,15 +169,28 @@ function useWheelInteraction(
         const wheelHoverRef = useRef<HTMLDivElement>(null)
         const [isHovered, setIsHovered] = useState(false)
 
-        // Track mousewheel events and add velocity. Changes are reflected in the frame loop. Performance impact negligible
-        useImpartVelocityOnScroll(wheelHoverRef, isHovered, velocity, deltaTime, setScrollSinceSelection)
-        // Allows wheel to be dragged. Performance impact low
-        useDragToSpin(wheelHoverRef, velocity, setScrollSinceSelection)
-        // Sets the wheels to their current xOffset. Performance impact negligible
-        useHoverOverWheel(wheelHoverRef, setIsHovered)
+        useImpartVelocityOnScroll(wheelHoverRef, isHovered, velocity, deltaTime, setScrollSinceSelection)   // Track mousewheel events and add velocity. Changes are reflected in the frame loop. Performance impact negligible
+        useDragToSpin(wheelHoverRef, velocity, setScrollSinceSelection)                                     // Allows wheel to be dragged. Performance impact low
+        useHoverOverWheel(wheelHoverRef, setIsHovered)                                                      // Sets the wheels to their current xOffset. Performance impact negligible
 
         return wheelHoverRef
     }
+
+function useBoldSelected(itemRefs: React.RefObject<HTMLDivElement>[], selected: Project | Tool | null | undefined) {
+    useEffect(() => {
+        itemRefs.forEach((item) => {
+            const element = item.current.children[0].children[0] as HTMLButtonElement
+
+            if (selected?.key_name == element.textContent) {
+                element.style.setProperty('text-decoration', 'underline')
+                element.style.setProperty('font-weight', 'bold')
+            } else {
+                element.style.setProperty('text-decoration', 'none')
+                element.style.setProperty('font-weight', 'normal')
+            }
+        })
+    }, [itemRefs, selected])
+}
 
 function useDragToSpin(
     wheelHoverRef: React.RefObject<HTMLDivElement | null>,
@@ -431,7 +434,7 @@ function usePushWheelToSelectedProject(
     }, [position, project, scrollSinceSelection, velocity, deltaTime])
 }
 
-function useMoveWheelsToXOffset(
+function useMoveWheelToXOffset(
     xOffset: number,
     circleRef: React.RefObject<HTMLDivElement | null>,
     parentRef: React.RefObject<HTMLDivElement | null>,
