@@ -1,111 +1,224 @@
-import { Project, projects, Tool, tools } from '../typescript/project_card_info'
 import { lexendExa, lexendGiga, lexendPeta } from '../typescript/css_constants'
 import ImageGallery, { ReactImageGalleryItem } from 'react-image-gallery'
 import 'react-image-gallery/styles/css/image-gallery.css'
-import { ReactElement, SetStateAction, useEffect, useRef } from 'react'
+import React, { ReactElement, useCallback, useContext, useEffect, useRef } from 'react'
+import { Project, Tool, PortfolioData } from '@/typescript/wheel_info'
+import { ProjectContext } from '@/contexts'
 
-/**
- * Also serves as intro card (When no projects are selected)
- */
-export function ProjectCard({
-    selected,
-    isProject,
-    setSelected,
-    setIsProject,
-    isPrevious,
-    previousSelected,
-    setPreviousSelected,
-    setIsPreviousProject,
-    setScrollSinceSelection,
-}: Readonly<{
-    selected: Project | Tool | null | undefined
-    isProject: boolean
-    setSelected: React.Dispatch<SetStateAction<Project | Tool | null | undefined>>
-    setIsProject: React.Dispatch<SetStateAction<boolean>>
+type ProjectCardProps = {
     previousSelected: Project | Tool | null | undefined
     isPrevious: boolean
-    setPreviousSelected: React.Dispatch<SetStateAction<Project | Tool | null | undefined>>
-    setIsPreviousProject: React.Dispatch<SetStateAction<boolean>>
-    setScrollSinceSelection: React.Dispatch<SetStateAction<boolean>>
-}>) {
-    console.log('PROJECT CARD RENDER')
-    console.log(selected)
-    console.log(isPrevious)
-    console.log(!!previousSelected)
+}
 
+function DemoLink({ link }: Readonly<{ link?: string }>) {
+    if (!link) return null
+    return (
+        <>
+            <a className="flex text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" href={link}>
+                View Live Project
+            </a>
+            <span className="mx-4">|</span>
+        </>
+    )
+}
+
+function GithubLink({ link }: Readonly<{ link?: string }>) {
+    if (!link) return null
+    return (
+        <a className="flex text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" href={link}>
+            GitHub
+        </a>
+    )
+}
+
+function DateText({ date }: Readonly<{ date?: string }>) {
+    if (!date) return null
+    return <p className="justify-end text-right grow">{date}</p>
+}
+
+function Gallery({ images }: Readonly<{ images?: ReactImageGalleryItem[] }>) {
     const galleryRef = useRef<ImageGallery>(null)
+    if (!images) return null
+    return (
+        <ImageGallery
+            ref={galleryRef}
+            showPlayButton={false}
+            onMouseOver={() => galleryRef.current?.pause()}
+            onMouseLeave={() => galleryRef.current?.play()}
+            autoPlay={true}
+            slideInterval={4000}
+            items={images}
+        />
+    )
+}
 
-    // Reset Animations every render
+function TechStackButton({ technology, onClick }: Readonly<{ technology: string; onClick: () => void }>) {
+    return (
+        <button
+            key={technology + 'container'}
+            className="flex items-center bg-orange-200/40 hover:bg-orange-200 m-2 p-2 rounded-xl w-full text-2xl text-right duration-200"
+            onClick={onClick}
+        >
+            <div className="flex justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    key={technology + ' logo'}
+                    alt={technology}
+                    src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
+                    className={'h-13 aspect-auto'}
+                />
+            </div>
+            <li className="grow" key={technology}>
+                {technology} ↗
+            </li>
+        </button>
+    )
+}
+
+function TechStackList({
+    technologies,
+    onTechClick,
+}: Readonly<{
+    technologies: string[]
+    onTechClick: (technology: string) => void
+}>) {
+    return (
+        <ul className="bg-orange-100 mt-4 ml-2 p-4 pr-8 rounded-xl grow">
+            <p className="p-2 text-[var(--foreground)] text-3xl">Tech Stack</p>
+            {technologies.map((technology) => {
+                // Try to find the tool in PortfolioData.Tools (search all categories)
+                let foundTool: Tool | undefined
+                for (const group of Object.values(PortfolioData.Tools)) {
+                    if (typeof group === 'object' && group !== null) {
+                        if (technology in group) {
+                            foundTool = (group as Record<string, Tool>)[technology]
+                            break
+                        }
+                    }
+                }
+                if (foundTool) {
+                    return (
+                        <TechStackButton
+                            key={technology}
+                            technology={technology}
+                            onClick={() => onTechClick(technology)}
+                        />
+                    )
+                }
+                // fallback: just show the technology name
+                return (
+                    <button
+                        key={technology + ' container'}
+                        className="flex items-center p-4 rounded-xl w-full text-2xl text-right duration-200"
+                        tabIndex={-1}
+                        disabled
+                    >
+                        <div className="flex justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                key={technology + ' logo'}
+                                alt={technology}
+                                src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
+                                className={'h-13 aspect-auto'}
+                            />
+                        </div>
+                        <li className="grow" key={technology}>
+                            {technology}
+                        </li>
+                    </button>
+                )
+            })}
+        </ul>
+    )
+}
+
+function UsedInProjectsList({
+    projects,
+    onProjectClick,
+}: Readonly<{
+    projects: string[]
+    onProjectClick: (project: string) => void
+}>) {
+    return (
+        <div>
+            {projects.length > 0 && <p className="m-4 text-3xl"> Used in: </p>}
+            <div>
+                {projects.map((project) =>
+                    PortfolioData.Projects[project] ? (
+                        <button
+                            className="block bg-orange-200/40 hover:bg-orange-200 m-2 p-4 rounded-xl text-xl hover:underline duration-200"
+                            key={project}
+                            onClick={() => onProjectClick(project)}
+                        >
+                            <span className="text-2xl">↗</span> {PortfolioData.Projects[project].name}
+                        </button>
+                    ) : (
+                        <button className="block m-2 p-4 rounded-xl text-xl duration-200" key={project} disabled>
+                            - {project}
+                        </button>
+                    ),
+                )}
+            </div>
+        </div>
+    )
+}
+
+export function ProjectCard({
+    isPrevious,
+    previousSelected,
+}: ProjectCardProps) {
+
+    const {
+        selected,
+        isProject,
+        setSelected,
+        setIsProject,
+        setPreviousSelected,
+        setIsPreviousProject,
+        setScrollSinceSelection,
+    } = useContext(ProjectContext)
+
     const cardRef = useRef<HTMLDivElement>(null)
 
-    function demoLink(link: string) {
-        return link ? (
-            <>
-                <a className="flex text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" href={link}>
-                    View Live Project
-                </a>{' '}
-                <span className="mx-4">|</span>
-            </>
-        ) : (
-            <></>
-        )
-    }
-
-    function githubLink(link: string) {
-        return link ? (
-            <>
-                <a className="flex text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" href={link}>
-                    GitHub
-                </a>{' '}
-            </>
-        ) : (
-            <></>
-        )
-    }
-
-    function date(date: string) {
-        return date ? (
-            <>
-                <p className="justify-end text-right grow">{date}</p>{' '}
-            </>
-        ) : (
-            <></>
-        )
-    }
-
-    function gallery(image: ReactImageGalleryItem[]) {
-        return image ? (
-            <ImageGallery
-                ref={galleryRef}
-                showPlayButton={false}
-                onMouseOver={() => galleryRef.current?.pause()}
-                onMouseLeave={() => galleryRef.current?.play()}
-                autoPlay={true}
-                slideInterval={4000}
-                items={image}
-            />
-        ) : null
-    }
-
-    function onClick(currentIsProject: boolean, currentSelected: Project | Tool) {
+    const handleTechClick = useCallback((technology: string) => {
         setScrollSinceSelection(false)
-        // new card
-        setSelected(currentSelected)
-        setIsProject(currentIsProject)
-        // old card
         setPreviousSelected(selected)
         setIsPreviousProject(isProject)
-    }
+        // Find the tool in PortfolioData.Tools
+        let foundTool: Tool | undefined
+        for (const group of Object.values(PortfolioData.Tools)) {
+            if (typeof group === 'object' && group !== null) {
+                if (technology in group) {
+                    foundTool = (group as Record<string, Tool>)[technology]
+                    break
+                }
+            }
+        }
+        if (foundTool) {
+            setSelected(foundTool)
+            setIsProject(false)
+        }
+    }, [isProject, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected])
+
+    const handleProjectClick = useCallback((project: string) => {
+        setScrollSinceSelection(false)
+        setPreviousSelected(selected)
+        setIsPreviousProject(isProject)
+        if (PortfolioData.Projects[project]) {
+            setSelected(PortfolioData.Projects[project])
+            setIsProject(true)
+        }
+    }, [isProject, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected])
 
     let card: ReactElement | null = null
     if (selected && isProject) {
         const project = selected as Project
         card = (
-            <div ref={cardRef} className={`absolute z-2 top-40 left-1/30 h-3/4 w-2/3 `}>
+            <div ref={cardRef} className="absolute z-2 top-40 left-1/30 h-3/4 w-2/3">
                 <div className="flex">
-                    {project.demo ? demoLink(project.demo) : <></>}
-                    {project.github ? githubLink(project.github) : <></>}
-                    {project.date ? date(project.date) : <></>}
+                    <DemoLink link={project.demo} />
+                    <GithubLink link={project.github} />
+                    <DateText date={project.date} />
                 </div>
                 <p style={lexendGiga.style} className="pb-1 border-b-3 text-4xl">
                     {project.name}
@@ -129,53 +242,9 @@ export function ProjectCard({
                     </div>
                     <div className="flex w-1/1">
                         <div className="bg-orange-100 mt-4 mr-2 p-4 rounded-xl w-2/3">
-                            {project.image ? gallery(project.image) : <></>}
+                            <Gallery images={project.image} />
                         </div>
-                        <ul className="bg-orange-100 mt-4 ml-2 p-4 pr-8 rounded-xl grow">
-                            <p className="p-2 text-[var(--foreground)] text-3xl">Tech Stack</p>
-                            {project.technologies.map((technology) =>
-                                tools[technology] ? (
-                                    <button
-                                        key={technology + 'container'}
-                                        className="flex items-center bg-orange-200/40 hover:bg-orange-200 m-2 p-2 rounded-xl w-full text-2xl text-right duration-200"
-                                        onClick={() => onClick(false, tools[technology])}
-                                    >
-                                        <div className="flex justify-center">
-                                            {/*TODO: remove */
-                                            /* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                key={technology + ' logo'}
-                                                alt={technology}
-                                                src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
-                                                className={'h-13 aspect-auto'}
-                                            />
-                                        </div>
-                                        <li className="grow" key={technology}>
-                                            {technology} ↗
-                                        </li>
-                                    </button>
-                                ) : (
-                                    <button
-                                        key={technology + ' container'}
-                                        className="flex items-center p-4 rounded-xl w-full text-2xl text-right duration-200"
-                                    >
-                                        <div className="flex justify-center">
-                                            {/*TODO: remove */
-                                            /* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                key={technology + ' logo'}
-                                                alt={technology}
-                                                src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
-                                                className={'h-13 aspect-auto'}
-                                            />
-                                        </div>
-                                        <li className="grow" key={technology}>
-                                            {technology}
-                                        </li>
-                                    </button>
-                                ),
-                            )}
-                        </ul>
+                        <TechStackList technologies={project.technologies} onTechClick={handleTechClick} />
                     </div>
                 </div>
             </div>
@@ -184,7 +253,7 @@ export function ProjectCard({
     if (selected && !isProject) {
         const tool = selected as Tool
         card = (
-            <div ref={cardRef} className={`absolute z-2 top-40 left-1/30 h-3/4 w-2/3 `}>
+            <div ref={cardRef} className="absolute z-2 top-40 left-1/30 h-3/4 w-2/3">
                 <div className="flex items-end gap-10 border-b-3">
                     <p style={lexendGiga.style} className="pb-1 text-4xl">
                         {tool.name}
@@ -193,12 +262,9 @@ export function ProjectCard({
                         <p> Proficiency: {tool.proficiency} </p>
                         {tool.usedOften ? (
                             <p className="self-start bg-amber-200 pr-1 pl-1 rounded-md bold">Used Often!</p>
-                        ) : (
-                            <></>
-                        )}
+                        ) : null}
                     </div>
                 </div>
-
                 <div className="h-1/1 overflow-y-auto">
                     <div className="bg-orange-100 p-4 rounded-b-xl w-1/1">
                         {tool.notes.map((note) => (
@@ -206,24 +272,7 @@ export function ProjectCard({
                                 {note}
                             </p>
                         ))}
-                        {tool.projects.length > 0 ? <p className="m-4 text-3xl"> Used in: </p> : <></>}
-                        <div className="">
-                            {tool.projects?.map((project) =>
-                                projects[project] ? (
-                                    <button
-                                        className="block bg-orange-200/40 hover:bg-orange-200 m-2 p-4 rounded-xl text-xl hover:underline duration-200"
-                                        key={project}
-                                        onClick={() => onClick(true, projects[project])}
-                                    >
-                                        <span className="text-2xl">↗</span> {projects[project].name}
-                                    </button>
-                                ) : (
-                                    <button className="block m-2 p-4 rounded-xl text-xl duration-200" key={project}>
-                                        - {project}
-                                    </button>
-                                ),
-                            )}
-                        </div>
+                        <UsedInProjectsList projects={tool.projects} onProjectClick={handleProjectClick} />
                     </div>
                 </div>
             </div>
@@ -232,7 +281,7 @@ export function ProjectCard({
 
     if (!selected) {
         card = (
-            <div ref={cardRef} className={`top-1/3 left-1/7 absolute`}>
+            <div ref={cardRef} className="top-1/3 left-1/7 absolute">
                 <p style={lexendPeta.style} className="mb-4 text-5xl">
                     Welcome <span className="text-2xl">to</span>
                 </p>
@@ -247,7 +296,6 @@ export function ProjectCard({
     }
 
     useEffect(() => {
-        console.log('hio')
         cardRef.current?.getAnimations().forEach((anim) => anim.cancel())
 
         let cardMove: Animation | undefined = undefined
@@ -282,7 +330,6 @@ export function ProjectCard({
         }
     }, [selected, previousSelected, isPrevious])
 
-    console.log(selected)
     //Dont show 2 on initial load
     if (isPrevious && selected === undefined) {
         card = <></>

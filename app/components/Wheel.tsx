@@ -1,159 +1,199 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Project, projects, Tool, tools } from '../typescript/project_card_info'
-import { circular_rotate } from '../typescript/math_helpers'
-import { getItemColor, headers, raw_items } from '@/typescript/wheel_info'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { circular_rotate, isVisible } from '../typescript/math_helpers'
+import { getItemColor, PortfolioData, Project, raw_headers, Tool} from '@/typescript/wheel_info'
+import { ProjectContext } from '@/contexts'
 
-const textWidth = 600
-const scrollVelocityFactor = 0.0002
+const SCROLL_VELOCITY_FACTOR = 0.0002
 
-/**
- * Hooks each element of the wheel to a scroll event, which changes css properties to emulate a wheel.
- */
-export default function Wheel({
-    setSelected,
-    isSelected,
-    selected,
-    isProject,
-    setIsProject,
-    scrollSinceSelection,
-    setScrollSinceSelection,
-    setPreviousSelected,
-    setIsPreviousProject,
-}: Readonly<{
-    setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
-    isSelected: boolean
-    selected: Project | Tool | null | undefined
-    isProject: boolean
-    setIsProject: React.Dispatch<React.SetStateAction<boolean>>
-    scrollSinceSelection: boolean
-    setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>
-    setPreviousSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
-    setIsPreviousProject: React.Dispatch<React.SetStateAction<boolean>>
-}>) {
-    // Changed by events. Performance impact low
-    const [xOffset, setxOffset] = useState(700)
+function Group({
+    header, items, position, totalTime, velocity, deltaTime, startingIndex
+}: Readonly<{ header: string, items: (Tool | Project)[], position: number, totalTime: React.RefObject<number>, velocity: React.RefObject<number>, deltaTime: React.RefObject<number>, startingIndex: number }>) {
+    const [visible, setVisible] = useState(false)
 
-    // Refs. Performance impact negligible
-    const parentRef = useRef<HTMLDivElement>(null)
-    const circleRef = React.createRef<HTMLDivElement>()
+    return (<>
+        <ItemWrapper position={position} totalTime={totalTime} velocity={velocity} deltaTime={deltaTime} index={startingIndex}>
+            <Header text={header} toggleSection={() => setVisible(!visible)}/>
+        </ItemWrapper>
+        {items.map((item, index) => {
+            return (
+                <ItemWrapper position={position} totalTime={totalTime} velocity={velocity} deltaTime={deltaTime} index={startingIndex + index + 1} key={item.key_name + index}>
+                    <Item tool={item} index={startingIndex + index + 1}></Item>
+                </ItemWrapper>
+            )
+        })}
+    </>)
+}
 
-    const itemRefs = useMemo(
-        () => raw_items.map(() => React.createRef<HTMLDivElement>() as React.RefObject<HTMLDivElement>), []
-    )
-
-    const items = useMemo(() =>
-        raw_items.map((item, index) => (
-            <div
-                ref={itemRefs[index]}
-                key={item + index}
-                className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
-            >
-                <div className="flex select-none justify-end transition-[padding-right] duration-200 ease-out">
-                    {headers.includes(item) ? (
-                        // If item is a header, render with different styling
-                        <p
-                            key={`wheel ${item} ${index}`}
-                            className="font-light text-[var(--light-text)] text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
-                        >{item}</p>
-                    ) : (
-                        // Else, render with different styling and as a button
-                        <button
-                            key={`wheel ${item} ${index}`}
-                            style={{color: getItemColor(item)}}
-                            className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
-                            onClick={() => {
-                                setScrollSinceSelection(false)
-
-                                setPreviousSelected(selected)
-                                setIsPreviousProject(isProject)
-
-                                // If clicking on the same thing twice, deselect
-                                if (selected?.key_name == item) {
-                                    setSelected(null)
-                                    return
-                                }
-
-                                // Depends on whether the selected item is a project or not
-                                if (Object.keys(projects).includes(item)) {
-                                    setSelected(projects[item])
-                                    setIsProject(true)
-                                } else {
-                                    setSelected(tools[item])
-                                    setIsProject(false)
-                                }
-                            }}
-                        >{item}</button>
-                    )}
-                </div>
-            </div>
-        )),
-        [isProject, itemRefs, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected],
-    )
-
-    // Set the width of each item based on the text width. Performance impact near-zero
-    useEffect(() => {
-        itemRefs.forEach((item) => (item.current.children[0] as HTMLElement).style.setProperty('width', `calc(${textWidth}px)`))
-    }, [itemRefs])
-
-    const wheelHoverRef = usePhysics(
-        selected,
-        itemRefs, 
-        scrollSinceSelection, setScrollSinceSelection, 
-        circleRef, 
-        parentRef,
-    )
-
-    useBoldSelected(itemRefs, selected)                     // Bold the selected items
-    useShiftOnProjectSelect(isSelected, setxOffset)         // Move wheel on project selection toggle. Performance effect negligible
-    useHoverEffectOnItems(itemRefs)                         // Hover effect for buttons on wheel. Performance impact negligible
-    useMoveWheelToXOffset(xOffset, circleRef, parentRef)    // Ensure correct offsets, especially on page load. Performance impact negligible
-    
+function Header({
+    text, toggleSection
+}: Readonly<{ text: string, toggleSection: () => void }>) {
     return (
-        <>
-            <div
-                ref={circleRef}
-                className="top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
-            ></div>
-            <div
-                ref={wheelHoverRef}
-                className="-right-300 absolute w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
-            >
-                <div
-                    ref={parentRef}
-                    className="top-1/2 absolute transition-transform translate-x-140 duration-1000 ease-in-out"
-                >
-                    {items}
-                </div>
-            </div>
-        </>
+        <button
+            className="font-light text-[var(--light-text)] text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
+            onClick={toggleSection}
+        >{text}</button>
     )
 }
 
+function Item({
+    tool, index
+}: Readonly<{ tool: Tool | Project, index: number }> ) {
+
+    const { 
+        selected,
+        setSelected,
+        setSelectedIndex,
+        isProject,
+        setIsProject,
+        setScrollSinceSelection, 
+        setPreviousSelected, 
+        setIsPreviousProject,
+    } = useContext(ProjectContext)
+
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    useBoldSelected(buttonRef, selected)
+
+    const itemMemo = useMemo(() => 
+        <button
+            ref={buttonRef}
+            style={{color: getItemColor(tool.key_name)}}
+            className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
+            onClick={() => {
+                setScrollSinceSelection(false)
+
+                setPreviousSelected(selected)
+                setIsPreviousProject(isProject)
+
+                // If clicking on the same thing twice, deselect
+                if (selected?.key_name === tool.key_name) {
+                    setSelected(null)
+                    setSelectedIndex(null)
+                    return
+                }
+
+                // Depends on whether the selected item is a project or not
+                if (Object.keys(PortfolioData.Projects).includes(tool.key_name)) {
+                    setSelected(tool)
+                    setSelectedIndex(index)
+                    setIsProject(true)
+                } else {
+                    setSelected(tool)
+                    setSelectedIndex(index)
+                    setIsProject(false)
+                }
+            }}
+        >{tool.key_name}</button>
+        ,
+        [tool, setScrollSinceSelection, setPreviousSelected, selected, setIsPreviousProject, isProject, setSelected, setSelectedIndex, index, setIsProject]
+    )
+
+
+    return itemMemo
+}
+
+function ItemWrapper({ 
+    position, totalTime, velocity, deltaTime, index, children
+}: Readonly<{ position: number, totalTime: React.RefObject<number>, velocity: React.RefObject<number>, deltaTime: React.RefObject<number>, index: number, children: React.ReactNode }>) {
+
+    const ref = useRef<HTMLDivElement>(null)
+    useHoverEffectOnItems(ref)
+    useUpdateItemRotations(ref, position, index)
+    useModifyItemAnimationsWhileLoading(position, totalTime, ref)
+    useUpdateVisibility(ref, index, position)
+
+    const { selectedIndex, scrollSinceSelection } = useContext(ProjectContext)
+
+    usePushWheelToSelectedProject(position, index, selectedIndex, scrollSinceSelection, velocity, deltaTime)
+
+    return <div
+        ref={ref}
+        className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
+    >
+        <div className="flex w-[600px] select-none justify-end transition-[padding-right] duration-200 ease-out">
+            {children}
+        </div>
+    </div>
+}
+
+export default function Wheel() {
+
+    // Changed by events. Performance impact low
+    const [xOffset, setxOffset] = useState(700)
+    const parentRef = useRef<HTMLDivElement>(null)
+    const circleRef = React.createRef<HTMLDivElement>()
+    useMoveWheelToXOffset(xOffset, circleRef, parentRef) // Ensure correct offsets, especially on page load. Performance impact negligible
+    
+    const { selected, setScrollSinceSelection } = useContext(ProjectContext)
+
+    const [frame, totalTime, velocity, deltaTime, wheelHoverRef] = usePhysics(setScrollSinceSelection, circleRef,  parentRef)
+    
+    useShiftOnProjectSelect(selected, setxOffset) // Move wheel on project selection toggle. Performance effect negligible
+    
+    const [position, setPosition] = useState(0)
+    useWheelPhysics(frame, setPosition, deltaTime, velocity)
+
+    const items = useMemo(() => {
+        let globalIndex = 0
+        return Object.entries(PortfolioData).map(entry => {
+
+            const items = Object.values(entry[1])
+            const sectionLength = items.length + 2 // One for header, one for gap between sections
+            
+            const section = (
+                <Group 
+                    key={entry[0]} 
+                    header={entry[0]} 
+                    items={Object.values(entry[1])}
+                    position={position}
+                    totalTime={totalTime}
+                    velocity={velocity}
+                    deltaTime={deltaTime}
+                    startingIndex={globalIndex}
+                    >
+                </Group>
+            )
+            
+            globalIndex += sectionLength
+            return section
+        })
+    }, [deltaTime, position, totalTime, velocity])
+
+    return (<>
+        <div
+            ref={circleRef}
+            className="top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
+        ></div>
+        <div
+            ref={wheelHoverRef}
+            className="-right-300 absolute w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
+        >
+            <div
+                ref={parentRef}
+                className="top-1/2 absolute transition-transform translate-x-140 duration-1000 ease-in-out"
+            >
+                {items} 
+            </div>
+        </div>
+    </>)
+}
+
 function usePhysics(
-        selected: Project | Tool | null | undefined,
-        itemRefs: React.RefObject<HTMLDivElement>[],
-        scrollSinceSelection: boolean,
         setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
         circleRef: React.RefObject<HTMLDivElement | null>,
         parentRef: React.RefObject<HTMLDivElement | null>,
-    ) {
+    ): [number, React.RefObject<number>, React.RefObject<number>, React.RefObject<number>, React.RefObject<HTMLDivElement | null>] {
+        
         const velocity = useRef(0)
         const deltaTime = useRef(0)
-
         const wheelHoverRef = useWheelInteraction(velocity, deltaTime, setScrollSinceSelection)         // Handles wheel-specific interaction. Performance impact low
-        const [position, setPosition] = useState(0)
         
-        usePushWheelToSelectedProject(position, velocity, selected, scrollSinceSelection, deltaTime) // Push the wheel towards the currently selected project. Performance impact high
-        useUpdateItemRotations(raw_items, itemRefs, position)                                        // Rotate items on position change. Performance impact high
-
         const totalTime = useRef(0)
         const lastRenderTime = useRef(0)
 
         const frame = useAnimationFrames(deltaTime, lastRenderTime, totalTime)              // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
-        useWheelPhysics(frame, velocity, deltaTime, setPosition)                            // Physics loop for wheel. Performance impact high
-        useModifyAnimationsWhileLoading(frame, totalTime, itemRefs, circleRef, parentRef)   // Change transitions after loading. Performance impact minimal
+        useModifyAnimationsWhileLoading(frame, totalTime, circleRef, parentRef)   // Change transitions after loading. Performance impact minimal
 
-        return wheelHoverRef
+        return [frame, totalTime, velocity, deltaTime, wheelHoverRef]
     }
 
 function useWheelInteraction(
@@ -171,20 +211,33 @@ function useWheelInteraction(
         return wheelHoverRef
     }
 
-function useBoldSelected(itemRefs: React.RefObject<HTMLDivElement>[], selected: Project | Tool | null | undefined) {
+function useUpdateVisibility(ref: React.RefObject<HTMLDivElement | null>, index: number, position: number) {
     useEffect(() => {
-        itemRefs.forEach((item) => {
-            const element = item.current.children[0].children[0] as HTMLButtonElement
+        if (!isVisible(index, position)){
+            ref.current?.style.setProperty('z-index', '-1')
+            ref.current?.style.setProperty('opacity', '0')
+        }
+        else {
+            ref.current?.style.setProperty('z-index', '1')
+            ref.current?.style.setProperty('opacity', '1')
+        }
+    }, [index, position, ref])
+}
 
-            if (selected?.key_name == element.textContent) {
-                element.style.setProperty('text-decoration', 'underline')
-                element.style.setProperty('font-weight', 'bold')
-            } else {
-                element.style.setProperty('text-decoration', 'none')
-                element.style.setProperty('font-weight', 'normal')
-            }
-        })
-    }, [itemRefs, selected])
+function useBoldSelected(itemRef: React.RefObject<HTMLButtonElement | null>, selected: Project | Tool | null | undefined) {
+    useEffect(() => {
+        const element = itemRef?.current
+        if (!element)
+            return
+
+        if (selected?.key_name == element.textContent) {
+            element.style.setProperty('text-decoration', 'underline')
+            element.style.setProperty('font-weight', 'bold')
+        } else {
+            element.style.setProperty('text-decoration', 'none')
+            element.style.setProperty('font-weight', 'normal')
+        }
+    }, [itemRef, selected])
 }
 
 function useDragToSpin(
@@ -210,7 +263,7 @@ function useDragToSpin(
             lastDragY.current = clientY
             if (!isDragging.current) return
 
-            velocity.current -= deltaY * scrollVelocityFactor * 0.4 // Adjust multiplier for sensitivity
+            velocity.current -= deltaY * SCROLL_VELOCITY_FACTOR * 0.4 // Adjust multiplier for sensitivity
             setScrollSinceSelection(true)
         }
 
@@ -235,32 +288,19 @@ function useDragToSpin(
     }, [wheelHoverRef, velocity, setScrollSinceSelection])
 }
 
-function useShiftOnProjectSelect(isSelected: boolean, setxOffset: React.Dispatch<React.SetStateAction<number>>) {
+function useShiftOnProjectSelect(selected: Project | Tool | null | undefined, setxOffset: React.Dispatch<React.SetStateAction<number>>) {
     useEffect(() => {
-        const handleProjectSelected = () => {
-            setxOffset(550)
-        }
-        const handleProjectDeselected = () => {
-            setxOffset(700)
-        }
-        if (isSelected) {
-            handleProjectSelected()
-        } else {
-            handleProjectDeselected()
-        }
-    }, [isSelected, setxOffset])
+        const handleProjectSelected = () => setxOffset(550)
+        const handleProjectDeselected = () => setxOffset(700)
+        if (selected) handleProjectSelected()
+        else handleProjectDeselected()
+    }, [selected, setxOffset])
 }
 
-function useUpdateItemRotations(raw_items: string[], itemRefs: React.RefObject<HTMLDivElement>[], position: number) {
+function useUpdateItemRotations(itemRef: React.RefObject<HTMLDivElement | null>, position: number, index: number) {
     useEffect(() => {
-        for (let i = 0; i < raw_items.length; i++) {
-            const item = itemRefs[i].current
-            if (!item) continue
-            item.style.transform = `rotate(
-                 ${-circular_rotate(i, position)}deg
-            )`
-        }
-    }, [itemRefs, position, raw_items.length])
+        itemRef.current?.style.setProperty('transform', `rotate(${-circular_rotate(index, position)}deg)`)
+    }, [itemRef, index, position])
 }
 
 function useImpartVelocityOnScroll(
@@ -271,10 +311,12 @@ function useImpartVelocityOnScroll(
     setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
     useEffect(() => {
-        console.log('hoveringers my name, and hoveringings the game')
+        
         const wheelHandler = (e: WheelEvent) => {
-            if (!isHovered || !element) return
-            velocity.current += +e.deltaY * scrollVelocityFactor * (deltaTime.current / 33)
+            if (!isHovered || !element) 
+                return
+
+            velocity.current += +e.deltaY * SCROLL_VELOCITY_FACTOR * (deltaTime.current / 33)
             setScrollSinceSelection(true)
         }
 
@@ -304,31 +346,33 @@ function useHoverOverWheel(
     }, [setIsHovered, wheelHoverRef])
 }
 
-function useHoverEffectOnItems(itemRefs: React.RefObject<HTMLDivElement>[]) {
+function useHoverEffectOnItems(itemRef: React.RefObject<HTMLDivElement | null>) {
     useEffect(() => {
         const handleItemHover = (e: MouseEvent) => {
             const target = e.target as HTMLButtonElement
-            ;(target as HTMLElement).style.setProperty('padding-right', '50px')
+            (target as HTMLElement).style.setProperty('padding-right', '50px')
         }
         const handleItemUnhover = (e: MouseEvent) => {
             const target = e.target as HTMLButtonElement
-            ;(target as HTMLElement).style.setProperty('padding-right', '0px')
+            (target as HTMLElement).style.setProperty('padding-right', '0px')
         }
 
-        const currentItemRefs = itemRefs.filter((item) => !headers.includes(item.current?.textContent ?? ''))
-        currentItemRefs.forEach((item) => {
-            const target = item.current?.children[0].children[0] as HTMLButtonElement
-            target.addEventListener('mouseenter', handleItemHover)
-            target.addEventListener('mouseleave', handleItemUnhover)
-        })
-        return () => {
-            currentItemRefs.forEach((item) => {
-                const target = item.current?.children[0].children[0] as HTMLButtonElement
-                target.removeEventListener('mouseenter', handleItemHover)
-                target.removeEventListener('mouseleave', handleItemUnhover)
-            })
+        if (Object.keys(raw_headers).includes(itemRef.current?.textContent ?? ''))
+            return
+        
+        const target = itemRef.current?.children[0].children[0] as HTMLButtonElement | null
+        if (!target) {
+            console.log('target is null')
+            return
         }
-    }, [itemRefs])
+
+        target.addEventListener('mouseenter', handleItemHover)
+        target.addEventListener('mouseleave', handleItemUnhover)
+        return () => {
+            target.removeEventListener('mouseenter', handleItemHover)
+            target.removeEventListener('mouseleave', handleItemUnhover)
+        }
+    }, [itemRef])
 }
 
 function useAnimationFrames(
@@ -380,11 +424,12 @@ function useAnimationFrames(
 
 function useWheelPhysics(
     frame: number,
-    velocity: React.RefObject<number>,
-    deltaTime: React.RefObject<number>,
     setPosition: React.Dispatch<React.SetStateAction<number>>,
+    deltaTime?: React.RefObject<number>,
+    velocity?: React.RefObject<number>,
 ) {
     useEffect(() => {
+        if(!deltaTime || !velocity) return
         const friction = 0.8
         velocity.current -= (velocity.current - friction * velocity.current) * (deltaTime.current / 33)
         setPosition((p) => p + velocity.current)
@@ -394,39 +439,47 @@ function useWheelPhysics(
 function useModifyAnimationsWhileLoading(
     frame: number,
     totalTime: React.RefObject<number>,
-    itemRefs: React.RefObject<HTMLDivElement>[],
     circleRef: React.RefObject<HTMLDivElement | null>,
     parentRef: React.RefObject<HTMLDivElement | null>,
 ) {
     useEffect(() => {
         if (totalTime.current > 1200) {
-            itemRefs.forEach((item) => {
-                item.current?.style.setProperty('transition', 'none')
-            })
             circleRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
             parentRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
         }
-    }, [itemRefs, circleRef, parentRef, frame, totalTime])
+    }, [circleRef, parentRef, frame, totalTime])
+}
+
+function useModifyItemAnimationsWhileLoading(
+    position: number,
+    totalTime?: React.RefObject<number>,
+    itemRef?: React.RefObject<HTMLDivElement | null>
+) {
+    useEffect(() => {
+        if (totalTime?.current ?? 0 > 1200) 
+            itemRef?.current?.style.setProperty('transition', 'none')
+    }, [itemRef, position, totalTime])
 }
 
 function usePushWheelToSelectedProject(
     position: number,
-    velocity: React.RefObject<number>,
-    project: Project | Tool | null | undefined,
+    project_index: number,
+    selected_index: number | null,
     scrollSinceSelection: boolean,
-    deltaTime: React.RefObject<number>,
+    velocity?: React.RefObject<number>,
+    deltaTime?: React.RefObject<number>,
 ) {
     useEffect(() => {
-        if (!project) return
+        if (!selected_index || !velocity || !deltaTime) return
         if (scrollSinceSelection) return
+        if (project_index !== selected_index) return
 
-        const project_index = raw_items.indexOf(project.name.split(':')[0])
-        const current_angle = circular_rotate(project_index, position)
+        const current_angle = circular_rotate(selected_index, position)
         const target_angle = circular_rotate(0, 0)
 
-        const delta_angle = current_angle - target_angle - 20 // 20 is target phase
+        const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
         velocity.current = velocity.current + Math.pow(Math.tanh(delta_angle), 3) * 0.0004 * (deltaTime.current / 4)
-    }, [position, project, scrollSinceSelection, velocity, deltaTime])
+    }, [position, selected_index, project_index, scrollSinceSelection, velocity, deltaTime])
 }
 
 function useMoveWheelToXOffset(
