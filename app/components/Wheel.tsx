@@ -1,22 +1,22 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createRef, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { circular_rotate, isVisible } from '../typescript/math_helpers'
-import { getItemColor, PortfolioData, Project, raw_headers, Tool} from '@/typescript/wheel_info'
+import { getItemColor, PortfolioData, Project, Tool} from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
 
 const SCROLL_VELOCITY_FACTOR = 0.0002
 
 function Group({
-    header, items, position, totalTime, velocity, deltaTime, startingIndex
-}: Readonly<{ header: string, items: (Tool | Project)[], position: number, totalTime: React.RefObject<number>, velocity: React.RefObject<number>, deltaTime: React.RefObject<number>, startingIndex: number }>) {
+    header, items, startingIndex, itemRefs
+}: Readonly<{ header: string, items: (Tool | Project)[], startingIndex: number, itemRefs: { headerRef: React.RefObject<HTMLDivElement | null>, itemRefs: (React.RefObject<HTMLDivElement | null>)[] } }>) {
     const [visible, setVisible] = useState(false)
 
     return (<>
-        <ItemWrapper position={position} totalTime={totalTime} velocity={velocity} deltaTime={deltaTime} index={startingIndex}>
+        <ItemWrapper ref={itemRefs.headerRef}>
             <Header text={header} toggleSection={() => setVisible(!visible)}/>
         </ItemWrapper>
         {items.map((item, index) => {
             return (
-                <ItemWrapper position={position} totalTime={totalTime} velocity={velocity} deltaTime={deltaTime} index={startingIndex + index + 1} key={item.key_name + index}>
+                <ItemWrapper ref={itemRefs.itemRefs[index]} key={item.key_name + index}>
                     <Item tool={item} index={startingIndex + index + 1}></Item>
                 </ItemWrapper>
             )
@@ -38,7 +38,6 @@ function Header({
 function Item({
     tool, index
 }: Readonly<{ tool: Tool | Project, index: number }> ) {
-
     const { 
         selected,
         setSelected,
@@ -49,6 +48,15 @@ function Item({
         setPreviousSelected, 
         setIsPreviousProject,
     } = useContext(ProjectContext)
+
+    const handleItemHover = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const target = event.target as HTMLButtonElement
+        (target as HTMLElement).style.setProperty('padding-right', '50px')
+    }
+    const handleItemUnhover = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const target = event.target as HTMLButtonElement
+        (target as HTMLElement).style.setProperty('padding-right', '0px')
+    }
 
     const buttonRef = useRef<HTMLButtonElement>(null)
     useBoldSelected(buttonRef, selected)
@@ -82,29 +90,17 @@ function Item({
                     setIsProject(false)
                 }
             }}
+            onMouseEnter={handleItemHover}
+            onMouseLeave={handleItemUnhover}
         >{tool.key_name}</button>
         ,
         [tool, setScrollSinceSelection, setPreviousSelected, selected, setIsPreviousProject, isProject, setSelected, setSelectedIndex, index, setIsProject]
     )
 
-
     return itemMemo
 }
 
-function ItemWrapper({ 
-    position, totalTime, velocity, deltaTime, index, children
-}: Readonly<{ position: number, totalTime: React.RefObject<number>, velocity: React.RefObject<number>, deltaTime: React.RefObject<number>, index: number, children: React.ReactNode }>) {
-
-    const ref = useRef<HTMLDivElement>(null)
-    useHoverEffectOnItems(ref)
-    useUpdateItemRotations(ref, position, index)
-    useModifyItemAnimationsWhileLoading(position, totalTime, ref)
-    useUpdateVisibility(ref, index, position)
-
-    const { selectedIndex, scrollSinceSelection } = useContext(ProjectContext)
-
-    usePushWheelToSelectedProject(position, index, selectedIndex, scrollSinceSelection, velocity, deltaTime)
-
+function ItemWrapper({ ref, children }: Readonly<{ ref: React.RefObject<HTMLDivElement | null>, children: React.ReactNode }>) {
     return <div
         ref={ref}
         className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
@@ -123,7 +119,7 @@ export default function Wheel() {
     const circleRef = React.createRef<HTMLDivElement>()
     useMoveWheelToXOffset(xOffset, circleRef, parentRef) // Ensure correct offsets, especially on page load. Performance impact negligible
     
-    const { selected, setScrollSinceSelection } = useContext(ProjectContext)
+    const { selected, selectedIndex, scrollSinceSelection, setScrollSinceSelection } = useContext(ProjectContext)
 
     const [frame, totalTime, velocity, deltaTime, wheelHoverRef] = usePhysics(setScrollSinceSelection, circleRef,  parentRef)
     
@@ -132,9 +128,31 @@ export default function Wheel() {
     const [position, setPosition] = useState(0)
     useWheelPhysics(frame, setPosition, deltaTime, velocity)
 
+    const itemRefs = useRef(
+        Object.entries(PortfolioData).map((entry) => {
+            const numItems = Object.values(entry[1]).length
+            return {
+                headerRef: createRef<HTMLDivElement>(),
+                itemRefs: Array.from({ length: numItems }, () => createRef<HTMLDivElement>()),
+                blankRef: createRef<HTMLDivElement>()
+            }
+        })
+    )
+
+    const flatItemRefs = useMemo(() => 
+        itemRefs.current.flatMap(item => [item.headerRef, ...item.itemRefs, item.blankRef]), 
+        [itemRefs]
+    )
+
+    useUpdateItemRotations(flatItemRefs, position)
+    useModifyItemAnimationsWhileLoading(flatItemRefs, position, totalTime)
+    useUpdateVisibility(flatItemRefs, position)
+
+    usePushWheelToSelectedProject(position, selectedIndex, scrollSinceSelection, velocity, deltaTime)
+
     const items = useMemo(() => {
         let globalIndex = 0
-        return Object.entries(PortfolioData).map(entry => {
+        return Object.entries(PortfolioData).map((entry, index) => {
 
             const items = Object.values(entry[1])
             const sectionLength = items.length + 2 // One for header, one for gap between sections
@@ -144,11 +162,8 @@ export default function Wheel() {
                     key={entry[0]} 
                     header={entry[0]} 
                     items={Object.values(entry[1])}
-                    position={position}
-                    totalTime={totalTime}
-                    velocity={velocity}
-                    deltaTime={deltaTime}
                     startingIndex={globalIndex}
+                    itemRefs={itemRefs.current[index]}
                     >
                 </Group>
             )
@@ -156,7 +171,7 @@ export default function Wheel() {
             globalIndex += sectionLength
             return section
         })
-    }, [deltaTime, position, totalTime, velocity])
+    }, [itemRefs])
 
     return (<>
         <div
@@ -190,7 +205,7 @@ function usePhysics(
         const totalTime = useRef(0)
         const lastRenderTime = useRef(0)
 
-        const frame = useAnimationFrames(deltaTime, lastRenderTime, totalTime)              // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
+        const frame = useAnimationFrames(deltaTime, lastRenderTime, totalTime)    // Re-render every frame (for physics) and limit to 60 FPS. Performance impact high
         useModifyAnimationsWhileLoading(frame, totalTime, circleRef, parentRef)   // Change transitions after loading. Performance impact minimal
 
         return [frame, totalTime, velocity, deltaTime, wheelHoverRef]
@@ -211,17 +226,19 @@ function useWheelInteraction(
         return wheelHoverRef
     }
 
-function useUpdateVisibility(ref: React.RefObject<HTMLDivElement | null>, index: number, position: number) {
+function useUpdateVisibility(itemRefs: React.RefObject<HTMLDivElement | null>[], position: number) {
     useEffect(() => {
-        if (!isVisible(index, position)){
-            ref.current?.style.setProperty('z-index', '-1')
-            ref.current?.style.setProperty('opacity', '0')
-        }
-        else {
-            ref.current?.style.setProperty('z-index', '1')
-            ref.current?.style.setProperty('opacity', '1')
-        }
-    }, [index, position, ref])
+        itemRefs.forEach((itemRef, index) => {
+            if (!isVisible(index, position)){
+                itemRef.current?.style.setProperty('z-index', '-1')
+                itemRef.current?.style.setProperty('opacity', '0')
+            }
+            else {
+                itemRef.current?.style.setProperty('z-index', '1')
+                itemRef.current?.style.setProperty('opacity', '1')
+            }
+        })
+    }, [itemRefs, position])
 }
 
 function useBoldSelected(itemRef: React.RefObject<HTMLButtonElement | null>, selected: Project | Tool | null | undefined) {
@@ -297,10 +314,16 @@ function useShiftOnProjectSelect(selected: Project | Tool | null | undefined, se
     }, [selected, setxOffset])
 }
 
-function useUpdateItemRotations(itemRef: React.RefObject<HTMLDivElement | null>, position: number, index: number) {
+function useUpdateItemRotations(itemRefs: React.RefObject<HTMLDivElement>[], position: number) {
     useEffect(() => {
-        itemRef.current?.style.setProperty('transform', `rotate(${-circular_rotate(index, position)}deg)`)
-    }, [itemRef, index, position])
+        for (let i = 0; i < itemRefs.length; i++) {
+            const item = itemRefs[i].current
+            if (!item) continue
+            item.style.transform = `rotate(
+                 ${-circular_rotate(i, position)}deg
+            )`
+        }
+    }, [itemRefs, position])
 }
 
 function useImpartVelocityOnScroll(
@@ -344,35 +367,6 @@ function useHoverOverWheel(
             element?.removeEventListener('mouseleave', mouseLeaveHandler)
         }
     }, [setIsHovered, wheelHoverRef])
-}
-
-function useHoverEffectOnItems(itemRef: React.RefObject<HTMLDivElement | null>) {
-    useEffect(() => {
-        const handleItemHover = (e: MouseEvent) => {
-            const target = e.target as HTMLButtonElement
-            (target as HTMLElement).style.setProperty('padding-right', '50px')
-        }
-        const handleItemUnhover = (e: MouseEvent) => {
-            const target = e.target as HTMLButtonElement
-            (target as HTMLElement).style.setProperty('padding-right', '0px')
-        }
-
-        if (Object.keys(raw_headers).includes(itemRef.current?.textContent ?? ''))
-            return
-        
-        const target = itemRef.current?.children[0].children[0] as HTMLButtonElement | null
-        if (!target) {
-            console.log('target is null')
-            return
-        }
-
-        target.addEventListener('mouseenter', handleItemHover)
-        target.addEventListener('mouseleave', handleItemUnhover)
-        return () => {
-            target.removeEventListener('mouseenter', handleItemHover)
-            target.removeEventListener('mouseleave', handleItemUnhover)
-        }
-    }, [itemRef])
 }
 
 function useAnimationFrames(
@@ -451,19 +445,18 @@ function useModifyAnimationsWhileLoading(
 }
 
 function useModifyItemAnimationsWhileLoading(
+    itemRefs: React.RefObject<HTMLDivElement | null>[],
     position: number,
-    totalTime?: React.RefObject<number>,
-    itemRef?: React.RefObject<HTMLDivElement | null>
+    totalTime: React.RefObject<number>
 ) {
     useEffect(() => {
         if (totalTime?.current ?? 0 > 1200) 
-            itemRef?.current?.style.setProperty('transition', 'none')
-    }, [itemRef, position, totalTime])
+            itemRefs.forEach(itemRef => itemRef?.current?.style.setProperty('transition', 'none')
+    )}, [itemRefs, position, totalTime])
 }
 
 function usePushWheelToSelectedProject(
     position: number,
-    project_index: number,
     selected_index: number | null,
     scrollSinceSelection: boolean,
     velocity?: React.RefObject<number>,
@@ -472,14 +465,13 @@ function usePushWheelToSelectedProject(
     useEffect(() => {
         if (!selected_index || !velocity || !deltaTime) return
         if (scrollSinceSelection) return
-        if (project_index !== selected_index) return
 
         const current_angle = circular_rotate(selected_index, position)
         const target_angle = circular_rotate(0, 0)
 
         const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
         velocity.current = velocity.current + Math.pow(Math.tanh(delta_angle), 3) * 0.0004 * (deltaTime.current / 4)
-    }, [position, selected_index, project_index, scrollSinceSelection, velocity, deltaTime])
+    }, [position, selected_index, scrollSinceSelection, velocity, deltaTime])
 }
 
 function useMoveWheelToXOffset(
