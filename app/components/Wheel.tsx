@@ -314,7 +314,7 @@ function useShiftOnProjectSelect(selected: Project | Tool | null | undefined, se
     }, [selected, setxOffset])
 }
 
-function useUpdateItemRotations(itemRefs: React.RefObject<HTMLDivElement>[], position: number) {
+function useUpdateItemRotations(itemRefs: React.RefObject<HTMLDivElement | null>[], position: number) {
     useEffect(() => {
         for (let i = 0; i < itemRefs.length; i++) {
             const item = itemRefs[i].current
