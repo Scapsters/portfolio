@@ -257,6 +257,162 @@ function useBoldSelected(itemRef: React.RefObject<HTMLButtonElement | null>, sel
     }, [itemRef, selected])
 }
 
+function useShiftOnProjectSelect(selected: Project | Tool | null | undefined, setxOffset: React.Dispatch<React.SetStateAction<number>>) {
+    useEffect(() => {
+        const handleProjectSelected = () => setxOffset(550)
+        const handleProjectDeselected = () => setxOffset(700)
+        if (selected) handleProjectSelected()
+        else handleProjectDeselected()
+    }, [selected, setxOffset])
+}
+
+function useUpdateItemRotations(itemRefs: React.RefObject<HTMLDivElement | null>[], position: number) {
+    useEffect(() => {
+        for (let i = 0; i < itemRefs.length; i++) {
+            const item = itemRefs[i].current
+            if (!item) continue
+            item.style.transform = `rotate(
+                 ${-circular_rotate(i, position)}deg
+            )`
+        }
+    }, [itemRefs, position])
+}
+
+
+
+function useHoverOverWheel(
+    wheelHoverRef: React.RefObject<HTMLDivElement | null>,
+    setIsHovered: React.Dispatch<React.SetStateAction<boolean>>,
+) {
+    useEffect(() => {
+        const element = wheelHoverRef.current
+        const mouseEnterHandler = () => setIsHovered(true)
+        const mouseLeaveHandler = () => setIsHovered(false)
+
+        element?.addEventListener('mouseenter', mouseEnterHandler)
+        element?.addEventListener('mouseleave', mouseLeaveHandler)
+        return () => {
+            element?.removeEventListener('mouseenter', mouseEnterHandler)
+            element?.removeEventListener('mouseleave', mouseLeaveHandler)
+        }
+    }, [setIsHovered, wheelHoverRef])
+}
+
+function useAnimationFrames(
+    delta_time: React.RefObject<number>,
+    lastRendertime: React.RefObject<number>,
+    totalTime: React.RefObject<number>,
+) {
+    const [frame, setFrame] = useState(0)
+
+    useEffect(() => {
+        let animationId: number | null = null
+        let running = true // Track if animation is active
+
+        let accumulator = 0;
+        const FIXED_STEP = 1000 / 60;
+
+        const updateFrame = (timestamp: number) => {
+            if (!running) return;
+
+            const delta = timestamp - lastRendertime.current;
+            accumulator += delta;
+
+            while (accumulator >= FIXED_STEP) {
+                delta_time.current = FIXED_STEP;
+                totalTime.current += FIXED_STEP;
+                lastRendertime.current = timestamp;
+                console.log(delta_time.current)
+
+                setFrame(prev => prev + 1);
+                accumulator -= FIXED_STEP;
+            }
+
+            animationId = requestAnimationFrame(updateFrame);
+        };
+
+        const tabOutHandler = () => {
+            if (document.hidden) {
+                running = false
+                if (animationId) cancelAnimationFrame(animationId)
+            } else {
+                running = true
+                lastRendertime.current = performance.now() // Reset timestamp to avoid time jumps
+                requestAnimationFrame(updateFrame)
+            }
+        }
+
+        lastRendertime.current = performance.now()
+        animationId = requestAnimationFrame(updateFrame)
+        document.addEventListener('visibilitychange', tabOutHandler)
+
+        return () => {
+            if (animationId) cancelAnimationFrame(animationId)
+            document.removeEventListener('visibilitychange', tabOutHandler)
+        }
+    }, [delta_time, lastRendertime, setFrame, totalTime])
+
+    return frame
+}
+
+function useWheelPhysics(
+    frame: number,
+    setPosition: React.Dispatch<React.SetStateAction<number>>,
+    deltaTime?: React.RefObject<number>,
+    velocity?: React.RefObject<number>,
+) {
+    useEffect(() => {
+        if(!deltaTime || !velocity) return
+        const friction = 0.03
+        velocity.current = (velocity.current * friction) * (deltaTime.current)
+        setPosition((p) => p + velocity.current * deltaTime.current / 10)
+    }, [deltaTime, frame, setPosition, velocity])
+}
+
+function useImpartVelocityOnScroll(
+    wheelHoverRef: React.RefObject<HTMLDivElement | null>,
+    isHovered: boolean,
+    velocity: React.RefObject<number>,
+    deltaTime: React.RefObject<number>,
+    setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
+) {
+    useEffect(() => {
+        
+        const wheelHandler = (e: WheelEvent) => {
+            if (!isHovered || !element) 
+                return
+
+            velocity.current += +e.deltaY * SCROLL_VELOCITY_FACTOR / (deltaTime.current / 33)
+            setScrollSinceSelection(true)
+        }
+
+        const element = wheelHoverRef.current
+        element?.addEventListener('wheel', wheelHandler)
+        return () => {
+            element?.removeEventListener('wheel', wheelHandler)
+        }
+    }, [wheelHoverRef, isHovered, velocity, setScrollSinceSelection, deltaTime])
+}
+
+function usePushWheelToSelectedProject(
+    position: number,
+    selected_index: number | null,
+    scrollSinceSelection: boolean,
+    velocity?: React.RefObject<number>,
+    deltaTime?: React.RefObject<number>,
+) {
+    useEffect(() => {
+        if (!selected_index || !velocity || !deltaTime) return
+        if (scrollSinceSelection) return
+
+        const current_angle = circular_rotate(selected_index, position)
+        const target_angle = circular_rotate(0, 0)
+
+        const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
+        velocity.current = velocity.current + Math.pow(Math.tanh(delta_angle), 3) * 0.0004 * (deltaTime.current / 4)
+    }, [position, selected_index, scrollSinceSelection, velocity, deltaTime])
+}
+
 function useDragToSpin(
     wheelHoverRef: React.RefObject<HTMLDivElement | null>,
     velocity: React.RefObject<number>,
@@ -305,131 +461,6 @@ function useDragToSpin(
     }, [wheelHoverRef, velocity, setScrollSinceSelection])
 }
 
-function useShiftOnProjectSelect(selected: Project | Tool | null | undefined, setxOffset: React.Dispatch<React.SetStateAction<number>>) {
-    useEffect(() => {
-        const handleProjectSelected = () => setxOffset(550)
-        const handleProjectDeselected = () => setxOffset(700)
-        if (selected) handleProjectSelected()
-        else handleProjectDeselected()
-    }, [selected, setxOffset])
-}
-
-function useUpdateItemRotations(itemRefs: React.RefObject<HTMLDivElement | null>[], position: number) {
-    useEffect(() => {
-        for (let i = 0; i < itemRefs.length; i++) {
-            const item = itemRefs[i].current
-            if (!item) continue
-            item.style.transform = `rotate(
-                 ${-circular_rotate(i, position)}deg
-            )`
-        }
-    }, [itemRefs, position])
-}
-
-function useImpartVelocityOnScroll(
-    wheelHoverRef: React.RefObject<HTMLDivElement | null>,
-    isHovered: boolean,
-    velocity: React.RefObject<number>,
-    deltaTime: React.RefObject<number>,
-    setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-    useEffect(() => {
-        
-        const wheelHandler = (e: WheelEvent) => {
-            if (!isHovered || !element) 
-                return
-
-            velocity.current += +e.deltaY * SCROLL_VELOCITY_FACTOR * (deltaTime.current / 33)
-            setScrollSinceSelection(true)
-        }
-
-        const element = wheelHoverRef.current
-        element?.addEventListener('wheel', wheelHandler)
-        return () => {
-            element?.removeEventListener('wheel', wheelHandler)
-        }
-    }, [wheelHoverRef, isHovered, velocity, setScrollSinceSelection, deltaTime])
-}
-
-function useHoverOverWheel(
-    wheelHoverRef: React.RefObject<HTMLDivElement | null>,
-    setIsHovered: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-    useEffect(() => {
-        const element = wheelHoverRef.current
-        const mouseEnterHandler = () => setIsHovered(true)
-        const mouseLeaveHandler = () => setIsHovered(false)
-
-        element?.addEventListener('mouseenter', mouseEnterHandler)
-        element?.addEventListener('mouseleave', mouseLeaveHandler)
-        return () => {
-            element?.removeEventListener('mouseenter', mouseEnterHandler)
-            element?.removeEventListener('mouseleave', mouseLeaveHandler)
-        }
-    }, [setIsHovered, wheelHoverRef])
-}
-
-function useAnimationFrames(
-    delta_time: React.RefObject<number>,
-    lastRendertime: React.RefObject<number>,
-    totalTime: React.RefObject<number>,
-) {
-    const [frame, setFrame] = useState(0)
-
-    useEffect(() => {
-        let animationId: number | null = null
-        let running = true // Track if animation is active
-
-        const updateFrame = (timestamp: number) => {
-            if (!running) return
-
-            delta_time.current = timestamp - lastRendertime.current
-            lastRendertime.current = timestamp
-            totalTime.current = totalTime.current + delta_time.current
-
-            setFrame((prev) => prev + 1)
-
-            animationId = requestAnimationFrame(updateFrame)
-        }
-
-        const tabOutHandler = () => {
-            if (document.hidden) {
-                running = false
-                if (animationId) cancelAnimationFrame(animationId)
-            } else {
-                running = true
-                lastRendertime.current = performance.now() // Reset timestamp to avoid time jumps
-                requestAnimationFrame(updateFrame)
-            }
-        }
-
-        lastRendertime.current = performance.now()
-        animationId = requestAnimationFrame(updateFrame)
-        document.addEventListener('visibilitychange', tabOutHandler)
-
-        return () => {
-            if (animationId) cancelAnimationFrame(animationId)
-            document.removeEventListener('visibilitychange', tabOutHandler)
-        }
-    }, [delta_time, lastRendertime, setFrame, totalTime])
-
-    return frame
-}
-
-function useWheelPhysics(
-    frame: number,
-    setPosition: React.Dispatch<React.SetStateAction<number>>,
-    deltaTime?: React.RefObject<number>,
-    velocity?: React.RefObject<number>,
-) {
-    useEffect(() => {
-        if(!deltaTime || !velocity) return
-        const friction = 0.8
-        velocity.current -= (velocity.current - friction * velocity.current) * (deltaTime.current / 33)
-        setPosition((p) => p + velocity.current)
-    }, [deltaTime, frame, setPosition, velocity])
-}
-
 function useModifyAnimationsWhileLoading(
     frame: number,
     totalTime: React.RefObject<number>,
@@ -453,25 +484,6 @@ function useModifyItemAnimationsWhileLoading(
         if (totalTime?.current ?? 0 > 1200) 
             itemRefs.forEach(itemRef => itemRef?.current?.style.setProperty('transition', 'none')
     )}, [itemRefs, position, totalTime])
-}
-
-function usePushWheelToSelectedProject(
-    position: number,
-    selected_index: number | null,
-    scrollSinceSelection: boolean,
-    velocity?: React.RefObject<number>,
-    deltaTime?: React.RefObject<number>,
-) {
-    useEffect(() => {
-        if (!selected_index || !velocity || !deltaTime) return
-        if (scrollSinceSelection) return
-
-        const current_angle = circular_rotate(selected_index, position)
-        const target_angle = circular_rotate(0, 0)
-
-        const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
-        velocity.current = velocity.current + Math.pow(Math.tanh(delta_angle), 3) * 0.0004 * (deltaTime.current / 4)
-    }, [position, selected_index, scrollSinceSelection, velocity, deltaTime])
 }
 
 function useMoveWheelToXOffset(
