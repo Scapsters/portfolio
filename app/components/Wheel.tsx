@@ -244,16 +244,11 @@ export default function Wheel() {
         let running = true
 
         let accumulator = 0
-
         let timeSinceAnimationFrame = 0
         let timeOfLastAnimationFrame = 0
-        let trueTotalTime = 0
 
-        let hasSetTime = false
         const frameLoop = (timestamp: number) => {
             timeSinceAnimationFrame = timestamp - timeOfLastAnimationFrame
-            console.log(timeSinceAnimationFrame)
-            trueTotalTime += timeSinceAnimationFrame
             if (!running) return
 
             accumulator += timeSinceAnimationFrame
@@ -262,14 +257,9 @@ export default function Wheel() {
                 totalTime.current += framePeriod.current
                 lag.current = timestamp - lastRender.current - deltaTime.current 
                 lastRender.current = timestamp
-                
-                //lag.current = accumulator - framePeriod.current
-                //console.log("lag:" + lag.current)
                 accumulator -= framePeriod.current
             }
-            
             timeOfLastAnimationFrame = timestamp
-
             animationId = requestAnimationFrame(frameLoop)
         }
 
@@ -279,7 +269,7 @@ export default function Wheel() {
                 if (animationId) cancelAnimationFrame(animationId)
             } else {
                 running = true
-                //lastRender.current = performance.now() // Reset timestamp to avoid time jumps
+                lastRender.current = performance.now() // Reset timestamp to avoid time jumps
                 requestAnimationFrame(frameLoop)
             }
         }
