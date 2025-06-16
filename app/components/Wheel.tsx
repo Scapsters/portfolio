@@ -105,7 +105,7 @@ function Item({
 function ItemWrapper({ ref, children }: Readonly<{ ref: React.RefObject<HTMLDivElement | null>, children: React.ReactNode }>) {
     return <div
         ref={ref}
-        className={`w-[var(--item-width)] h-0 text-3xl transition duration-1000 ease-in-out `}
+        className={`w-[var(--item-width)] h-0 text-3xl`}
     >
         <div className="flex w-[600px] select-none justify-end transition-[padding-right] duration-200 ease-out">
             {children}
@@ -181,7 +181,6 @@ export default function Wheel() {
         circleRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
         parentRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
     }
-    if (totalTime?.current ?? 0 > 1200) flatItemRefs.forEach(itemRef => itemRef?.current?.style.setProperty('transition', 'none')) // Remove transitions to allow wheel movement to work
 
     // Frame data
     const framePeriod = useRef(1000 / DEFAULT_FRAME_RATE)
@@ -207,21 +206,18 @@ export default function Wheel() {
     deltaDrag.current = 0
     position.current += velocity.current * (deltaTime.current + lag.current) / 16
 
-    // Update rotations
-    for (let i = 0; i < flatItemRefs.length; i++) {
-        const item = flatItemRefs[i].current
-        if (item) item.style.transform = `rotate(${-circular_rotate(i, position.current)}deg)`
-    }
-
-    // Update item visibilities
+    // Update rotations and visibilities
     flatItemRefs.forEach((itemRef, index) => {
-        if (!isVisible(index, position.current)){
-            itemRef.current?.style.setProperty('z-index', '-1')
-            itemRef.current?.style.setProperty('opacity', '0')
-        }
-        else {
-            itemRef.current?.style.setProperty('z-index', '1')
-            itemRef.current?.style.setProperty('opacity', '1')
+        const item = itemRef.current
+        if (item) {
+            item.style.setProperty('transform', `rotate(${-circular_rotate(index, position.current)}deg)`, )
+            if (!isVisible(index, position.current)) {
+                item.style.setProperty('z-index', '-1')
+                item.style.setProperty('opacity', '0')
+            } else {
+                item.style.setProperty('z-index', '1')
+                item.style.setProperty('opacity', '1')
+            }
         }
     })
 
