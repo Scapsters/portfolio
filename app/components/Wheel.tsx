@@ -5,7 +5,7 @@ import { ProjectContext } from '@/contexts'
 
 const SCROLL_VELOCITY_FACTOR = 0.00007
 const FRICTION = 0.996
-const DEFAULT_FRAME_RATE = 120
+const DEFAULT_FRAME_RATE = 60
 
 function Group({
     header, items, startingIndex, itemRefs
@@ -136,6 +136,7 @@ export default function Wheel() {
     const deltaDrag = useRef(0)
     useAccumulateDragging(parentRef, deltaDrag, setScrollSinceSelection)
     
+    // Track hover
     const wheelHoverRef = useRef<HTMLDivElement>(null)
     const [isHovered, setIsHovered] = useState(false)
     useHoverOverWheel(wheelHoverRef, setIsHovered)
@@ -158,6 +159,29 @@ export default function Wheel() {
         element?.addEventListener('wheel', wheelHandler)
         return () => element?.removeEventListener('wheel', wheelHandler)
     }, [isHovered])
+    
+    // Store item refs for central handling of rotation
+    const itemRefs = useRef( // Organized per section with header, main items, and a gap between
+        Object.entries(PortfolioData).map((entry) => {
+            const numItems = Object.values(entry[1]).length
+            return {
+                headerRef: createRef<HTMLDivElement>(),
+                itemRefs: Array.from({ length: numItems }, () => createRef<HTMLDivElement>()),
+                blankRef: createRef<HTMLDivElement>()
+            }
+        })
+    )
+    const flatItemRefs = useMemo(() => // Just flattened the original array
+        itemRefs.current.flatMap(item => [item.headerRef, ...item.itemRefs, item.blankRef]), 
+        [itemRefs]
+    )
+
+    const totalTime = useRef(0)
+    if (totalTime.current > 1200) { // For some reason
+        circleRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
+        parentRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
+    }
+    if (totalTime?.current ?? 0 > 1200) flatItemRefs.forEach(itemRef => itemRef?.current?.style.setProperty('transition', 'none')) // Remove transitions to allow wheel movement to work
 
     // Frame data
     const framePeriod = useRef(1000 / DEFAULT_FRAME_RATE)
@@ -176,54 +200,18 @@ export default function Wheel() {
             * 0.0004 // Scale for funsies 
             * ((deltaTime.current + lag.current)/ 6) // Scale for scaries
     }
-    
     velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
-    
     velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR // Scrolling
     deltaScroll.current = 0
-
     velocity.current += deltaDrag.current * SCROLL_VELOCITY_FACTOR // Dragging
     deltaDrag.current = 0
-
     position.current += velocity.current * (deltaTime.current + lag.current) / 16
-    
-    // Organized per section with header, main items, and a gap between
-    const itemRefs = useRef(
-        Object.entries(PortfolioData).map((entry) => {
-            const numItems = Object.values(entry[1]).length
-            return {
-                headerRef: createRef<HTMLDivElement>(),
-                itemRefs: Array.from({ length: numItems }, () => createRef<HTMLDivElement>()),
-                blankRef: createRef<HTMLDivElement>()
-            }
-        })
-    )
-
-    // Just flattened the original array
-    const flatItemRefs = useMemo(() => 
-        itemRefs.current.flatMap(item => [item.headerRef, ...item.itemRefs, item.blankRef]), 
-        [itemRefs]
-    )
 
     // Update rotations
     for (let i = 0; i < flatItemRefs.length; i++) {
         const item = flatItemRefs[i].current
-        if (!item) continue
-        item.style.transform = `rotate(
-                ${-circular_rotate(i, position.current)}deg
-        )`
+        if (item) item.style.transform = `rotate(${-circular_rotate(i, position.current)}deg)`
     }
-
-    const totalTime = useRef(0)
-
-    // For some reason
-    if (totalTime.current > 1200) {
-        circleRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
-        parentRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
-    }
-
-    // Remove transitions to allow wheel movement to work
-    if (totalTime?.current ?? 0 > 1200) flatItemRefs.forEach(itemRef => itemRef?.current?.style.setProperty('transition', 'none'))
 
     // Update item visibilities
     flatItemRefs.forEach((itemRef, index) => {
@@ -408,4 +396,3 @@ function useAccumulateDragging(
         }
     }, [deltaDrag, setScrollSinceSelection, wheelHoverRef])
 }
-
