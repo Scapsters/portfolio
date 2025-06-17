@@ -192,9 +192,12 @@ export default function Wheel() {
     )
 
     const totalTime = useRef(0)
-    if (totalTime.current > 1200) { // For some reason
+
+    const hasSetTransition = useRef(false)
+    if (!hasSetTransition.current && totalTime.current > 1200) { // For some reason
         circleRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
         parentRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
+        hasSetTransition.current = true
     }
 
     // Frame data
