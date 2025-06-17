@@ -8,15 +8,30 @@ const FRICTION = 0.996
 const DEFAULT_FRAME_RATE = 60
 
 function Group({
-    header, items, startingIndex, itemRefs
-}: Readonly<{ header: string, items: (Tool | Project)[], startingIndex: number, itemRefs: { headerRef: React.RefObject<HTMLDivElement | null>, itemRefs: (React.RefObject<HTMLDivElement | null>)[] } }>) {
-    const [visible, setVisible] = useState(false)
-
+    header, items, groupIndex, startingIndex, itemRefs, groupVisibilities, setGroupVisibilities
+}: Readonly<{ 
+        header: string, 
+        items: (Tool | Project)[], 
+        groupIndex: number
+        startingIndex: number, 
+        itemRefs: { 
+            headerRef: React.RefObject<HTMLDivElement | null>, 
+            itemRefs: (React.RefObject<HTMLDivElement | null>)[] 
+        }, 
+        groupVisibilities: boolean[]
+        setGroupVisibilities: React.Dispatch<React.SetStateAction<boolean[]>>
+    }>) {
     return (<>
         <ItemWrapper ref={itemRefs.headerRef}>
-            <Header text={header} toggleSection={() => setVisible(!visible)}/>
+            <Header text={header} toggleSection={() => {
+                setGroupVisibilities(prev => [
+                    ...prev.slice(0, groupIndex),
+                    !prev[groupIndex],
+                    ...prev.slice(groupIndex + 1),
+                ]);
+            }}/>
         </ItemWrapper>
-        {visible ? items.map((item, index) => {
+        {groupVisibilities[groupIndex] ? items.map((item, index) => {
             return (
                 <ItemWrapper ref={itemRefs.itemRefs[index]} key={item.key_name + index}>
                     <Item tool={item} index={startingIndex + index + 1}></Item>
@@ -206,18 +221,29 @@ export default function Wheel() {
     deltaDrag.current = 0
     position.current += velocity.current * (deltaTime.current + lag.current) / 16
 
-    // Update rotations and visibilities
-    flatItemRefs.forEach((itemRef, index) => {
-        const item = itemRef.current
-        if (item) {
-            item.style.setProperty('transform', `rotate(${-circular_rotate(index, position.current)}deg)`, )
-            if (!isVisible(index, position.current)) {
-                item.style.setProperty('z-index', '-1')
-                item.style.setProperty('opacity', '0')
-            } else {
-                item.style.setProperty('z-index', '1')
-                item.style.setProperty('opacity', '1')
-            }
+    const [groupVisibilities, setGroupVisibilities] = useState<boolean[]>(new Array(itemRefs.current.length).fill(false))
+
+    let wheelIndex = 0
+    function rotate(ref: React.RefObject<HTMLDivElement | null>, index: number, position: React.RefObject<number>) {
+        if (!ref.current) 
+            return
+
+        ref.current.style.setProperty('transform', `rotate(${-circular_rotate(wheelIndex, position.current)}deg)`)
+        if (!isVisible(index, position.current)) {
+            ref.current.style.setProperty('z-index', '-1')
+            ref.current.style.setProperty('opacity', '0')
+        } else {
+            ref.current.style.setProperty('z-index', '1')
+            ref.current.style.setProperty('opacity', '1')
+        }
+    }
+    itemRefs.current.forEach((group, index) => {
+        rotate(group.headerRef, wheelIndex++, position)
+        if (groupVisibilities[index]) {
+            group.itemRefs.forEach((item, index) => {
+                rotate(item, wheelIndex++, position)
+            })
+            wheelIndex++
         }
     })
 
@@ -279,9 +305,12 @@ export default function Wheel() {
                 <Group 
                     key={entry[0]} 
                     header={entry[0]} 
+                    groupIndex={index}
                     items={Object.values(entry[1])}
                     startingIndex={globalIndex}
                     itemRefs={itemRefs.current[index]}
+                    groupVisibilities={groupVisibilities}
+                    setGroupVisibilities={setGroupVisibilities}
                     >
                 </Group>
             )
@@ -289,7 +318,7 @@ export default function Wheel() {
             globalIndex += sectionLength
             return section
         })
-    }, [itemRefs])
+    }, [itemRefs, groupVisibilities])
 
     return (<>
         <div
