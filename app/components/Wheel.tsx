@@ -1,4 +1,4 @@
-import React, { createRef, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { circular_rotate, isVisible } from '../typescript/math_helpers'
 import { getItemColor, PortfolioData, Project, Tool} from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
@@ -6,6 +6,13 @@ import { ProjectContext } from '@/contexts'
 const SCROLL_VELOCITY_FACTOR = 0.00007
 const FRICTION = 0.996
 const DEFAULT_FRAME_RATE = 60
+const EASING_DURATION = 7000
+
+
+type Visibility = {
+    visible: boolean,
+    timeSet: number
+}
 
 function Group({
     header, items, groupIndex, startingIndex, itemRefs, groupVisibilities, setGroupVisibilities
@@ -18,26 +25,26 @@ function Group({
             headerRef: React.RefObject<HTMLDivElement | null>, 
             itemRefs: (React.RefObject<HTMLDivElement | null>)[] 
         }, 
-        groupVisibilities: boolean[]
-        setGroupVisibilities: React.Dispatch<React.SetStateAction<boolean[]>>
+        groupVisibilities: Visibility[],
+        setGroupVisibilities: React.Dispatch<React.SetStateAction<Visibility[]>>
     }>) {
     return (<>
-        <ItemWrapper ref={itemRefs.headerRef}>
+        <ItemWrapper ref={itemRefs.headerRef} isHeader={true}>
             <Header text={header} toggleSection={() => {
                 setGroupVisibilities(prev => [
-                    ...prev.slice(0, groupIndex),
-                    !prev[groupIndex],
-                    ...prev.slice(groupIndex + 1),
+                    ...prev.slice(0, groupIndex).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
+                    { visible: !prev[groupIndex].visible, timeSet: performance.now() },
+                    ...prev.slice(groupIndex + 1).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
                 ]);
             }}/>
         </ItemWrapper>
-        {groupVisibilities[groupIndex] ? items.map((item, index) => {
+        {items.map((item, index) => {
             return (
                 <ItemWrapper ref={itemRefs.itemRefs[index]} key={item.key_name + index}>
                     <Item tool={item} index={startingIndex + index + 1}></Item>
                 </ItemWrapper>
             )
-        }) : <></>}
+        })}
     </>)
 }
 
@@ -117,12 +124,13 @@ function Item({
     return itemMemo
 }
 
-function ItemWrapper({ ref, children }: Readonly<{ ref: React.RefObject<HTMLDivElement | null>, children: React.ReactNode }>) {
+function ItemWrapper({ ref, children, isHeader }: Readonly<{ ref: React.RefObject<HTMLDivElement | null>, children: React.ReactNode, isHeader?: boolean }>) {
     return <div
         ref={ref}
-        className={`w-[var(--item-width)] h-0 text-3xl`}
+        style={isHeader ? { 'zIndex': 100 } : {}}
+        className={`relative w-[var(--item-width)] h-0 text-3xl`}
     >
-        <div className="flex w-[600px] select-none justify-end transition-[padding-right] duration-200 ease-out">
+        <div className="flex w-[600px] -rotate-2 select-none justify-end transition-[padding-right] duration-200 ease-out">
             {children}
         </div>
     </div>
@@ -224,30 +232,81 @@ export default function Wheel() {
     deltaDrag.current = 0
     position.current += velocity.current * (deltaTime.current + lag.current) / 16
 
-    const [groupVisibilities, setGroupVisibilities] = useState<boolean[]>(new Array(itemRefs.current.length).fill(false))
+    const [groupVisibilities, setGroupVisibilities] = useState<Visibility[]>(
+        new Array(itemRefs.current.length).fill({ visible: false, timeSet: performance.now() })
+    )
 
-    let wheelIndex = 0
-    function rotate(ref: React.RefObject<HTMLDivElement | null>, index: number, position: React.RefObject<number>) {
-        if (!ref.current) 
-            return
+    const currentOffsets = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
+    const currentOpacities = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
+    const currentXOffsets = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
 
-        ref.current.style.setProperty('transform', `rotate(${-circular_rotate(wheelIndex, position.current)}deg)`)
-        if (!isVisible(index, position.current)) {
-            ref.current.style.setProperty('z-index', '-1')
-            ref.current.style.setProperty('opacity', '0')
+    let groupIndexOut = 0
+    let extraItems = 0
+    let absoluteIndex = 0
+
+    function rotate(ref: HTMLDivElement, angle: number) { ref.style.setProperty('transform', `rotate(${angle}deg)`)}
+    function opacity(ref: HTMLDivElement, value: number) { ref.style.setProperty('opacity', value.toString()) }
+    function width(ref: HTMLDivElement, value: number) { ref.children[0].style.setProperty('width', `${600 + value}px`) }
+    const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start 
+    const lerpSquared = (start: number, end: number, t: number) => t ** 2 * end + (1 - t ** 2) * start
+    const lerpRoot = (start: number, end: number, t: number) => Math.sqrt(t) * end + (1 - Math.sqrt(t)) * start
+    
+    function updateRotation(
+        ref: HTMLDivElement, 
+        timeSinceChange: number,
+        isHeader: boolean = false
+    ) {
+
+        // Opacity
+        const nextOpacity = lerpRoot(
+            currentOpacities.current[absoluteIndex], 
+            groupVisibilities[groupIndexOut].visible || isHeader ? 1 : 0, 
+            Math.min(timeSinceChange / EASING_DURATION, 1)
+        )
+        currentOpacities.current[absoluteIndex] = nextOpacity
+        opacity(ref, nextOpacity)
+        
+        // Rotation
+        const offset = lerpRoot(
+            currentOffsets.current[absoluteIndex], 
+            extraItems, 
+            Math.min(timeSinceChange / EASING_DURATION, 1)
+        )
+        currentOffsets.current[absoluteIndex] = offset
+        const angle = -circular_rotate(groupIndexOut + offset, position.current)
+        rotate(ref, angle)
+
+        // X Offset
+        const nextXOffset = lerp(
+            currentXOffsets.current[absoluteIndex],
+            groupVisibilities[groupIndexOut].visible || isHeader ? 0 : 400,
+            Math.min(timeSinceChange / EASING_DURATION, 1)
+        )
+        currentXOffsets.current[absoluteIndex] = nextXOffset
+        width(ref, nextXOffset)
+
+        // Visibility
+        if (isVisible(groupIndexOut + offset, position.current)) {
         } else {
-            ref.current.style.setProperty('z-index', '1')
-            ref.current.style.setProperty('opacity', '1')
+            opacity(ref, .1)
         }
+
+        // Indices
+        if (groupVisibilities[groupIndexOut].visible) 
+            extraItems++
+        absoluteIndex++
     }
-    itemRefs.current.forEach((group, index) => {
-        rotate(group.headerRef, wheelIndex++, position)
-        if (groupVisibilities[index]) {
-            group.itemRefs.forEach((item, index) => {
-                rotate(item, wheelIndex++, position)
-            })
-            wheelIndex++
-        }
+    
+    itemRefs.current.forEach((group, groupIndex) => {
+        const timeSet = groupVisibilities[groupIndex].timeSet
+        const timeSinceSet = performance.now() - timeSet
+
+        if (group.headerRef.current) updateRotation(group.headerRef.current, timeSinceSet, true)
+        
+        group.itemRefs.forEach(item => {
+            if (item.current) updateRotation(item.current, timeSinceSet)
+        })
+        groupIndexOut++
     })
 
     const [frame, setFrame] = useState(0)
@@ -326,11 +385,11 @@ export default function Wheel() {
     return (<>
         <div
             ref={circleRef}
-            className="top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
+            className="z-1 top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
         ></div>
         <div
             ref={wheelHoverRef}
-            className="-right-300 absolute w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
+            className="-z-1 -right-300 absolute w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
         >
             <div
                 ref={parentRef}
