@@ -15,7 +15,7 @@ type Visibility = {
 }
 
 function Group({
-    header, items, groupIndex, startingIndex, itemRefs, groupVisibilities, setGroupVisibilities
+    header, items, groupIndex, startingIndex, itemRefs, setGroupVisibilities
 }: Readonly<{ 
         header: string, 
         items: (Tool | Project)[], 
@@ -25,7 +25,6 @@ function Group({
             headerRef: React.RefObject<HTMLDivElement | null>, 
             itemRefs: (React.RefObject<HTMLDivElement | null>)[] 
         }, 
-        groupVisibilities: Visibility[],
         setGroupVisibilities: React.Dispatch<React.SetStateAction<Visibility[]>>
     }>) {
     return (<>
@@ -208,30 +207,6 @@ export default function Wheel() {
         hasSetTransition.current = true
     }
 
-    // Frame data
-    const framePeriod = useRef(1000 / DEFAULT_FRAME_RATE)
-    const lag = useRef(0)
-    const velocity = useRef(0)
-    const deltaTime = useRef(framePeriod.current)
-    const position = useRef(0)
-
-    // Physics loop
-    if (!scrollSinceSelection) { // Move wheel to selected item
-        const current_angle = circular_rotate(selectedIndex ?? 0, position.current)
-        const target_angle = circular_rotate(0, 0)
-        const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
-        velocity.current = velocity.current 
-            + Math.pow(Math.tanh(delta_angle), 3) // Main function
-            * 0.0004 // Scale for funsies 
-            * ((deltaTime.current + lag.current)/ 6) // Scale for scaries
-    }
-    velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
-    velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR // Scrolling
-    deltaScroll.current = 0
-    velocity.current += deltaDrag.current * SCROLL_VELOCITY_FACTOR // Dragging
-    deltaDrag.current = 0
-    position.current += velocity.current * (deltaTime.current + lag.current) / 16
-
     const [groupVisibilities, setGroupVisibilities] = useState<Visibility[]>(
         new Array(itemRefs.current.length).fill({ visible: false, timeSet: performance.now() })
     )
@@ -250,12 +225,23 @@ export default function Wheel() {
     const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start 
     const lerpSquared = (start: number, end: number, t: number) => t ** 2 * end + (1 - t ** 2) * start
     const lerpRoot = (start: number, end: number, t: number) => Math.sqrt(t) * end + (1 - Math.sqrt(t)) * start
-    
+
+    // Frame data
+    const framePeriod = useRef(1000 / DEFAULT_FRAME_RATE)
+    const lag = useRef(0)
+    const velocity = useRef(0)
+    const deltaTime = useRef(framePeriod.current)
+    const position = useRef(0)
+
+    const effectiveSelectedIndex = useRef(0)
     function updateRotation(
         ref: HTMLDivElement, 
         timeSinceChange: number,
         isHeader: boolean = false
     ) {
+
+        const isSelectedIndex = selectedIndex === absoluteIndex
+        if (isSelectedIndex) effectiveSelectedIndex.current = extraItems
 
         // Opacity
         const nextOpacity = lerpRoot(
@@ -308,6 +294,31 @@ export default function Wheel() {
         })
         groupIndexOut++
     })
+
+    // Physics loop
+    if (!scrollSinceSelection && effectiveSelectedIndex) { // Move wheel to selected item
+        const current_angle = circular_rotate(effectiveSelectedIndex.current ?? 0, position.current)
+        const target_angle = circular_rotate(0, 0)
+        const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
+        velocity.current = velocity.current 
+            + Math.pow(Math.tanh(delta_angle), 3) // Main function
+            * 0.0004 // Scale for funsies 
+            * ((deltaTime.current + lag.current)/ 6) // Scale for scaries
+    }
+    velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
+    velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR // Scrolling
+    deltaScroll.current = 0
+
+    // Dragging
+    const isDragging = useRef(false)
+    if (isDragging.current) {
+        if (deltaDrag.current === 0) isDragging.current = false
+        velocity.current += deltaDrag.current * SCROLL_VELOCITY_FACTOR 
+    } else if (Math.abs(deltaDrag.current) > 1) isDragging.current = true // Only start dragging if the user drags fast enough
+
+    deltaDrag.current = 0
+
+    position.current += velocity.current * (deltaTime.current + lag.current) / 16
 
     const [frame, setFrame] = useState(0)
     const lastRender = useRef<number>(performance.now())
