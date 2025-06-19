@@ -2,9 +2,9 @@ import { lexendExa, lexendGiga, lexendPeta } from '../typescript/css_constants'
 import ImageGallery, { ReactImageGalleryItem } from 'react-image-gallery'
 import 'react-image-gallery/styles/css/image-gallery.css'
 import React, { ReactElement, useCallback, useContext, useEffect, useRef } from 'react'
-import { Project, Tool, PortfolioData, getIndexOfProjectInSection, raw_items, all_items } from '@/typescript/wheel_info'
+import { Project, Tool, PortfolioData, getIndexOfProjectInSection } from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
-import { all_items_with_gaps } from '../typescript/wheel_info';
+import { all_items_with_gaps } from '../typescript/wheel_info'
 
 type ProjectCardProps = {
     current: Project | Tool | null | undefined
@@ -164,13 +164,10 @@ function UsedInProjectsList({
     )
 }
 
-export function ProjectCard({
-    isPrevious,
-    current,
-}: ProjectCardProps) {
+export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
+    const selected = current
 
     const {
-        selected,
         isProject,
         setSelected,
         setIsProject,
@@ -178,67 +175,93 @@ export function ProjectCard({
         setPreviousSelected,
         setIsPreviousProject,
         setScrollSinceSelection,
-        groupVisibilities,
         setGroupVisibilities,
     } = useContext(ProjectContext)
 
     const cardRef = useRef<HTMLDivElement>(null)
 
-    const handleTechClick = useCallback((technology: string) => {
-        setScrollSinceSelection(false)
-        setPreviousSelected(selected)
-        setIsPreviousProject(isProject)
-        // Find the tool in PortfolioData.Tools
-        let foundTool: Tool | undefined
-        let groupIndex = 0
-        for (const group of Object.values(PortfolioData)) {
-            let leave = 0
-            Object.keys(group).forEach(element => {
-                if (technology in group) {
-                    foundTool = (group as Record<string, Tool>)[technology]
-                    leave = 1
-                } 
-            })
-            if (leave === 1) break
-            groupIndex += 1
-        };
-        if (foundTool) {
-            const index = all_items_with_gaps.findIndex(item => item === foundTool.key_name);
-            setSelectedIndex(index) 
-            console.log(index)
-            setGroupVisibilities(prev => [
-                ...prev.slice(0, groupIndex).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
-                { visible: true, timeSet: performance.now() },
-                ...prev.slice(groupIndex + 1).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
-            ]);
-            setSelected(foundTool)
+    const handleTechClick = useCallback(
+        (technology: string) => {
             setIsProject(false)
-        }
-    }, [isProject, selected, setGroupVisibilities, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected, setSelectedIndex])
+            setScrollSinceSelection(false)
+            setPreviousSelected(selected)
+            setIsPreviousProject(isProject)
+            let foundTool: Tool | undefined
+            let groupIndex = 0
+            for (const group of Object.values(PortfolioData)) {
+                let leave = 0
+                Object.keys(group).forEach((element) => {
+                    if (technology in group) {
+                        foundTool = (group as Record<string, Tool>)[technology]
+                        leave = 1
+                    }
+                })
+                if (leave === 1) break
+                groupIndex += 1
+            }
+            if (foundTool) {
+                const index = all_items_with_gaps.findIndex((item) => item === foundTool.key_name)
+                setSelectedIndex(index)
+                console.log(index)
+                setGroupVisibilities((prev) => [
+                    ...prev.slice(0, groupIndex).map((prev) => ({ visible: prev.visible, timeSet: performance.now() })),
+                    { visible: true, timeSet: performance.now() },
+                    ...prev
+                        .slice(groupIndex + 1)
+                        .map((prev) => ({ visible: prev.visible, timeSet: performance.now() })),
+                ])
+                setSelected(foundTool)
+                
+            }
+        },
+        [
+            isProject,
+            selected,
+            setGroupVisibilities,
+            setIsPreviousProject,
+            setIsProject,
+            setPreviousSelected,
+            setScrollSinceSelection,
+            setSelected,
+            setSelectedIndex,
+        ],
+    )
 
-    const handleProjectClick = useCallback((project: string) => {
-        setScrollSinceSelection(false)
-        setPreviousSelected(selected)
-        setIsPreviousProject(isProject)
-        if (PortfolioData.Projects[project]) {
-            setSelected(PortfolioData.Projects[project])
+    const handleProjectClick = useCallback(
+        (project: string) => {
+            setScrollSinceSelection(false)
+            setPreviousSelected(selected)
+            setIsPreviousProject(isProject)
             setIsProject(true)
-            const index = getIndexOfProjectInSection(
-                PortfolioData.Projects[project].key_name,
-                "Projects"
-            )
-            setSelectedIndex(index)
-            const groupIndex = 0
-            setGroupVisibilities(prev => [
-                ...prev.slice(0, groupIndex).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
-                { visible: true, timeSet: performance.now() },
-                ...prev.slice(groupIndex + 1).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
-            ]);
-        }
-    }, [isProject, selected, setGroupVisibilities, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected, setSelectedIndex])
+            if (PortfolioData.Projects[project]) {
+                setSelected(PortfolioData.Projects[project])
+                const index = getIndexOfProjectInSection(PortfolioData.Projects[project].key_name, 'Projects')
+                setSelectedIndex(index)
+                const groupIndex = 0
+                setGroupVisibilities((prev) => [
+                    ...prev.slice(0, groupIndex).map((prev) => ({ visible: prev.visible, timeSet: performance.now() })),
+                    { visible: true, timeSet: performance.now() },
+                    ...prev
+                        .slice(groupIndex + 1)
+                        .map((prev) => ({ visible: prev.visible, timeSet: performance.now() })),
+                ])
+            }
+        },
+        [
+            isProject,
+            selected,
+            setGroupVisibilities,
+            setIsPreviousProject,
+            setIsProject,
+            setPreviousSelected,
+            setScrollSinceSelection,
+            setSelected,
+            setSelectedIndex,
+        ],
+    )
 
     let card: ReactElement | null = null
-    if (selected && isProject) {
+    if (selected && isProject && selected.description) {
         const project = selected as Project
         card = (
             <div ref={cardRef} className="absolute z-2 top-40 left-1/30 h-3/4 w-2/3">
@@ -277,7 +300,7 @@ export function ProjectCard({
             </div>
         )
     }
-    if (selected && !isProject) {
+    if (selected && !isProject && selected.notes) {
         const tool = selected as Tool
         card = (
             <div ref={cardRef} className="absolute z-2 top-40 left-1/30 h-3/4 w-2/3">
@@ -287,9 +310,6 @@ export function ProjectCard({
                     </p>
                     <div className="flex flex-col-reverse justify-evenly items-center h-12">
                         <p> Proficiency: {tool.proficiency} </p>
-                        {tool.usedOften ? (
-                            <p className="self-start bg-amber-200 pr-1 pl-1 rounded-md bold">Used Often!</p>
-                        ) : null}
                     </div>
                 </div>
                 <div className="h-1/1 overflow-y-auto">

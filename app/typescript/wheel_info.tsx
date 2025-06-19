@@ -299,11 +299,11 @@ export const PortfolioData = {
     },
     Cloud: {
         Portfolio: PortfolioProject,
-        // ScrapStack: ScrapStackProject,
-        // AWS: AWSTool,
-        // Amplify: AmplifyTool,
-        // Terraform: TerraformTool,
-        // 'AWS Console': AWSConsoleTool,
+        ScrapStack: ScrapStackProject,
+        AWS: AWSTool,
+        Amplify: AmplifyTool,
+        Terraform: TerraformTool,
+        'AWS Console': AWSConsoleTool,
     },
 }
 export const raw_items = Object.values(PortfolioData).flatMap(category => Object.keys(category))

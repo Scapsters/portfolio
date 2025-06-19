@@ -46,7 +46,7 @@ function Header({
 }: Readonly<{ text: string, toggleSection: () => void }>) {
     return (
         <button
-            className="font-light text-[var(--light-text)] text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
+            className="font-light text-[var(--light-text)] hover:underline text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
             onClick={toggleSection}
         >{text}</button>
     )
@@ -171,9 +171,14 @@ export default function Wheel() {
         const wheelHandler = (e: WheelEvent) => {
             if (isHovered) deltaScroll.current += e.deltaY
         }
-        const element = wheelHoverRef.current
-        element?.addEventListener('wheel', wheelHandler)
-        return () => element?.removeEventListener('wheel', wheelHandler)
+        const wheelHover = wheelHoverRef.current
+        const circle =  circleRef.current
+        wheelHover?.addEventListener('wheel', wheelHandler)
+        circle?.addEventListener('wheel', wheelHandler)
+        return () => {
+            wheelHover?.removeEventListener('wheel', wheelHandler)
+            circle?.removeEventListener('wheel', wheelHandler)
+        }
     }, [isHovered])
     
     // Store item refs for central handling of rotation
@@ -212,6 +217,9 @@ export default function Wheel() {
     const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start 
     // const lerpSquared = (start: number, end: number, t: number) => t ** 2 * end + (1 - t ** 2) * start
     const lerpRoot = (start: number, end: number, t: number) => Math.sqrt(t) * end + (1 - Math.sqrt(t)) * start
+    const lerpOvershoot = (start: number, end: number, t: number) => {
+        return lerp(start, end * 2, t)
+    }
 
     // Frame data
     const framePeriod = useRef(1000 / DEFAULT_FRAME_RATE)
@@ -224,7 +232,7 @@ export default function Wheel() {
 
     let extraItems = 0
     let absoluteIndex = 0
-    function updateRotation(
+    function updateEverything(
         ref: HTMLDivElement, 
         timeSinceChange: number,
         groupIndex: number,
@@ -253,7 +261,7 @@ export default function Wheel() {
         rotate(ref, angle)
 
         // X Offset
-        const nextXOffset = lerp(
+        const nextXOffset = lerpOvershoot(
             currentXOffsets.current[absoluteIndex],
             groupVisibilities[groupIndex].visible || isHeader ? 0 : 400,
             Math.min(timeSinceChange / EASING_DURATION, 1)
@@ -278,13 +286,13 @@ export default function Wheel() {
         const timeSet = groupVisibilities[groupIndex].timeSet
         const timeSinceSet = performance.now() - timeSet
 
-        if (group.headerRef.current) updateRotation(group.headerRef.current, timeSinceSet, groupIndex, true)
+        if (group.headerRef.current) updateEverything(group.headerRef.current, timeSinceSet, groupIndex, true)
         
         group.itemRefs.forEach(item => {
-            if (item.current) updateRotation(item.current, timeSinceSet, groupIndex)
+            if (item.current) updateEverything(item.current, timeSinceSet, groupIndex)
         })
         absoluteIndex++ // idk why
-        if (group.blankRef.current) updateRotation(group.blankRef.current, timeSinceSet, groupIndex)
+        if (group.blankRef.current) updateEverything(group.blankRef.current, timeSinceSet, groupIndex)
     })
 
     // Physics loop
@@ -388,7 +396,7 @@ export default function Wheel() {
     return (<>
         <div
             ref={circleRef}
-            className="z-1 top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
+            className="z-3 top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
         ></div>
         <div
             ref={wheelHoverRef}

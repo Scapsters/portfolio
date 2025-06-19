@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "cross-env NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start -p 2000",
     "lint": "next lint"
@@ -16,6 +16,7 @@
     "trailingComma": "all"
   },
   "dependencies": {
+    "cross-env": "^7.0.3",
     "my-app": "file:",
     "next": "^15.3.3",
     "react": "^19.0.0",
