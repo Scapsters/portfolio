@@ -1,6 +1,11 @@
 import { Project, Tool } from "@/typescript/wheel_info";
 import { createContext } from "react";
 
+export type Visibility = {
+    visible: boolean,
+    timeSet: number
+}
+
 export const ProjectContext = createContext<{
     selected: Project | Tool | null | undefined
     setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
@@ -12,6 +17,8 @@ export const ProjectContext = createContext<{
     setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>
     setPreviousSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
     setIsPreviousProject: React.Dispatch<React.SetStateAction<boolean>>
+    groupVisibilities: Visibility[]
+    setGroupVisibilities: React.Dispatch<React.SetStateAction<Visibility[]>>
 }>({
     selected: undefined,
     setSelected: () => {},
@@ -22,5 +29,7 @@ export const ProjectContext = createContext<{
     scrollSinceSelection: false,
     setScrollSinceSelection: () => {},
     setPreviousSelected: () => {},
-    setIsPreviousProject: () => {}
+    setIsPreviousProject: () => {},
+    groupVisibilities: [],
+    setGroupVisibilities: () => {}
 })

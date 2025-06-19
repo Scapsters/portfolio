@@ -1,18 +1,12 @@
-import React, { createRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createRef, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { circular_rotate, isVisible } from '../typescript/math_helpers'
 import { getItemColor, PortfolioData, Project, Tool} from '@/typescript/wheel_info'
-import { ProjectContext } from '@/contexts'
+import { ProjectContext, Visibility } from '@/contexts'
 
 const SCROLL_VELOCITY_FACTOR = 0.00007
 const FRICTION = 0.996
 const DEFAULT_FRAME_RATE = 60
 const EASING_DURATION = 7000
-
-
-type Visibility = {
-    visible: boolean,
-    timeSet: number
-}
 
 function Group({
     header, items, groupIndex, startingIndex, itemRefs, setGroupVisibilities
@@ -126,7 +120,7 @@ function Item({
 function ItemWrapper({ ref, children, isHeader }: Readonly<{ ref: React.RefObject<HTMLDivElement | null>, children: React.ReactNode, isHeader?: boolean }>) {
     return <div
         ref={ref}
-        style={isHeader ? { 'zIndex': 100 } : {}}
+        style={isHeader ? { 'zIndex': 2 } : {}}
         className={`relative w-[var(--item-width)] h-0 text-3xl`}
     >
         <div className="flex w-[600px] -rotate-2 select-none justify-end transition-[padding-right] duration-200 ease-out">
@@ -150,7 +144,7 @@ export default function Wheel() {
         })
     }, [xOffset])
     
-    const { selected, selectedIndex, scrollSinceSelection, setScrollSinceSelection } = useContext(ProjectContext)
+    const { selected, selectedIndex, scrollSinceSelection, setScrollSinceSelection , groupVisibilities, setGroupVisibilities} = useContext(ProjectContext)
 
     useEffect(() => setxOffset(selected ? 550: 700), [selected])
 
@@ -207,23 +201,16 @@ export default function Wheel() {
         hasSetTransition.current = true
     }
 
-    const [groupVisibilities, setGroupVisibilities] = useState<Visibility[]>(
-        new Array(itemRefs.current.length).fill({ visible: false, timeSet: performance.now() })
-    )
-
     const currentOffsets = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
     const currentOpacities = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
     const currentXOffsets = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
 
-    let groupIndexOut = 0
-    let extraItems = 0
-    let absoluteIndex = 0
-
     function rotate(ref: HTMLDivElement, angle: number) { ref.style.setProperty('transform', `rotate(${angle}deg)`)}
     function opacity(ref: HTMLDivElement, value: number) { ref.style.setProperty('opacity', value.toString()) }
-    function width(ref: HTMLDivElement, value: number) { ref.children[0].style.setProperty('width', `${600 + value}px`) }
+    function width(ref: HTMLDivElement, value: number) { (ref.children[0] as HTMLDivElement).style.setProperty('width', `${600 + value}px`) }
+    
     const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start 
-    const lerpSquared = (start: number, end: number, t: number) => t ** 2 * end + (1 - t ** 2) * start
+    // const lerpSquared = (start: number, end: number, t: number) => t ** 2 * end + (1 - t ** 2) * start
     const lerpRoot = (start: number, end: number, t: number) => Math.sqrt(t) * end + (1 - Math.sqrt(t)) * start
 
     // Frame data
@@ -234,19 +221,22 @@ export default function Wheel() {
     const position = useRef(0)
 
     const effectiveSelectedIndex = useRef(0)
+
+    let extraItems = 0
+    let absoluteIndex = 0
     function updateRotation(
         ref: HTMLDivElement, 
         timeSinceChange: number,
+        groupIndex: number,
         isHeader: boolean = false
     ) {
-
         const isSelectedIndex = selectedIndex === absoluteIndex
-        if (isSelectedIndex) effectiveSelectedIndex.current = extraItems
+        if (isSelectedIndex) effectiveSelectedIndex.current = extraItems + groupIndex
 
         // Opacity
         const nextOpacity = lerpRoot(
             currentOpacities.current[absoluteIndex], 
-            groupVisibilities[groupIndexOut].visible || isHeader ? 1 : 0, 
+            groupVisibilities[groupIndex].visible || isHeader ? 1 : 0, 
             Math.min(timeSinceChange / EASING_DURATION, 1)
         )
         currentOpacities.current[absoluteIndex] = nextOpacity
@@ -259,27 +249,28 @@ export default function Wheel() {
             Math.min(timeSinceChange / EASING_DURATION, 1)
         )
         currentOffsets.current[absoluteIndex] = offset
-        const angle = -circular_rotate(groupIndexOut + offset, position.current)
+        const angle = -circular_rotate(groupIndex + offset, position.current)
         rotate(ref, angle)
 
         // X Offset
         const nextXOffset = lerp(
             currentXOffsets.current[absoluteIndex],
-            groupVisibilities[groupIndexOut].visible || isHeader ? 0 : 400,
+            groupVisibilities[groupIndex].visible || isHeader ? 0 : 400,
             Math.min(timeSinceChange / EASING_DURATION, 1)
         )
         currentXOffsets.current[absoluteIndex] = nextXOffset
         width(ref, nextXOffset)
 
         // Visibility
-        if (isVisible(groupIndexOut + offset, position.current)) {
+        if (isVisible(groupIndex + offset, position.current)) {
         } else {
             opacity(ref, .1)
         }
 
         // Indices
-        if (groupVisibilities[groupIndexOut].visible) 
+        if (groupVisibilities[groupIndex].visible) 
             extraItems++
+
         absoluteIndex++
     }
     
@@ -287,12 +278,13 @@ export default function Wheel() {
         const timeSet = groupVisibilities[groupIndex].timeSet
         const timeSinceSet = performance.now() - timeSet
 
-        if (group.headerRef.current) updateRotation(group.headerRef.current, timeSinceSet, true)
+        if (group.headerRef.current) updateRotation(group.headerRef.current, timeSinceSet, groupIndex, true)
         
         group.itemRefs.forEach(item => {
-            if (item.current) updateRotation(item.current, timeSinceSet)
+            if (item.current) updateRotation(item.current, timeSinceSet, groupIndex)
         })
-        groupIndexOut++
+        absoluteIndex++ // idk why
+        if (group.blankRef.current) updateRotation(group.blankRef.current, timeSinceSet, groupIndex)
     })
 
     // Physics loop
@@ -320,6 +312,7 @@ export default function Wheel() {
 
     position.current += velocity.current * (deltaTime.current + lag.current) / 16
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [frame, setFrame] = useState(0)
     const lastRender = useRef<number>(performance.now())
     useEffect(() => {
@@ -382,7 +375,6 @@ export default function Wheel() {
                     items={Object.values(entry[1])}
                     startingIndex={globalIndex}
                     itemRefs={itemRefs.current[index]}
-                    groupVisibilities={groupVisibilities}
                     setGroupVisibilities={setGroupVisibilities}
                     >
                 </Group>
@@ -391,7 +383,7 @@ export default function Wheel() {
             globalIndex += sectionLength
             return section
         })
-    }, [itemRefs, groupVisibilities])
+    }, [setGroupVisibilities])
 
     return (<>
         <div

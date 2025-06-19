@@ -299,21 +299,33 @@ export const PortfolioData = {
     },
     Cloud: {
         Portfolio: PortfolioProject,
-        ScrapStack: ScrapStackProject,
-        AWS: AWSTool,
-        Amplify: AmplifyTool,
-        Terraform: TerraformTool,
-        'AWS Console': AWSConsoleTool,
+        // ScrapStack: ScrapStackProject,
+        // AWS: AWSTool,
+        // Amplify: AmplifyTool,
+        // Terraform: TerraformTool,
+        // 'AWS Console': AWSConsoleTool,
     },
 }
 export const raw_items = Object.values(PortfolioData).flatMap(category => Object.keys(category))
 
-export const all_items = Object.values(PortfolioData).flatMap(category => Object.values(category))
+export const all_items = Object.values(PortfolioData).flatMap(category => [ "", ...Object.keys(category) ] )
+
+export const all_items_with_gaps = Object.values(PortfolioData).flatMap(category => [ "", ...Object.keys(category), "" ] )
 
 export const raw_headers = [...Object.keys(PortfolioData)]
 
 export function getItemIndex(key_name: string) {
     return raw_items.indexOf(key_name)
+}
+
+export function getIndexOfProjectInSection(key_name: string, category: string) {
+    const section = PortfolioData[category as keyof typeof PortfolioData]
+    if (!section) return -1
+    const projects = Object.values(section).filter(item => 'key_name' in item && item.key_name === key_name)
+    return projects.length > 0 ? all_items.indexOf(projects[0].key_name) : -1
+}
+
+export function getGroupIndexOfProject(key_name: string, category: string) {
 }
 
 export function getItemColor(item: string) {

@@ -2,11 +2,12 @@ import { lexendExa, lexendGiga, lexendPeta } from '../typescript/css_constants'
 import ImageGallery, { ReactImageGalleryItem } from 'react-image-gallery'
 import 'react-image-gallery/styles/css/image-gallery.css'
 import React, { ReactElement, useCallback, useContext, useEffect, useRef } from 'react'
-import { Project, Tool, PortfolioData } from '@/typescript/wheel_info'
+import { Project, Tool, PortfolioData, getIndexOfProjectInSection, raw_items, all_items } from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
+import { all_items_with_gaps } from '../typescript/wheel_info';
 
 type ProjectCardProps = {
-    previousSelected: Project | Tool | null | undefined
+    current: Project | Tool | null | undefined
     isPrevious: boolean
 }
 
@@ -88,7 +89,7 @@ function TechStackList({
             {technologies.map((technology) => {
                 // Try to find the tool in PortfolioData.Tools (search all categories)
                 let foundTool: Tool | undefined
-                for (const group of Object.values(PortfolioData.Tools)) {
+                for (const group of Object.values(PortfolioData)) {
                     if (typeof group === 'object' && group !== null) {
                         if (technology in group) {
                             foundTool = (group as Record<string, Tool>)[technology]
@@ -165,7 +166,7 @@ function UsedInProjectsList({
 
 export function ProjectCard({
     isPrevious,
-    previousSelected,
+    current,
 }: ProjectCardProps) {
 
     const {
@@ -173,9 +174,12 @@ export function ProjectCard({
         isProject,
         setSelected,
         setIsProject,
+        setSelectedIndex,
         setPreviousSelected,
         setIsPreviousProject,
         setScrollSinceSelection,
+        groupVisibilities,
+        setGroupVisibilities,
     } = useContext(ProjectContext)
 
     const cardRef = useRef<HTMLDivElement>(null)
@@ -186,19 +190,31 @@ export function ProjectCard({
         setIsPreviousProject(isProject)
         // Find the tool in PortfolioData.Tools
         let foundTool: Tool | undefined
-        for (const group of Object.values(PortfolioData.Tools)) {
-            if (typeof group === 'object' && group !== null) {
+        let groupIndex = 0
+        for (const group of Object.values(PortfolioData)) {
+            let leave = 0
+            Object.keys(group).forEach(element => {
                 if (technology in group) {
                     foundTool = (group as Record<string, Tool>)[technology]
-                    break
-                }
-            }
-        }
+                    leave = 1
+                } 
+            })
+            if (leave === 1) break
+            groupIndex += 1
+        };
         if (foundTool) {
+            const index = all_items_with_gaps.findIndex(item => item === foundTool.key_name);
+            setSelectedIndex(index) 
+            console.log(index)
+            setGroupVisibilities(prev => [
+                ...prev.slice(0, groupIndex).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
+                { visible: true, timeSet: performance.now() },
+                ...prev.slice(groupIndex + 1).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
+            ]);
             setSelected(foundTool)
             setIsProject(false)
         }
-    }, [isProject, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected])
+    }, [isProject, selected, setGroupVisibilities, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected, setSelectedIndex])
 
     const handleProjectClick = useCallback((project: string) => {
         setScrollSinceSelection(false)
@@ -207,8 +223,19 @@ export function ProjectCard({
         if (PortfolioData.Projects[project]) {
             setSelected(PortfolioData.Projects[project])
             setIsProject(true)
+            const index = getIndexOfProjectInSection(
+                PortfolioData.Projects[project].key_name,
+                "Projects"
+            )
+            setSelectedIndex(index)
+            const groupIndex = 0
+            setGroupVisibilities(prev => [
+                ...prev.slice(0, groupIndex).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
+                { visible: true, timeSet: performance.now() },
+                ...prev.slice(groupIndex + 1).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
+            ]);
         }
-    }, [isProject, selected, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected])
+    }, [isProject, selected, setGroupVisibilities, setIsPreviousProject, setIsProject, setPreviousSelected, setScrollSinceSelection, setSelected, setSelectedIndex])
 
     let card: ReactElement | null = null
     if (selected && isProject) {
@@ -328,7 +355,7 @@ export function ProjectCard({
         if (cardMove) {
             cardMove.play()
         }
-    }, [selected, previousSelected, isPrevious])
+    }, [selected, setPreviousSelected, isPrevious])
 
     //Dont show 2 on initial load
     if (isPrevious && selected === undefined) {
