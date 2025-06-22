@@ -3,8 +3,8 @@ import { circular_rotate, isVisible } from '../typescript/math_helpers'
 import { getItemColor, PortfolioData, Project, Tool} from '@/typescript/wheel_info'
 import { ProjectContext, Visibility } from '@/contexts'
 
-const SCROLL_VELOCITY_FACTOR = 0.00007
-const FRICTION = 0.996
+const SCROLL_VELOCITY_FACTOR = 0.00003
+const FRICTION = 0.997
 const DEFAULT_FRAME_RATE = 60
 const EASING_DURATION = 7000
 
@@ -302,7 +302,7 @@ export default function Wheel() {
         const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
         velocity.current = velocity.current 
             + Math.pow(Math.tanh(delta_angle), 3) // Main function
-            * 0.0004 // Scale for funsies 
+            * 0.0002 // Scale for funsies 
             * ((deltaTime.current + lag.current)/ 6) // Scale for scaries
     }
     velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
