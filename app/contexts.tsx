@@ -1,4 +1,4 @@
-import { Project, Tool } from "@/typescript/wheel_info";
+import { ProjectData, ToolData } from "@/typescript/wheel_info";
 import { createContext } from "react";
 
 export type Visibility = {
@@ -7,15 +7,15 @@ export type Visibility = {
 }
 
 export const ProjectContext = createContext<{
-    selected: Project | Tool | null | undefined
-    setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
+    selected: ProjectData | ToolData | null | undefined
+    setSelected: React.Dispatch<React.SetStateAction<ProjectData | ToolData | null | undefined>>
     selectedIndex: number | null,
     setSelectedIndex: React.Dispatch<React.SetStateAction<number | null>>
     isProject: boolean
     setIsProject: React.Dispatch<React.SetStateAction<boolean>>
     scrollSinceSelection: boolean
     setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>
-    setPreviousSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
+    setPreviousSelected: React.Dispatch<React.SetStateAction<ProjectData | ToolData | null | undefined>>
     setIsPreviousProject: React.Dispatch<React.SetStateAction<boolean>>
     groupVisibilities: Visibility[]
     setGroupVisibilities: React.Dispatch<React.SetStateAction<Visibility[]>>

@@ -1,135 +1,18 @@
 import React, { createRef, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { circular_rotate, isVisible } from '../typescript/math_helpers'
-import { getItemColor, PortfolioData, Project, Tool} from '@/typescript/wheel_info'
-import { ProjectContext, Visibility } from '@/contexts'
+import { PortfolioData } from '@/typescript/wheel_info'
+import { ProjectContext } from '@/contexts'
+import { Group } from './WheelItems'
 
-const SCROLL_VELOCITY_FACTOR = 0.00003
+const SCROLL_VELOCITY_FACTOR = 0.00004
+const DRAG_VELOCITY_FACTOR = 0.00006
 const FRICTION = 0.997
 const DEFAULT_FRAME_RATE = 60
 const EASING_DURATION = 7000
 
-function Group({
-    header, items, groupIndex, startingIndex, itemRefs, setGroupVisibilities
-}: Readonly<{ 
-        header: string, 
-        items: (Tool | Project)[], 
-        groupIndex: number
-        startingIndex: number, 
-        itemRefs: { 
-            headerRef: React.RefObject<HTMLDivElement | null>, 
-            itemRefs: (React.RefObject<HTMLDivElement | null>)[] 
-        }, 
-        setGroupVisibilities: React.Dispatch<React.SetStateAction<Visibility[]>>
-    }>) {
-    return (<>
-        <ItemWrapper ref={itemRefs.headerRef} isHeader={true}>
-            <Header text={header} toggleSection={() => {
-                setGroupVisibilities(prev => [
-                    ...prev.slice(0, groupIndex).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
-                    { visible: !prev[groupIndex].visible, timeSet: performance.now() },
-                    ...prev.slice(groupIndex + 1).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
-                ]);
-            }}/>
-        </ItemWrapper>
-        {items.map((item, index) => {
-            return (
-                <ItemWrapper ref={itemRefs.itemRefs[index]} key={item.key_name + index}>
-                    <Item tool={item} index={startingIndex + index + 1}></Item>
-                </ItemWrapper>
-            )
-        })}
-    </>)
-}
-
-function Header({
-    text, toggleSection
-}: Readonly<{ text: string, toggleSection: () => void }>) {
-    return (
-        <button
-            className="font-light text-[var(--light-text)] hover:underline text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
-            onClick={toggleSection}
-        >{text}</button>
-    )
-}
-
-function Item({
-    tool, index
-}: Readonly<{ tool: Tool | Project, index: number }> ) {
-    const { 
-        selected,
-        setSelected,
-        setSelectedIndex,
-        isProject,
-        setIsProject,
-        setScrollSinceSelection, 
-        setPreviousSelected, 
-        setIsPreviousProject,
-    } = useContext(ProjectContext)
-
-    const handleItemHover = (event: React.MouseEvent<HTMLButtonElement>) => {
-        const target = event.target as HTMLButtonElement
-        (target as HTMLElement).style.setProperty('padding-right', '50px')
-    }
-    const handleItemUnhover = (event: React.MouseEvent<HTMLButtonElement>) => {
-        const target = event.target as HTMLButtonElement
-        (target as HTMLElement).style.setProperty('padding-right', '0px')
-    }
-
-    const buttonRef = useRef<HTMLButtonElement>(null)
-    useBoldSelected(buttonRef, selected)
-
-    const itemMemo = useMemo(() => 
-        <button
-            ref={buttonRef}
-            style={{color: getItemColor(tool.key_name)}}
-            className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
-            onClick={() => {
-                setScrollSinceSelection(false)
-
-                setPreviousSelected(selected)
-                setIsPreviousProject(isProject)
-
-                // If clicking on the same thing twice, deselect
-                if (selected?.key_name === tool.key_name) {
-                    setSelected(null)
-                    setSelectedIndex(null)
-                    return
-                }
-
-                // Depends on whether the selected item is a project or not
-                if (Object.keys(PortfolioData.Projects).includes(tool.key_name)) {
-                    setSelected(tool)
-                    setSelectedIndex(index)
-                    setIsProject(true)
-                } else {
-                    setSelected(tool)
-                    setSelectedIndex(index)
-                    setIsProject(false)
-                }
-            }}
-            onMouseEnter={handleItemHover}
-            onMouseLeave={handleItemUnhover}
-        >{tool.key_name}</button>
-        ,
-        [tool, setScrollSinceSelection, setPreviousSelected, selected, setIsPreviousProject, isProject, setSelected, setSelectedIndex, index, setIsProject]
-    )
-
-    return itemMemo
-}
-
-function ItemWrapper({ ref, children, isHeader }: Readonly<{ ref: React.RefObject<HTMLDivElement | null>, children: React.ReactNode, isHeader?: boolean }>) {
-    return <div
-        ref={ref}
-        style={isHeader ? { 'zIndex': 2 } : {}}
-        className={`relative w-[var(--item-width)] h-0 text-3xl`}
-    >
-        <div className="flex w-[600px] -rotate-2 select-none justify-end transition-[padding-right] duration-200 ease-out">
-            {children}
-        </div>
-    </div>
-}
-
 export default function Wheel() {
+
+    const [frameRate, setFrameRate] = useState(DEFAULT_FRAME_RATE)
 
     const [xOffset, setxOffset] = useState(700)
     const parentRef = useRef<HTMLDivElement>(null)
@@ -148,10 +31,6 @@ export default function Wheel() {
 
     useEffect(() => setxOffset(selected ? 550: 700), [selected])
 
-    // Accumulate dragging to affect physics
-    const deltaDrag = useRef(0)
-    useAccumulateDragging(parentRef, deltaDrag, setScrollSinceSelection)
-    
     // Track hover
     const wheelHoverRef = useRef<HTMLDivElement>(null)
     const [isHovered, setIsHovered] = useState(false)
@@ -164,22 +43,6 @@ export default function Wheel() {
         ref?.addEventListener("wheel", scrollHandler)
         return () => ref?.removeEventListener("wheel", scrollHandler)
     })
-    
-    // Count scroll per frame
-    const deltaScroll = useRef(0)
-    useEffect(() => {
-        const wheelHandler = (e: WheelEvent) => {
-            if (isHovered) deltaScroll.current += e.deltaY
-        }
-        const wheelHover = wheelHoverRef.current
-        const circle =  circleRef.current
-        wheelHover?.addEventListener('wheel', wheelHandler)
-        circle?.addEventListener('wheel', wheelHandler)
-        return () => {
-            wheelHover?.removeEventListener('wheel', wheelHandler)
-            circle?.removeEventListener('wheel', wheelHandler)
-        }
-    }, [isHovered])
     
     // Store item refs for central handling of rotation
     const itemRefs = useRef( // Organized per section with header, main items, and a gap between
@@ -197,7 +60,7 @@ export default function Wheel() {
         [itemRefs]
     )
 
-    const totalTime = useRef(0)
+    const totalTime = useRef(0) 
 
     const hasSetTransition = useRef(false)
     if (!hasSetTransition.current && totalTime.current > 1200) { // For some reason
@@ -215,18 +78,18 @@ export default function Wheel() {
     function width(ref: HTMLDivElement, value: number) { (ref.children[0] as HTMLDivElement).style.setProperty('width', `${600 + value}px`) }
     
     const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start 
-    // const lerpSquared = (start: number, end: number, t: number) => t ** 2 * end + (1 - t ** 2) * start
-    const lerpRoot = (start: number, end: number, t: number) => Math.sqrt(t) * end + (1 - Math.sqrt(t)) * start
+    const lerpRoot = (start: number, end: number, t: number) => lerp(start, end, Math.sqrt(t))
     const lerpOvershoot = (start: number, end: number, t: number) => {
-        return lerp(start, end * 2, t)
+        if (t < 0.5) return lerp(start, end * 2, t * 2)
+        return lerp(end * 2, end, t * 2 - 1)
     }
 
     // Frame data
-    const framePeriod = useRef(1000 / DEFAULT_FRAME_RATE)
     const lag = useRef(0)
     const velocity = useRef(0)
-    const deltaTime = useRef(framePeriod.current)
-    const position = useRef(0)
+    const deltaTime = useRef(1000 / frameRate)
+    deltaTime.current = 1000 / frameRate
+    const position = useRef(-.7)
 
     const effectiveSelectedIndex = useRef(0)
 
@@ -306,25 +169,41 @@ export default function Wheel() {
             * ((deltaTime.current + lag.current)/ 6) // Scale for scaries
     }
     velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
-    velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR // Scrolling
+
+    // Scrolling
+    const deltaScroll = useRef(0)
+    useEffect(() => {
+        const wheelHandler = (e: WheelEvent) => {
+            if (isHovered) deltaScroll.current += e.deltaY
+        }
+        const wheelHover = wheelHoverRef.current
+        const circle =  circleRef.current
+        wheelHover?.addEventListener('wheel', wheelHandler)
+        circle?.addEventListener('wheel', wheelHandler)
+        return () => {
+            wheelHover?.removeEventListener('wheel', wheelHandler)
+            circle?.removeEventListener('wheel', wheelHandler)
+        }
+    }, [isHovered])
+    velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR 
     deltaScroll.current = 0
 
     // Dragging
+    const deltaDrag = useRef(0)
+    useAccumulateDragging([parentRef, circleRef], deltaDrag, setScrollSinceSelection)
     const isDragging = useRef(false)
     if (isDragging.current) {
         if (deltaDrag.current === 0) isDragging.current = false
-        velocity.current += deltaDrag.current * SCROLL_VELOCITY_FACTOR 
+        velocity.current += deltaDrag.current * DRAG_VELOCITY_FACTOR 
+        deltaDrag.current = 0
     } else if (Math.abs(deltaDrag.current) > 1) isDragging.current = true // Only start dragging if the user drags fast enough
-
-    deltaDrag.current = 0
 
     position.current += velocity.current * (deltaTime.current + lag.current) / 16
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [frame, setFrame] = useState(0)
+    const [, setFrame] = useState(0)
     const lastRender = useRef<number>(performance.now())
+    const animationId = useRef<number | null>(null)
     useEffect(() => {
-        let animationId: number | null = null
         let running = true
 
         let accumulator = 0
@@ -336,21 +215,22 @@ export default function Wheel() {
             if (!running) return
 
             accumulator += timeSinceAnimationFrame
-            if (accumulator > framePeriod.current) {
+            if (accumulator > deltaTime.current) {
                 setFrame(f => f + 1)
-                totalTime.current += framePeriod.current
+                console.log(timestamp - lastRender.current, deltaTime.current)
+                totalTime.current += deltaTime.current
                 lag.current = timestamp - lastRender.current - deltaTime.current 
                 lastRender.current = timestamp
-                accumulator -= framePeriod.current
+                accumulator -= deltaTime.current
             }
             timeOfLastAnimationFrame = timestamp
-            animationId = requestAnimationFrame(frameLoop)
+            animationId.current = requestAnimationFrame(frameLoop)
         }
 
         const tabOutHandler = () => {
             if (document.hidden) {
                 running = false
-                if (animationId) cancelAnimationFrame(animationId)
+                if (animationId.current) cancelAnimationFrame(animationId.current)
             } else {
                 running = true
                 lastRender.current = performance.now() // Reset timestamp to avoid time jumps
@@ -358,11 +238,11 @@ export default function Wheel() {
             }
         }
 
-        animationId = requestAnimationFrame(frameLoop)
+        animationId.current = requestAnimationFrame(frameLoop)
         document.addEventListener('visibilitychange', tabOutHandler)
 
         return () => {
-            if (animationId) cancelAnimationFrame(animationId)
+            if (animationId.current) cancelAnimationFrame(animationId.current)
             document.removeEventListener('visibilitychange', tabOutHandler)
         }
 
@@ -398,6 +278,7 @@ export default function Wheel() {
             ref={circleRef}
             className="z-3 top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
         ></div>
+        <FrameRateSelector frameRate={frameRate} setFrameRate={setFrameRate}></FrameRateSelector>
         <div
             ref={wheelHoverRef}
             className="-z-1 -right-300 absolute w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
@@ -412,20 +293,50 @@ export default function Wheel() {
     </>)
 }
 
-function useBoldSelected(itemRef: React.RefObject<HTMLButtonElement | null>, selected: Project | Tool | null | undefined) {
-    useEffect(() => {
-        const element = itemRef?.current
-        if (!element)
-            return
-
-        if (selected?.key_name == element.textContent) {
-            element.style.setProperty('text-decoration', 'underline')
-            element.style.setProperty('font-weight', 'bold')
-        } else {
-            element.style.setProperty('text-decoration', 'none')
-            element.style.setProperty('font-weight', 'normal')
-        }
-    }, [itemRef, selected])
+function FrameRateSelector({
+    frameRate,
+    setFrameRate,
+}: Readonly<{
+    frameRate: number
+    setFrameRate: React.Dispatch<React.SetStateAction<number>>
+}>) {
+    const options = [15, 30, 60, 120]
+    return (
+        <div className="absolute top-3 left-240 flex gap-4 items-center bg-[var(--background)] px-4 py-2 rounded shadow">
+            <span className="ml-2 text-sm text-[var(--foreground)]">FPS</span>
+            {options.map(option => {
+                const isSelected = frameRate === option
+                const baseStyle = {
+                    background: isSelected ? 'var(--foreground)' : 'transparent',
+                    color: isSelected ? 'white' : 'var(--foreground)',
+                    fontWeight: isSelected ? 'bold' : 'normal',
+                    borderRadius: '0.375rem',
+                    padding: '0.25rem 0.75rem',
+                    transition: 'background 0.2s, color 0.2s',
+                    cursor: 'pointer',
+                }
+                return (
+                    <button
+                        key={option}
+                        onClick={() => setFrameRate(option)}
+                        style={baseStyle}
+                        onMouseEnter={e => {
+                            if (!isSelected) {
+                                e.currentTarget.style.background = 'rgba(0,0,0,0.08)'
+                            }
+                        }}
+                        onMouseLeave={e => {
+                            if (!isSelected) {
+                                e.currentTarget.style.background = 'transparent'
+                            }
+                        }}
+                    >
+                        {option}
+                    </button>
+                )
+            })}
+        </div>
+    )
 }
 
 function useHoverOverWheel(
@@ -447,7 +358,7 @@ function useHoverOverWheel(
 }
 
 function useAccumulateDragging(
-    wheelHoverRef: React.RefObject<HTMLDivElement | null>,
+    refs: React.RefObject<HTMLDivElement | null>[],
     deltaDrag: React.RefObject<number>,
     setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
 ) {
@@ -455,9 +366,6 @@ function useAccumulateDragging(
     const lastDragY = useRef(0)
 
     useEffect(() => {
-        const element = wheelHoverRef.current
-        if (!element) return
-
         const onMouseDown = (e: MouseEvent | TouchEvent) => {
             isDragging.current = true
             lastDragY.current = 'touches' in e ? e.touches[0].clientY : e.clientY
@@ -467,8 +375,8 @@ function useAccumulateDragging(
             const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
             const deltaY = clientY - lastDragY.current
             lastDragY.current = clientY
-            
-            if (isDragging.current) {   
+
+            if (isDragging.current) {
                 deltaDrag.current -= deltaY
                 setScrollSinceSelection(true)
             }
@@ -478,19 +386,34 @@ function useAccumulateDragging(
             isDragging.current = false
         }
 
-        element.addEventListener('mousedown', onMouseDown)
+        refs.forEach(ref => {
+            const element = ref.current
+            if (!element) return
+
+            element.addEventListener('mousedown', onMouseDown)
+            element.addEventListener('touchstart', onMouseDown)
+        })
+
         window.addEventListener('mousemove', onMouseMove)
         window.addEventListener('mouseup', onMouseUp)
-
-        element.addEventListener('touchstart', onMouseDown)
         window.addEventListener('touchmove', onMouseMove)
         window.addEventListener('touchend', onMouseUp)
         window.addEventListener('touchcancel', onMouseUp)
 
         return () => {
-            element.removeEventListener('mousedown', onMouseDown)
+            refs.forEach(ref => {
+                const element = ref.current
+                if (!element) return
+
+                element.removeEventListener('mousedown', onMouseDown)
+                element.removeEventListener('touchstart', onMouseDown)
+            })
+
             window.removeEventListener('mousemove', onMouseMove)
             window.removeEventListener('mouseup', onMouseUp)
+            window.removeEventListener('touchmove', onMouseMove)
+            window.removeEventListener('touchend', onMouseUp)
+            window.removeEventListener('touchcancel', onMouseUp)
         }
-    }, [deltaDrag, setScrollSinceSelection, wheelHoverRef])
+    }, [deltaDrag, setScrollSinceSelection, refs])
 }

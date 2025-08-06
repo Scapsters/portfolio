@@ -76,9 +76,9 @@ export default function Infocard() {
     )
 
     return (
-        <div ref={ref} className="transform translate-y-[-80px]">
-            <div className="w-240 absolute h-5 z-3 bg-[var(--background)]"></div>
-            <div className="w-max absolute z-2">{info}</div>
+        <div ref={ref} className="transform translate-y-[-80px] -z-2">
+            <div className="w-240 absolute h-5 -z-1 bg-[var(--background)]"></div>
+            <div className="w-max absolute -z-2">{info}</div>
         </div>
     )
 }
