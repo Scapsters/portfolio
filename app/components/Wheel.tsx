@@ -12,6 +12,7 @@ const EASING_DURATION = 7000
 
 export default function Wheel() {
 
+    //eslint-disable-next-line
     const [frameRate, setFrameRate] = useState(DEFAULT_FRAME_RATE)
 
     const [xOffset, setxOffset] = useState(700)
@@ -33,6 +34,7 @@ export default function Wheel() {
 
     // Track hover
     const wheelHoverRef = useRef<HTMLDivElement>(null)
+    //eslint-disable-next-line
     const [isHovered, setIsHovered] = useState(false)
     useHoverOverWheel(wheelHoverRef, setIsHovered)
     
@@ -311,6 +313,7 @@ export default function Wheel() {
     </>)
 }
 
+//eslint-disable-next-line
 function FrameRateSelector({
     frameRate,
     setFrameRate,
