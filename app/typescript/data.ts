@@ -2,7 +2,6 @@
 export type Tool = {
     id: string;
     name: string;
-    proficiency: 'Novice' | 'Intermediate' | 'Advanced';
     notes: string[];
     projects: string[];
 };
@@ -20,11 +19,28 @@ export type Project = {
 };
 
 export const Projects = {
-    ScrapStack: {
-        id: 'ScrapStack',
-        name: 'ScrapStack: Self-hosted Twitter Media Viewer',
+    Scrapstack: {
+        id: 'Scrapstack',
+        name: 'Scrapstack',
         description: [
-            'Created as a way to view my 6000 liked posts. Utilized a web scraper to collect back-end tweet data for every post and enter it into a database. Currently, only random images may be displayed.',
+            'The second version of a social media post viewer, rebuilt entirely from the ground up, or should I say from the cloud up?',
+            'This redesign revolved around user experience and extensibility, with a conventional infinite scroll layout and support for multiple feeds',
+        ],
+        features: [
+            'Hand-rolled virtualization and scroll restoration in an infinite scrolling context',
+            'Propietary web scraper to retrieve posts',
+            'Simple auth system to allow for frictionless user persistence',
+        ],
+        technologies: ['React', 'Typescript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB', 'Selenium', 'Terraform', 'Cloudflare Wrangler', 'Cloudflare Workers', 'AWS Lamda'],
+        date: 'July 2025 - Present',
+        demo: 'https://scrapstack.net'
+    },
+    ScrapstackBeta: {
+        id: 'Scrapstack Beta',
+        name: 'Scrapstack Beta',
+        description: [
+            'First version of a social media post viewer, with data from an third party web scraper. Displays random posts from my at-the-time 6000 liked posts on twitter.',
+            'Formerly hosted on my local machine, but due to the newer version existing, this isnt live anymore.'
         ],
         features: [
             'Prefetching and prerendering for little to no lag',
@@ -33,8 +49,7 @@ export const Projects = {
             '(Partial) support for back/forward arrow navigation',
         ],
         technologies: ['React', 'TypeScript', 'Tailwind', 'Express.js', 'PostgreSQL'],
-        date: 'December 2024 - Present',
-        demo: 'https://ScrapStack.net',
+        date: 'December 2024 - June 2025',
         github: 'https://github.com/Scapsters/Furry-Slop',
         image: [
             { original: '/furryslop/preview.png' },
@@ -46,10 +61,10 @@ export const Projects = {
         id: 'JSThread',
         name: 'JSThread: Java-style threading in Node.js',
         description: [
-            'Born out of curiosity, this is a recreation of Java multithreading inside of a single-threaded programming language. Design overview and documentation available in the demo.',
+            'This is a recreation of Java multithreading inside of a single-threaded programming language. Design overview and documentation available in the demo.',
         ],
         features: [
-            'Leverages web-workers with advanced communication to simulate synchronized blocks, keys, joins, etc.',
+            'Leverages web-workers to simulate synchronized blocks, keys, joins, etc.',
             'Built-in code editor (and output console) with examples to see it running yourself!',
             'Followed TSDoc specifications to create webpage with thorough documentation using TypeDoc'
         ],
@@ -64,10 +79,10 @@ export const Projects = {
         name: 'YoLink Center: Leveraging an IoT API',
         description: [
             "A framework for interacting with YoLink IoT devices through their API. Enables users to read more data from their sensors than possible through YoLink's app.",
-            'While I gained much experience in this python-based tech stack, this fledgling project is mostly incomplete and lacks a public demo.',
+            'While I gained much experience in this python-based tech stack, this project is mostly incomplete and lacks a public demo.',
         ],
         features: [
-            'Worked with experts from SoCore and Oracle to design an effective denormalized schema top optimize write speed',
+            'Worked with experts from SoCore and Oracle to design an effective denormalized schema to optimize write speed',
         ],
         date: 'November 2024 - December 2024',
         github: 'https://github.com/Scapsters/YoLink',
@@ -81,7 +96,7 @@ export const Projects = {
         description: [
             'My first time really challenging myself with how fast I could develop a unique app. Was rushed to prepare for an interview and made the core of the app in about a week over ~40 hours of work.',
             'I learned about tradeoffs with in development and sought to leverage the limited scope of the project to make incredibly efficient, if unsound, development decisions.',
-            'Coming back after I\'ve refined the project, I do regret some of my choices. A particular pitfall was that I was unneccesarily reducing data, when I could\'ve been passing around the full representation the whole time.'
+            'Coming back after I\'ve refined the project, making it more robust in terms of styling and rendering.'
         ],
         features: ['Rigorously optimized physics-based side navigation bar', 'Wireframed in Figma for fast design prototyping', 'Hosted with AWS Amplify'],
         demo: 'https://scotthappy.com',
@@ -94,7 +109,8 @@ export const Projects = {
         name: 'DinDin: Share Your Food With the World',
         date: 'January 2025 - May 2025',
         description: [
-            'Semester-long group project designing a product\'s UX from the ground up. Our product: A social media platform, but for food. Quickly share recipies with your friends and view engaging content from home chefs.',
+            'Semester-long group UX design project, including all sorts of design artifacts and feedback cycles.',
+            'Our product: A social media platform, but for food. Quickly share recipies with your friends and view engaging content from home chefs.',
         ],
         features: [
             '60+ Page design documentation sheet',
@@ -115,17 +131,17 @@ export const Projects = {
 
 export const Tools: Record<string, Tool> = {
     TypeScript: {
-        id: 'TypeScript', name: 'TypeScript', proficiency: 'Advanced',
+        id: 'TypeScript', name: 'TypeScript',
         projects: ['ScrapStack', 'JSThread', 'Portfolio'], notes: [
             'I\'ve had several months of professional TypeScript experience and it is my go-to language for personal projects.'
         ]
     },
     Java: {
-        id: 'Java', name: 'Java', proficiency: 'Advanced',
+        id: 'Java', name: 'Java',
         projects: ['NutriApp', 'Bowling App Refactor'], notes: []
     },
     Python: {
-        id: 'Python', name: 'Python', proficiency: 'Intermediate',
+        id: 'Python', name: 'Python',
         projects: ['YoLink Center', 'Chat App'], notes: [
             'I\'ve had several months of working with python professionally, with my experience lying in a couple key regions.',
             '- Pytest, where I am comfortable managing contexts and mocks in order to mock external apis, internal apis, and databases.',
@@ -133,47 +149,47 @@ export const Tools: Record<string, Tool> = {
         ]
     },
     CSS: {
-        id: 'CSS', name: 'CSS', proficiency: 'Intermediate',
+        id: 'CSS', name: 'CSS',
         projects: ['ScrapStack', 'Portfolio'], notes: []
     },
     HTML: {
-        id: 'HTML', name: 'HTML', proficiency: 'Intermediate',
+        id: 'HTML', name: 'HTML',
         projects: ['ScrapStack', 'JSThread', 'Portfolio'], notes: []
     },
     React: {
-        id: 'React', name: 'React', proficiency: 'Advanced',
+        id: 'React', name: 'React',
         projects: ['ScrapStack', 'Portfolio', 'Chess App'], notes: []
     },
     Tailwind: {
-        id: 'Tailwind', name: 'Tailwind', proficiency: 'Advanced',
+        id: 'Tailwind', name: 'Tailwind',
         projects: ['ScrapStack', 'JSThread', 'Portfolio'], notes: [],
     },
     Nextjs: {
-        id: 'Next.js', name: 'Next.js', proficiency: 'Novice',
+        id: 'Next.js', name: 'Next.js',
         projects: ['Portfolio'], notes: [],
     },
     Bootstrap: {
-        id: 'Bootstrap', name: 'Bootstrap', proficiency: 'Novice',
+        id: 'Bootstrap', name: 'Bootstrap',
         projects: ['Nightclub Tracker'], notes: [],
     },
     Expressjs: {
-        id: 'Express.js', name: 'Express.js', proficiency: 'Intermediate',
+        id: 'Express.js', name: 'Express.js',
         projects: ['ScrapStack'], notes: ['I\'ve leveraged Expressjs as a nginx substitute, creating a reverse proxy to divert traffic to multiple locally hosted services.']
     },
     AWS: {
-        id: 'AWS', name: 'AWS', proficiency: 'Novice',
+        id: 'AWS', name: 'AWS',
         projects: ['Portfolio'], notes: []
     },
     AWSConsole: {
-        id: 'AWS Console', name: 'AWS Console', proficiency: 'Novice',
+        id: 'AWS Console', name: 'AWS Console',
         projects: [], notes: []
     },
     Amplify: {
-        id: 'Amplify', name: 'Amplify', proficiency: 'Novice',
+        id: 'Amplify', name: 'Amplify',
         projects: ['Portfolio'], notes: ['I don\'t like Amplify.']
     },
     Terraform: {
-        id: 'Terraform', name: 'Terraform', proficiency: 'Novice',
+        id: 'Terraform', name: 'Terraform',
         projects: ['ScrapStack'], notes: [
             'With only scattered experience with Terraform, I am not an expert.',
             'Stil, I created a CLI to automate the editing of Terraform files. You provide a series of template files with blanks, put specially formatted markers in your code, and then run the CLI with whatever you want filled in the blanks. It could add new blocks or edit existing ones.',
@@ -181,39 +197,35 @@ export const Tools: Record<string, Tool> = {
         ]
     },
     PostgreSQL: {
-        id: 'PostgreSQL', name: 'PostgreSQL', proficiency: 'Intermediate',
+        id: 'PostgreSQL', name: 'PostgreSQL',
         projects: ['ScrapStack', 'Chat App'], notes: []
     },
     MySQL: {
-        id: 'MySQL', name: 'MySQL', proficiency: 'Intermediate',
+        id: 'MySQL', name: 'MySQL',
         projects: ['YoLink Center'], notes: []
     },
     Scrum: {
-        id: 'Scrum', name: 'Scrum', proficiency: 'Intermediate',
+        id: 'Scrum', name: 'Scrum',
         projects: [], notes: []
     },
     Docker: {
-        id: 'Docker', name: 'Docker', proficiency: 'Novice',
+        id: 'Docker', name: 'Docker',
         projects: ['NutriApp'], notes: []
     },
     GitHub: {
-        id: 'GitHub', name: 'GitHub', proficiency: 'Intermediate',
+        id: 'GitHub', name: 'GitHub',
         projects: [], notes: []
     },
     Git: {
-        id: 'Git', name: 'Git', proficiency: 'Intermediate',
+        id: 'Git', name: 'Git',
         projects: [], notes: ['I\'m proud of my profciency with Git! I\'ve heard its an undervalued skill, but like with a lot of things, it\'s worth getting to know.']
     },
     Figma: {
-        id: 'Figma', name: 'Figma', proficiency: 'Intermediate',
-        projects: ['Portfolio', 'DinDin'], notes: []
-    },
-    Drawio: {
-        id: 'Draw.io', name: 'Draw.io', proficiency: 'Advanced',
-        projects: ['ScrapStack'], notes: []
+        id: 'Figma', name: 'Figma',
+        projects: ['Portfolio', 'DinDin', 'Scrapstack'], notes: []
     },
     AppsScript: {
-        id: 'Apps Script', name: 'Apps Script', proficiency: 'Intermediate',
+        id: 'Apps Script', name: 'Apps Script',
         projects: [], notes: [
             'While not a conventional technology, I was introduced to spreadsheet scripting by Apps Script.',
             'I used it to create a visualizer for a mood tracker-style Sheet. It was mostly a fancy formatter, parsing words and numbers to decide what colors to shade cells with, but it was context aware, allowing it to shade in regions between two specifically formatted cells.'

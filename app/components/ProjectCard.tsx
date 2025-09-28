@@ -270,9 +270,6 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                     <p style={lexendGiga.style} className="pb-1 text-2xl 2xl:text-4xl">
                         {tool.name}
                     </p>
-                    <div className="flex flex-col-reverse justify-evenly items-center h-12">
-                        <p> Proficiency: {tool.proficiency} </p>
-                    </div>
                 </div>
                 <div className="h-1/1 overflow-y-auto">
                     <div className="bg-orange-200/40 p-4 rounded-b-xl w-1/1">

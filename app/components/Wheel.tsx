@@ -7,7 +7,7 @@ import { Group } from './WheelItems'
 const SCROLL_VELOCITY_FACTOR = 0.00004
 const DRAG_VELOCITY_FACTOR = 0.00006
 const FRICTION = 0.997
-const DEFAULT_FRAME_RATE = 60
+const DEFAULT_FRAME_RATE = 120
 const EASING_DURATION = 7000
 
 export default function Wheel() {

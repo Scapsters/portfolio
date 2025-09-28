@@ -16,24 +16,26 @@ export enum Category {
 
 export const PortfolioData: Record<Category, Record<string, PortfolioItem>> = {
     [Category.Projects]: {
-        'ScrapStack': Projects.ScrapStack,
+        'Scrapstack': Projects.Scrapstack,
         'Portfolio': Projects.Portfolio,
         'JSThread': Projects.JSThread,
+        'Scrapstack Beta': Projects.ScrapstackBeta,
         'YoLink Center': Projects.YoLinkCenter,
         'DinDin': Projects.DinDin,
     },
     [Category.Frontend]: {
-        'ScrapStack': Projects.ScrapStack,
+        'Scrapstack': Projects.Scrapstack,
         'JSThread': Projects.JSThread,
         'Portfolio': Projects.Portfolio,
+        'Scrapstack Beta': Projects.ScrapstackBeta,
         'React': Tools.React,
         'Tailwind': Tools.Tailwind,
         'Next.js': Tools.Nextjs,
         'TypeScript': Tools.TypeScript,
     },
     [Category.Cloud]: {
+        'Scrapstack': Projects.Scrapstack,
         'Portfolio': Projects.Portfolio,
-        'ScrapStack': Projects.ScrapStack,
         'Amplify': Tools.Amplify,
         'Terraform': Tools.Terraform,
     },
@@ -55,7 +57,7 @@ export const PortfolioData: Record<Category, Record<string, PortfolioItem>> = {
         'Apps Script': Tools.AppsScript,
     },
     [Category.Backend]: {
-        'ScrapStack': Projects.ScrapStack,
+        'ScrapStack Beta': Projects.ScrapstackBeta,
         'YoLink Center': Projects.YoLinkCenter,
         'Python': Tools.Python,
     },
