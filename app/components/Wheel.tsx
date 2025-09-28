@@ -4,10 +4,10 @@ import { PortfolioData } from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
 import { Group } from './WheelItems'
 
-const SCROLL_VELOCITY_FACTOR = 0.00004
-const DRAG_VELOCITY_FACTOR = 0.00006
-const FRICTION = 0.997
-const DEFAULT_FRAME_RATE = 120
+const SCROLL_VELOCITY_FACTOR = 0.00008
+const DRAG_VELOCITY_FACTOR = 0.00015
+const FRICTION = 0.992
+const DEFAULT_FRAME_RATE = 60
 const EASING_DURATION = 7000
 
 export default function Wheel() {
@@ -176,7 +176,7 @@ export default function Wheel() {
         const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
         velocity.current = velocity.current 
             + Math.pow(Math.tanh(delta_angle), 3) // Main function
-            * 0.0002 // Scale for funsies 
+            * .001 // Scale for funsies 
             * ((deltaTime.current + lag.current)/ 6) // Scale for scaries
     }
     velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
