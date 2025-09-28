@@ -6,7 +6,7 @@
     --light-text: #646464;
     --lighter-text: #a0a0a0;
     --dark-text: #393939;
-    --wheel-size: 1000px;
+    --wheel-size: 800px;
     --text-width: 620px;
     --item-width: calc(40px + var(--wheel-size) + var(--text-width) * 2);
     --circular-scroll: 0deg;

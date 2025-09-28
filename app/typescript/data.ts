@@ -13,7 +13,7 @@ export type Project = {
     technologies: string[];
     date: string;
     features?: string[];
-    image?: { original: string }[];
+    image?: string;
     github?: string;
     demo?: string;
 };
@@ -31,9 +31,11 @@ export const Projects = {
             'Propietary web scraper to retrieve posts',
             'Simple auth system to allow for frictionless user persistence',
         ],
-        technologies: ['React', 'Typescript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB', 'Selenium', 'Terraform', 'Cloudflare Wrangler', 'Cloudflare Workers', 'AWS Lamda'],
+        technologies: ['React', 'TypeScript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB', 'Selenium', 'Terraform', 'Cloudflare Wrangler', 'Cloudflare Workers', 'AWS Lambda'],
         date: 'July 2025 - Present',
-        demo: 'https://scrapstack.net'
+        demo: 'https://scrapstack.net',
+        github: 'https://github.com/Scapsters/ScrapStack',
+        image: '/scrapstack/banner.png'
     },
     ScrapstackBeta: {
         id: 'Scrapstack Beta',
@@ -46,16 +48,11 @@ export const Projects = {
             'Prefetching and prerendering for little to no lag',
             'Responsive UI based off user feedback',
             'Cross-site embeds using Twitter Card API',
-            '(Partial) support for back/forward arrow navigation',
         ],
         technologies: ['React', 'TypeScript', 'Tailwind', 'Express.js', 'PostgreSQL'],
         date: 'December 2024 - June 2025',
         github: 'https://github.com/Scapsters/Furry-Slop',
-        image: [
-            { original: '/furryslop/preview.png' },
-            { original: '/furryslop/componentuml.png' },
-            { original: '/furryslop/sequence.png' },
-        ],
+        image: '/furryslop/preview.png',
     },
     JSThread: {
         id: 'JSThread',
@@ -64,14 +61,13 @@ export const Projects = {
             'This is a recreation of Java multithreading inside of a single-threaded programming language. Design overview and documentation available in the demo.',
         ],
         features: [
-            'Leverages web-workers to simulate synchronized blocks, keys, joins, etc.',
-            'Built-in code editor (and output console) with examples to see it running yourself!',
-            'Followed TSDoc specifications to create webpage with thorough documentation using TypeDoc'
+            'Leverages web workers to simulate synchronized blocks, keys, joins, etc.',
+            'Simple code editor (and output console) with examples to see it running yourself!',
         ],
         date: 'February 2025 - February 2025',
         github: 'https://github.com/Scapsters/swen_342_github',
         demo: 'https://scapsters.github.io/swen_342_github/JSThread/dist/',
-        image: [{ original: '/jsthread/header.png' }, { original: '/jsthread/console.png' }],
+        image: '/jsthread/console.png',
         technologies: ['TypeScript', 'Node.js', 'Vite.js', 'Tailwind'],
     },
     YoLinkCenter: {
@@ -86,7 +82,7 @@ export const Projects = {
         ],
         date: 'November 2024 - December 2024',
         github: 'https://github.com/Scapsters/YoLink',
-        image: [{ original: '/yolink/sensors.png' }, { original: '/yolink/thsensors.png' }],
+        image: '/yolink/sensors.png',
         technologies: ['Python', 'Flask', 'MySQL'],
     },
     Portfolio: {
@@ -96,12 +92,11 @@ export const Projects = {
         description: [
             'My first time really challenging myself with how fast I could develop a unique app. Was rushed to prepare for an interview and made the core of the app in about a week over ~40 hours of work.',
             'I learned about tradeoffs with in development and sought to leverage the limited scope of the project to make incredibly efficient, if unsound, development decisions.',
-            'Coming back after I\'ve refined the project, making it more robust in terms of styling and rendering.'
         ],
-        features: ['Rigorously optimized physics-based side navigation bar', 'Wireframed in Figma for fast design prototyping', 'Hosted with AWS Amplify'],
+        features: ['Rigorously optimized physics-based side navigation bar', 'Wireframed in Figma for fast design prototyping'],
         demo: 'https://scotthappy.com',
         github: 'https://github.com/Scapsters/portfolio',
-        image: [{ original: '/portfolio/portfolio.png' }],
+        image: '/portfolio/portfolio.png',
         technologies: ['Next.js', 'TypeScript', 'Tailwind', 'AWS', 'Amplify'],
     },
     DinDin: {
@@ -117,14 +112,7 @@ export const Projects = {
             'Appealing and user-friendly UI built in Figma',
             'Artifacts such as WAADs and HTA',
         ],
-        image: [
-            { original: '/dindin/main.png' },
-            { original: '/dindin/profile.png' },
-            { original: '/dindin/waad.png' },
-            { original: '/dindin/themes.png' },
-            { original: '/dindin/guidelines.png' },
-            { original: '/dindin/tutorial.png' },
-        ],
+        image: '/dindin/main.png',
         technologies: ['Figma', 'Draw.io'],
     }
 }

@@ -101,7 +101,7 @@ function ItemWrapper({ ref, children, isHeader }: Readonly<{ ref: React.RefObjec
     return <div
         ref={ref}
         style={isHeader ? { 'zIndex': 2 } : {}}
-        className={`relative w-[var(--item-width)] h-0 text-3xl`}
+        className={`relative w-[var(--item-width)] h-0 text-2xl`}
     >
         <div className="flex w-[600px] -rotate-2 select-none justify-end transition-[padding-right] duration-200 ease-out">
             {children}

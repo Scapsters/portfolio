@@ -1,5 +1,4 @@
 import { lexendExa, lexendGiga, lexendPeta } from '../typescript/css_constants'
-import ImageGallery, { ReactImageGalleryItem } from 'react-image-gallery'
 import 'react-image-gallery/styles/css/image-gallery.css'
 import React, { ReactElement, useCallback, useContext, useEffect, useRef } from 'react'
 import { Project, Tool, PortfolioData, Category } from '@/typescript/wheel_info'
@@ -34,22 +33,6 @@ function DateText({ date }: Readonly<{ date?: string }>) {
     return <p className="justify-end text-left lg:text-right grow">{date}</p>
 }
 
-function Gallery({ images }: Readonly<{ images?: ReactImageGalleryItem[] }>) {
-    const galleryRef = useRef<ImageGallery>(null)
-    if (!images) return null
-    return (
-        <ImageGallery
-            ref={galleryRef}
-            showPlayButton={false}
-            onMouseOver={() => galleryRef.current?.pause()}
-            onMouseLeave={() => galleryRef.current?.play()}
-            autoPlay={true}
-            slideInterval={4000}
-            items={images}
-        />
-    )
-}
-
 function TechStackButton({ technology, onClick }: Readonly<{ technology: string; onClick: () => void }>) {
     return (
         <button
@@ -66,7 +49,7 @@ function TechStackButton({ technology, onClick }: Readonly<{ technology: string;
                     className={'h-13 aspect-auto'}
                 />
             </div>
-            <li className="grow" key={technology}>
+            <li className="grow ml-3" key={technology}>
                 {technology} ↗
             </li>
         </button>
@@ -81,7 +64,7 @@ function TechStackList({
     onTechClick: (technology: string) => void
 }>) {
     return (
-        <ul className="bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl grow">
+        <ul className="bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl h-90 overflow-y-auto overflow-x-clip w-1/2">
             <p className="p-2 text-[var(--foreground)] text-3xl">Stack</p>
             {technologies.map((technology) => {
                 let foundTool: Tool | undefined;
@@ -118,7 +101,7 @@ function TechStackList({
                                 className={'h-13 aspect-auto'}
                             />
                         </div>
-                        <li className="grow" key={technology}>
+                        <li className="grow ml-3" key={technology}>
                             {technology}
                         </li>
                     </button>
@@ -234,7 +217,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                     <GithubLink link={project.github} />
                     <DateText date={project.date} />
                 </div>
-                <p style={lexendGiga.style} className="pb-1 border-b-3 text-2xl 2xl:text-4xl">
+                <p style={lexendGiga.style} className="pb-1 border-b-3 text-2xl 2xl:text-3xl">
                     {project.name}
                 </p>
                 <div className="h-1/1 overflow-y-auto">
@@ -254,9 +237,9 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                             ))}
                         </div>
                     </div>
-                    <div className="flex flex-col w-1/1 xl:flex-row items-center justify">
-                        <div className="bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3">
-                            <Gallery images={project.image} />
+                    <div className="flex">
+                        <div className="relative bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3 h-90 aspect-auto overflow-hidden flex items-center">
+                            {project.image && <img src={project.image} alt={project.image} className="p-2 h-min rounded-2xl" />}
                         </div>
                         <TechStackList technologies={project.technologies} onTechClick={handleTechClick} />
                     </div>
@@ -283,10 +266,11 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 </div>
             </>)
         }
-        card = <div ref={cardRef} className="absolute z-2 
-            top-30 left-1/12 w-1/2
-            xl:top-40 xl:left-1/16 xl:w-2/3
-            h-3/4
+        card = <div ref={cardRef} className="absolute
+            z-2
+            top-40
+            left-10
+            w-230
             "
         >{card}</div>
     }

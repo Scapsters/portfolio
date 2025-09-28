@@ -286,7 +286,7 @@ export default function Wheel() {
     return (<>
         <div
             ref={circleRef}
-            className="z-3 cursor-grab active:cursor-grabbing top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
+            className="z-3 cursor-grab active:cursor-grabbing top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-300 duration-1000 ease-in-out"
         >
             <div ref={tabRef1} className='text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 -rotate-2 left-3 text-[var(--background)]'>
                 -
