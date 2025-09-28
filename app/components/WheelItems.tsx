@@ -40,7 +40,7 @@ function Header({
 }: Readonly<{ text: string, toggleSection: () => void }>) {
     return (
         <button
-            className="font-light text-[var(--light-text)] hover:underline text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
+            className="font-light cursor-pointer text-[var(--light-text)] hover:underline text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
             onClick={toggleSection}
         >{text}</button>
     )
@@ -71,7 +71,7 @@ function Item({ tool, index }: Readonly<{ tool: Tool | Project; index: number }>
         <button
             ref={buttonRef}
             style={{color: getItemColor(tool.id)}}
-            className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
+            className="left-0 p-3 w-max h-max text-[var(--dark-text)] cursor-pointer text-right transition-[padding-right, color] duration-200 ease-out"
             onClick={() => {
                 setScrollSinceSelection(false)
 

@@ -158,6 +158,15 @@ export default function Wheel() {
         if (group.blankRef.current) updateEverything(group.blankRef.current, timeSinceSet, groupIndex)
     })
 
+    const tabRef1 = useRef<HTMLDivElement>(null)
+    const tabRef2 = useRef<HTMLDivElement>(null)
+    const tabRef3 = useRef<HTMLDivElement>(null)
+    if (tabRef1.current && tabRef2.current && tabRef3.current) {
+        rotate(tabRef1.current, -circular_rotate(0, position.current))
+        rotate(tabRef2.current, -circular_rotate(0, position.current))
+        rotate(tabRef3.current, -circular_rotate(0, position.current))
+    }
+
     // Physics loop
     if (!scrollSinceSelection && effectiveSelectedIndex) { // Move wheel to selected item
         const current_angle = circular_rotate(effectiveSelectedIndex.current ?? 0, position.current)
@@ -174,7 +183,7 @@ export default function Wheel() {
     const deltaScroll = useRef(0)
     useEffect(() => {
         const wheelHandler = (e: WheelEvent) => {
-            if (isHovered) deltaScroll.current += e.deltaY
+            deltaScroll.current += e.deltaY
         }
         const wheelHover = wheelHoverRef.current
         const circle =  circleRef.current
@@ -184,7 +193,7 @@ export default function Wheel() {
             wheelHover?.removeEventListener('wheel', wheelHandler)
             circle?.removeEventListener('wheel', wheelHandler)
         }
-    }, [isHovered])
+    })
     velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR 
     deltaScroll.current = 0
 
@@ -275,8 +284,18 @@ export default function Wheel() {
     return (<>
         <div
             ref={circleRef}
-            className="z-3 top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
-        ></div>
+            className="z-3 cursor-grab active:cursor-grabbing top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
+        >
+            <div ref={tabRef1} className='text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 -rotate-2 left-3 text-[var(--background)]'>
+                -
+            </div>
+            <div ref={tabRef2} className='text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 left-3 text-[var(--background)]'>
+                -
+            </div>
+            <div ref={tabRef3} className='text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 rotate-2 left-3 text-[var(--background)]'>
+                -
+            </div>
+        </div>
         {/* <FrameRateSelector frameRate={frameRate} setFrameRate={setFrameRate}></FrameRateSelector> */}
         <div
             ref={wheelHoverRef}
