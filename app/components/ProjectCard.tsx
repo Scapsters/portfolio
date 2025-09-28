@@ -2,12 +2,12 @@ import { lexendExa, lexendGiga, lexendPeta } from '../typescript/css_constants'
 import ImageGallery, { ReactImageGalleryItem } from 'react-image-gallery'
 import 'react-image-gallery/styles/css/image-gallery.css'
 import React, { ReactElement, useCallback, useContext, useEffect, useRef } from 'react'
-import { ProjectData, ToolData, PortfolioData, getIndexOfProjectInSection } from '@/typescript/wheel_info'
+import { Project, Tool, PortfolioData, Category } from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
 import { all_items_with_gaps } from '../typescript/wheel_info'
 
 type ProjectCardProps = {
-    current: ProjectData | ToolData | null | undefined
+    current: Project | Tool | null | undefined
     isPrevious: boolean
 }
 
@@ -84,16 +84,14 @@ function TechStackList({
         <ul className="bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl grow">
             <p className="p-2 text-[var(--foreground)] text-3xl">Stack</p>
             {technologies.map((technology) => {
-                // Try to find the tool in PortfolioData.Tools (search all categories)
-                let foundTool: ToolData | undefined
-                for (const group of Object.values(PortfolioData)) {
-                    if (typeof group === 'object' && group !== null) {
-                        if (technology in group) {
-                            foundTool = (group as Record<string, ToolData>)[technology]
-                            break
-                        }
+                let foundTool: Tool | undefined;
+                for (const category of Object.values(PortfolioData)) {
+                    if (Object.prototype.hasOwnProperty.call(category, technology)) {
+                        foundTool = category[technology] as Tool;
+                        break;
                     }
                 }
+
                 if (foundTool) {
                     return (
                         <TechStackButton
@@ -141,23 +139,20 @@ function UsedInProjectsList({
         <div>
             {projects.length > 0 && <p className="m-4 text-3xl"> Used in: </p>}
             <div>
-                {projects.map((project) => {
-                    project
-                    return project
-                }
-                    // PortfolioData.Projects[project] ? (
-                    //     <button
-                    //         className="block bg-orange-200/40 hover:bg-orange-200 m-2 p-4 rounded-xl text-xl hover:underline duration-200"
-                    //         key={project}
-                    //         onClick={() => onProjectClick(project)}
-                    //     >
-                    //         <span className="text-2xl">↗</span> {PortfolioData.Projects[project].name}
-                    //     </button>
-                    // ) : (
-                    //     <button className="block m-2 p-4 rounded-xl text-xl duration-200" key={project} disabled>
-                    //         - {project}
-                    //     </button>
-                    // ),
+                {projects.map((project) =>
+                    PortfolioData.Projects[project] ? (
+                        <button
+                            className="block bg-orange-200/40 hover:bg-orange-200 m-2 p-4 rounded-xl text-xl hover:underline duration-200"
+                            key={project}
+                            onClick={() => onProjectClick(project)}
+                        >
+                            <span className="text-2xl">↗</span> {PortfolioData.Projects[project].name}
+                        </button>
+                    ) : (
+                        <button className="block m-2 p-4 rounded-xl text-xl duration-200" key={project} disabled>
+                            - {project}
+                        </button>
+                    ),
                 )}
             </div>
         </div>
@@ -173,36 +168,34 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
 
     const handleTechClick = useCallback(
         (technology: string) => {
-            prjctx.setIsProject(false)
+            
             prjctx.setScrollSinceSelection(false)
             prjctx.setPreviousSelected(selected)
-            prjctx.setIsPreviousProject(prjctx.isProject)
-            let foundTool: ToolData | undefined
-            let groupIndex = 0
-            for (const group of Object.values(PortfolioData)) {
-                let leave = 0
-                Object.keys(group).forEach(() => {
-                    if (technology in group) {
-                        foundTool = (group as Record<string, ToolData>)[technology]
-                        leave = 1
-                    }
-                })
-                if (leave === 1) break
-                groupIndex += 1
+            
+            
+            let foundTool: Tool | undefined;
+            let groupIndex = -1;
+            
+            const categories = Object.keys(PortfolioData) as Category[];
+            for (let i = 0; i < categories.length; i++) {
+                const categoryName = categories[i];
+                const category = PortfolioData[categoryName];
+                if (Object.prototype.hasOwnProperty.call(category, technology)) {
+                    foundTool = category[technology] as Tool;
+                    groupIndex = i;
+                    break;
+                }
             }
-            if (foundTool) {
-                const index = all_items_with_gaps.findIndex((item) => item === foundTool.key_name)
+
+            if (foundTool && groupIndex !== -1) {
+                const index = all_items_with_gaps.findIndex((item) => item === foundTool.id)
                 prjctx.setSelectedIndex(index)
-                console.log(index)
-                prjctx.setGroupVisibilities((prev) => [
-                    ...prev.slice(0, groupIndex).map((prev) => ({ visible: prev.visible, timeSet: performance.now() })),
-                    { visible: true, timeSet: performance.now() },
-                    ...prev
-                        .slice(groupIndex + 1)
-                        .map((prev) => ({ visible: prev.visible, timeSet: performance.now() })),
-                ])
+                prjctx.setGroupVisibilities((prev) => {
+                    const newVisibilities = [...prev];
+                    newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() };
+                    return newVisibilities;
+                })
                 prjctx.setSelected(foundTool)
-                
             }
         }, [prjctx, selected],
     )
@@ -211,20 +204,21 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
         (project: string) => {
             prjctx.setScrollSinceSelection(false)
             prjctx.setPreviousSelected(selected)
-            prjctx.setIsPreviousProject(prjctx.isProject)
-            prjctx.setIsProject(true)
-            if (PortfolioData.Projects[project]) {
-                prjctx.setSelected(PortfolioData.Projects[project])
-                const index = getIndexOfProjectInSection(PortfolioData.Projects[project].key_name, 'Projects')
+            
+            
+            const projectItem = PortfolioData.Projects[project] as Project;
+            if (projectItem) {
+                prjctx.setSelected(projectItem)
+                const index = all_items_with_gaps.indexOf(projectItem.id);
                 prjctx.setSelectedIndex(index)
-                const groupIndex = 0
-                prjctx.setGroupVisibilities((prev) => [
-                    ...prev.slice(0, groupIndex).map((prev) => ({ visible: prev.visible, timeSet: performance.now() })),
-                    { visible: true, timeSet: performance.now() },
-                    ...prev
-                        .slice(groupIndex + 1)
-                        .map((prev) => ({ visible: prev.visible, timeSet: performance.now() })),
-                ])
+                const groupIndex = (Object.keys(PortfolioData) as (keyof typeof PortfolioData)[]).indexOf(Category.Projects);
+                if (groupIndex !== -1) {
+                    prjctx.setGroupVisibilities((prev) => {
+                        const newVisibilities = [...prev];
+                        newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() };
+                        return newVisibilities;
+                    })
+                }
             }
         },
         [prjctx, selected],
@@ -232,8 +226,8 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
 
     let card: ReactElement | null = null
     if (selected) {
-        if (prjctx.isProject && selected.description) {
-            const project = selected as ProjectData
+        if ('description' in selected) {
+            const project = selected as Project
             card = (<>
                 <div className="flex flex-col lg:flex-row">
                     <DemoLink link={project.demo} />
@@ -269,8 +263,8 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 </div>
             </>)
         }
-        if (!prjctx.isProject && selected.notes) {
-            const tool = selected as ToolData
+        else {
+            const tool = selected as Tool
             card = (<>
                 <div className="flex items-end gap-10 border-b-3">
                     <p style={lexendGiga.style} className="pb-1 text-2xl 2xl:text-4xl">

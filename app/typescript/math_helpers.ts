@@ -1,11 +1,13 @@
-import { raw_headers, raw_items } from './wheel_info';
+import { getPortfolioItemCount } from './wheel_info';
+
+const { totalRenderedItems, categoryCount } = getPortfolioItemCount();
 
 export const delta_t = 6
 const phase = -90
 const prephase = 70 // This affects the position of the wheel when loading
 
 function theta(index: number, scroll: number): number {
-    return mod((delta_t * index) - (90 * scroll) + prephase, delta_t * (raw_items.length + raw_headers.length * 2))
+    return mod((delta_t * index) - (90 * scroll) + prephase, delta_t * (totalRenderedItems + categoryCount * 2))
 }
 
 // Circular equations based off of https://www.desmos.com/calculator/cvaldk77ud, created by me

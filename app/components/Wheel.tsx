@@ -217,7 +217,6 @@ export default function Wheel() {
             accumulator += timeSinceAnimationFrame
             if (accumulator > deltaTime.current) {
                 setFrame(f => f + 1)
-                console.log(timestamp - lastRender.current, deltaTime.current)
                 totalTime.current += deltaTime.current
                 lag.current = timestamp - lastRender.current - deltaTime.current 
                 lastRender.current = timestamp
@@ -278,7 +277,7 @@ export default function Wheel() {
             ref={circleRef}
             className="z-3 top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-350 duration-1000 ease-in-out"
         ></div>
-        <FrameRateSelector frameRate={frameRate} setFrameRate={setFrameRate}></FrameRateSelector>
+        {/* <FrameRateSelector frameRate={frameRate} setFrameRate={setFrameRate}></FrameRateSelector> */}
         <div
             ref={wheelHoverRef}
             className="-z-1 -right-300 absolute w-500 h-screen transition-transform duration-1000 ease-in-out align-end"

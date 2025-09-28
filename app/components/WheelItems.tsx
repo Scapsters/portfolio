@@ -1,12 +1,12 @@
 import { ProjectContext, Visibility } from "@/contexts";
-import { getItemColor, PortfolioData, ProjectData, ToolData } from "@/typescript/wheel_info";
+import { getItemColor, Project, Tool } from "@/typescript/wheel_info";
 import { useContext, useEffect, useMemo, useRef } from "react";
 
 export function Group({
     header, items, groupIndex, startingIndex, itemRefs, setGroupVisibilities
 }: Readonly<{ 
         header: string, 
-        items: (ToolData | ProjectData)[], 
+        items: (Tool | Project)[], 
         groupIndex: number
         startingIndex: number, 
         itemRefs: { 
@@ -27,7 +27,7 @@ export function Group({
         </ItemWrapper>
         {items.map((item, index) => {
             return (
-                <ItemWrapper ref={itemRefs.itemRefs[index]} key={item.key_name + index}>
+                <ItemWrapper ref={itemRefs.itemRefs[index]} key={item.id + index}>
                     <Item tool={item} index={startingIndex + index + 1}></Item>
                 </ItemWrapper>
             )
@@ -46,18 +46,13 @@ function Header({
     )
 }
 
-function Item({
-    tool, index
-}: Readonly<{ tool: ToolData | ProjectData, index: number }> ) {
+function Item({ tool, index }: Readonly<{ tool: Tool | Project; index: number }>) {
     const { 
         selected,
         setSelected,
         setSelectedIndex,
-        isProject,
-        setIsProject,
         setScrollSinceSelection, 
         setPreviousSelected, 
-        setIsPreviousProject,
     } = useContext(ProjectContext)
 
     const handleItemHover = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -75,37 +70,28 @@ function Item({
     const itemMemo = useMemo(() => 
         <button
             ref={buttonRef}
-            style={{color: getItemColor(tool.key_name)}}
+            style={{color: getItemColor(tool.id)}}
             className="left-0 p-3 w-max h-max text-[var(--dark-text)] text-right transition-[padding-right, color] duration-200 ease-out"
             onClick={() => {
                 setScrollSinceSelection(false)
 
                 setPreviousSelected(selected)
-                setIsPreviousProject(isProject)
 
                 // If clicking on the same thing twice, deselect
-                if (selected?.key_name === tool.key_name) {
+                if (selected?.id === tool.id) {
                     setSelected(null)
                     setSelectedIndex(null)
                     return
                 }
 
-                // Depends on whether the selected item is a project or not
-                if (Object.keys(PortfolioData.Projects).includes(tool.key_name)) {
-                    setSelected(tool)
-                    setSelectedIndex(index)
-                    setIsProject(true)
-                } else {
-                    setSelected(tool)
-                    setSelectedIndex(index)
-                    setIsProject(false)
-                } 
+                setSelected(tool)
+                setSelectedIndex(index)
             }}
             onMouseEnter={handleItemHover}
             onMouseLeave={handleItemUnhover}
-        >{tool.key_name}</button>
+        >{tool.id}</button>
         ,
-        [tool, setScrollSinceSelection, setPreviousSelected, selected, setIsPreviousProject, isProject, setSelected, setSelectedIndex, index, setIsProject]
+        [tool, setScrollSinceSelection, setPreviousSelected, selected, setSelected, setSelectedIndex, index]
     )
 
     return itemMemo
@@ -123,13 +109,13 @@ function ItemWrapper({ ref, children, isHeader }: Readonly<{ ref: React.RefObjec
     </div>
 }
 
-function useBoldSelected(itemRef: React.RefObject<HTMLButtonElement | null>, selected: ProjectData | ToolData | null | undefined) {
+function useBoldSelected(itemRef: React.RefObject<HTMLButtonElement | null>, selected: Project | Tool | null | undefined) {
     useEffect(() => {
         const element = itemRef?.current
         if (!element)
             return
 
-        if (selected?.key_name == element.textContent) {
+        if (selected?.id == element.textContent) {
             element.style.setProperty('text-decoration', 'underline')
             element.style.setProperty('font-weight', 'bold')
         } else {

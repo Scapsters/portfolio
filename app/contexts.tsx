@@ -1,4 +1,4 @@
-import { ProjectData, ToolData } from "@/typescript/wheel_info";
+import { Project, Tool } from "@/typescript/wheel_info";
 import { createContext } from "react";
 
 export type Visibility = {
@@ -7,16 +7,14 @@ export type Visibility = {
 }
 
 export const ProjectContext = createContext<{
-    selected: ProjectData | ToolData | null | undefined
-    setSelected: React.Dispatch<React.SetStateAction<ProjectData | ToolData | null | undefined>>
+    selected: Project | Tool | null | undefined
+    setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
     selectedIndex: number | null,
     setSelectedIndex: React.Dispatch<React.SetStateAction<number | null>>
-    isProject: boolean
-    setIsProject: React.Dispatch<React.SetStateAction<boolean>>
     scrollSinceSelection: boolean
     setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>
-    setPreviousSelected: React.Dispatch<React.SetStateAction<ProjectData | ToolData | null | undefined>>
-    setIsPreviousProject: React.Dispatch<React.SetStateAction<boolean>>
+    previousSelected: Project | Tool | null | undefined
+    setPreviousSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
     groupVisibilities: Visibility[]
     setGroupVisibilities: React.Dispatch<React.SetStateAction<Visibility[]>>
 }>({
@@ -24,12 +22,10 @@ export const ProjectContext = createContext<{
     setSelected: () => {},
     selectedIndex: 0,
     setSelectedIndex: () => {},
-    isProject: true, // TODO: This state doesn't need to exist; use a render function on projects and tools (yucky OOP)
-    setIsProject: () => {},
     scrollSinceSelection: false,
     setScrollSinceSelection: () => {},
+    previousSelected: undefined,
     setPreviousSelected: () => {},
-    setIsPreviousProject: () => {},
     groupVisibilities: [],
     setGroupVisibilities: () => {}
 })
