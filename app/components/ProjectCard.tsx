@@ -181,9 +181,9 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                         ))}
                     </div>
                 </div>
-                <div className="flex h-330 3xl:h-460">
-                    <div className="bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3 h-2/7 aspect-auto overflow-hidden flex justify-center items-center">
-                        {project.image && <img src={project.image} alt={project.image} className="p-2 max-h-80 2xl:max-h-120 w-auto rounded-2xl" />}
+                <div className="flex h-4/5 3xl:h-460">
+                    <div className="relative bg-orange-200/40 mt-4 mr-2 p-1 rounded-xl w-2/3 h-2/7 aspect-auto overflow-hidden flex justify-center items-center">
+                        {project.image && <img src={project.image} alt={project.image} className="max-h-full w-auto rounded-2xl" />}
                     </div>
                     <ul className=" bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl h-2/7 overflow-y-scroll overflow-x-clip w-1/2">
                         <p className="p-2 text-[var(--foreground)] text-3xl">Stack</p>
@@ -255,6 +255,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
         card = <div ref={cardRef} className={`absolute
             ${isPrevious ? "-z-10" : "z-10"}
             top-40
+            h-full
             left-10 xl:left-1/24 3xl:left-1/12 4xl:left-1/6
             max-w-400 w-180 xl:w-220 2xl:w-7/10
             `}
