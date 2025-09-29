@@ -37,7 +37,7 @@ function TechStackButton({ technology, onClick }: Readonly<{ technology: string;
     return (
         <button
             key={technology + 'container'}
-            className="flex items-center bg-orange-200/40 hover:bg-orange-200 m-2 p-2 rounded-xl w-full text-2xl text-right duration-200"
+            className="flex items-center bg-orange-200/40 hover:bg-orange-200 m-2 p-2 rounded-xl w-full text-xl text-right duration-200"
             onClick={onClick}
         >
             <div className="flex justify-center">
@@ -46,7 +46,7 @@ function TechStackButton({ technology, onClick }: Readonly<{ technology: string;
                     key={technology + ' logo'}
                     alt={technology}
                     src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
-                    className={'h-13 aspect-auto'}
+                    className={'h-10 aspect-auto'}
                 />
             </div>
             <li className="grow ml-3" key={technology}>
@@ -64,7 +64,7 @@ function TechStackList({
     onTechClick: (technology: string) => void
 }>) {
     return (
-        <ul className="bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl h-90 overflow-y-auto overflow-x-clip w-1/2">
+        <ul className="bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl h-80 overflow-y-auto overflow-x-clip w-1/2">
             <p className="p-2 text-[var(--foreground)] text-3xl">Stack</p>
             {technologies.map((technology) => {
                 let foundTool: Tool | undefined;
@@ -88,7 +88,7 @@ function TechStackList({
                 return (
                     <button
                         key={technology + ' container'}
-                        className="flex items-center p-4 rounded-xl w-full text-2xl text-right duration-200"
+                        className="flex items-center p-4 rounded-lg w-full text-xl text-right duration-200"
                         tabIndex={-1}
                         disabled
                     >
@@ -98,7 +98,7 @@ function TechStackList({
                                 key={technology + ' logo'}
                                 alt={technology}
                                 src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
-                                className={'h-13 aspect-auto'}
+                                className={'h-10 aspect-auto'}
                             />
                         </div>
                         <li className="grow ml-3" key={technology}>
@@ -238,7 +238,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                         </div>
                     </div>
                     <div className="flex">
-                        <div className="relative bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3 h-90 aspect-auto overflow-hidden flex items-center">
+                        <div className="relative bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3 h-80 aspect-auto overflow-hidden flex items-center">
                             {project.image && <img src={project.image} alt={project.image} className="p-2 h-min rounded-2xl" />}
                         </div>
                         <TechStackList technologies={project.technologies} onTechClick={handleTechClick} />
