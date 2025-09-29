@@ -90,8 +90,8 @@ export const Projects = {
         name: 'Portfolio',
         date: 'March 22, 2025 - March 30, 2025',
         description: [
-            'My first time really challenging myself with how fast I could develop a unique app. Was rushed to prepare for an interview and made the core of the app in about a week over ~40 hours of work.',
-            'I learned about tradeoffs with in development and sought to leverage the limited scope of the project to make incredibly efficient, if unsound, development decisions.',
+            'In rushing to complete this for a live demo, I learned important lessons on technical debt. Or more accurately, I learned those lessons afterwards. It was worth it!',
+            'My biggest mistake here was using Next.js. There\'s practically no reason to do that for a static site like this. But, here I am.'
         ],
         features: ['Rigorously optimized physics-based side navigation bar', 'Wireframed in Figma for fast design prototyping'],
         demo: 'https://scotthappy.com',
