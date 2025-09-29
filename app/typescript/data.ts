@@ -24,7 +24,7 @@ export const Projects = {
         name: 'Scrapstack',
         description: [
             'The second version of a social media post viewer, rebuilt entirely from the ground up, or should I say from the cloud up?',
-            'This redesign revolved around user experience and extensibility, with a conventional infinite scroll layout and support for multiple feeds',
+            'This redesign revolved around user experience and extensibility, with a conventional infinite scroll layout and support for multiple feeds.',
         ],
         features: [
             'Hand-rolled virtualization and scroll restoration in an infinite scrolling context',
