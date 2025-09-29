@@ -56,61 +56,6 @@ function TechStackButton({ technology, onClick }: Readonly<{ technology: string;
     )
 }
 
-function TechStackList({
-    technologies,
-    onTechClick,
-}: Readonly<{
-    technologies: string[]
-    onTechClick: (technology: string) => void
-}>) {
-    return (
-        <ul className="bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl h-80 overflow-y-auto overflow-x-clip w-1/2">
-            <p className="p-2 text-[var(--foreground)] text-3xl">Stack</p>
-            {technologies.map((technology) => {
-                let foundTool: Tool | undefined;
-                for (const category of Object.values(PortfolioData)) {
-                    if (Object.prototype.hasOwnProperty.call(category, technology)) {
-                        foundTool = category[technology] as Tool;
-                        break;
-                    }
-                }
-
-                if (foundTool) {
-                    return (
-                        <TechStackButton
-                            key={technology}
-                            technology={technology}
-                            onClick={() => onTechClick(technology)}
-                        />
-                    )
-                }
-                // fallback: just show the technology name
-                return (
-                    <button
-                        key={technology + ' container'}
-                        className="flex items-center p-4 rounded-lg w-full text-xl text-right duration-200"
-                        tabIndex={-1}
-                        disabled
-                    >
-                        <div className="flex justify-center">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                key={technology + ' logo'}
-                                alt={technology}
-                                src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
-                                className={'h-10 aspect-auto'}
-                            />
-                        </div>
-                        <li className="grow ml-3" key={technology}>
-                            {technology}
-                        </li>
-                    </button>
-                )
-            })}
-        </ul>
-    )
-}
-
 function UsedInProjectsList({
     projects,
     onProjectClick,
@@ -151,22 +96,22 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
 
     const handleTechClick = useCallback(
         (technology: string) => {
-            
+
             prjctx.setScrollSinceSelection(false)
             prjctx.setPreviousSelected(selected)
-            
-            
-            let foundTool: Tool | undefined;
-            let groupIndex = -1;
-            
-            const categories = Object.keys(PortfolioData) as Category[];
+
+
+            let foundTool: Tool | undefined
+            let groupIndex = -1
+
+            const categories = Object.keys(PortfolioData) as Category[]
             for (let i = 0; i < categories.length; i++) {
-                const categoryName = categories[i];
-                const category = PortfolioData[categoryName];
+                const categoryName = categories[i]
+                const category = PortfolioData[categoryName]
                 if (Object.prototype.hasOwnProperty.call(category, technology)) {
-                    foundTool = category[technology] as Tool;
-                    groupIndex = i;
-                    break;
+                    foundTool = category[technology] as Tool
+                    groupIndex = i
+                    break
                 }
             }
 
@@ -174,9 +119,9 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 const index = all_items_with_gaps.findIndex((item) => item === foundTool.id)
                 prjctx.setSelectedIndex(index)
                 prjctx.setGroupVisibilities((prev) => {
-                    const newVisibilities = [...prev];
-                    newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() };
-                    return newVisibilities;
+                    const newVisibilities = [...prev]
+                    newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() }
+                    return newVisibilities
                 })
                 prjctx.setSelected(foundTool)
             }
@@ -187,19 +132,19 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
         (project: string) => {
             prjctx.setScrollSinceSelection(false)
             prjctx.setPreviousSelected(selected)
-            
-            
-            const projectItem = PortfolioData.Projects[project] as Project;
+
+
+            const projectItem = PortfolioData.Projects[project] as Project
             if (projectItem) {
                 prjctx.setSelected(projectItem)
-                const index = all_items_with_gaps.indexOf(projectItem.id);
+                const index = all_items_with_gaps.indexOf(projectItem.id)
                 prjctx.setSelectedIndex(index)
-                const groupIndex = (Object.keys(PortfolioData) as (keyof typeof PortfolioData)[]).indexOf(Category.Projects);
+                const groupIndex = (Object.keys(PortfolioData) as (keyof typeof PortfolioData)[]).indexOf(Category.Projects)
                 if (groupIndex !== -1) {
                     prjctx.setGroupVisibilities((prev) => {
-                        const newVisibilities = [...prev];
-                        newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() };
-                        return newVisibilities;
+                        const newVisibilities = [...prev]
+                        newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() }
+                        return newVisibilities
                     })
                 }
             }
@@ -220,29 +165,70 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 <p style={lexendGiga.style} className="pb-1 border-b-3 text-2xl 2xl:text-3xl">
                     {project.name}
                 </p>
-                <div className="h-1/1 overflow-y-auto">
-                    <div className="bg-orange-200/40 p-4 max-h-50 xl:max-h-80 2xl:max-h-100 overflow-auto rounded-b-xl w-1/1">
-                        {project.description.map((description) => (
-                            <p className="m-4" key={description}>
-                                {description}
+                <div className="bg-orange-200/40 p-4 max-h-50 xl:h-2/5 2xl:max-h-100 overflow-auto rounded-b-xl w-1/1">
+                    {project.description.map((description) => (
+                        <p className="m-4" key={description}>
+                            {description}
+                        </p>
+                    ))}
+                    <p className="m-4 text-xl"> Features </p>
+                    <div>
+                        {project.features?.map((feature) => (
+                            <p className="m-2" key={feature}>
+                                {' '}
+                                - {feature}{' '}
                             </p>
                         ))}
-                        <p className="m-4 text-xl"> Features </p>
-                        <div>
-                            {project.features?.map((feature) => (
-                                <p className="m-2" key={feature}>
-                                    {' '}
-                                    - {feature}{' '}
-                                </p>
-                            ))}
-                        </div>
                     </div>
-                    <div className="flex">
-                        <div className="relative bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3 h-80 aspect-auto overflow-hidden flex justify-center items-center">
-                            {project.image && <img src={project.image} alt={project.image} className="p-2 max-h-80 w-auto rounded-2xl" />}
-                        </div>
-                        <TechStackList technologies={project.technologies} onTechClick={handleTechClick} />
+                </div>
+                <div className="flex h-330 3xl:h-460">
+                    <div className="bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3 h-2/7 aspect-auto overflow-hidden flex justify-center items-center">
+                        {project.image && <img src={project.image} alt={project.image} className="p-2 max-h-80 2xl:max-h-120 w-auto rounded-2xl" />}
                     </div>
+                    <ul className=" bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl h-2/7 overflow-y-scroll overflow-x-clip w-1/2">
+                        <p className="p-2 text-[var(--foreground)] text-3xl">Stack</p>
+                        {project.technologies.map((technology) => {
+                            let foundTool: Tool | undefined
+                            for (const category of Object.values(PortfolioData)) {
+                                if (Object.prototype.hasOwnProperty.call(category, technology)) {
+                                    foundTool = category[technology] as Tool
+                                    break
+                                }
+                            }
+
+                            if (foundTool) {
+                                return (
+                                    <TechStackButton
+                                        key={technology}
+                                        technology={technology}
+                                        onClick={() => handleTechClick(technology)}
+                                    />
+                                )
+                            }
+                            // fallback: just show the technology name
+                            return (
+                                <button
+                                    key={technology + ' container'}
+                                    className="flex items-center p-4 rounded-lg w-full text-xl text-right duration-200"
+                                    tabIndex={-1}
+                                    disabled
+                                >
+                                    <div className="flex justify-center">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            key={technology + ' logo'}
+                                            alt={technology}
+                                            src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
+                                            className={'h-10 aspect-auto'}
+                                        />
+                                    </div>
+                                    <li className="grow ml-3" key={technology}>
+                                        {technology}
+                                    </li>
+                                </button>
+                            )
+                        })}
+                    </ul>
                 </div>
             </>)
         }
@@ -266,15 +252,15 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 </div>
             </>)
         }
-        card = <div ref={cardRef} className="absolute
-            z-2
+        card = <div ref={cardRef} className={`absolute
+            ${isPrevious ? "-z-10" : "z-10"}
             top-40
-            left-10
-            w-180 xl:w-220 2xl:w-7/10
-            "
+            left-10 xl:left-1/24 3xl:left-1/12 4xl:left-1/6
+            max-w-400 w-180 xl:w-220 2xl:w-7/10
+            `}
         >{card}</div>
     }
-    
+
 
     if (!selected) {
         card = (

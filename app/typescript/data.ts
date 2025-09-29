@@ -121,7 +121,8 @@ export const Tools: Record<string, Tool> = {
     TypeScript: {
         id: 'TypeScript', name: 'TypeScript',
         projects: ['ScrapStack', 'JSThread', 'Portfolio'], notes: [
-            'I\'ve had several months of professional TypeScript experience and it is my go-to language for personal projects.'
+            'I\'ve had several months of professional TypeScript experience and it is my go-to language for personal projects.',
+            "Sometimes, when I write .toArray(), I close my eyes and imagine I'm using Java Streams. Just kidding who want to imagine that."
         ]
     },
     Java: {
@@ -138,19 +139,24 @@ export const Tools: Record<string, Tool> = {
     },
     CSS: {
         id: 'CSS', name: 'CSS',
-        projects: ['ScrapStack', 'Portfolio'], notes: []
+        projects: ['Scrapstack', 'Portfolio'], notes: []
     },
     HTML: {
         id: 'HTML', name: 'HTML',
-        projects: ['ScrapStack', 'JSThread', 'Portfolio'], notes: []
+        projects: ['Scrapstack', 'JSThread', 'Portfolio'], notes: []
     },
     React: {
         id: 'React', name: 'React',
-        projects: ['ScrapStack', 'Portfolio', 'Chess App'], notes: []
+        notes: [
+            "There's a lot to learn about Git, but as of recently, there are two guiding principals that made improved my ability to use React:",
+            " - Only split components when there is a meaningful chance of reuse",
+            " - Think really hard any time you want to use a useEffect"
+        ],
+        projects: ['Scrapstack', 'Portfolio', 'Chess App'],
     },
     Tailwind: {
         id: 'Tailwind', name: 'Tailwind',
-        projects: ['ScrapStack', 'JSThread', 'Portfolio'], notes: [],
+        projects: ['Scrapstack', 'JSThread', 'Portfolio'], notes: [],
     },
     Nextjs: {
         id: 'Next.js', name: 'Next.js',
@@ -162,7 +168,10 @@ export const Tools: Record<string, Tool> = {
     },
     Expressjs: {
         id: 'Express.js', name: 'Express.js',
-        projects: ['ScrapStack'], notes: ['I\'ve leveraged Expressjs as a nginx substitute, creating a reverse proxy to divert traffic to multiple locally hosted services.']
+        projects: ['Scrapstack'], notes: [
+            'I\'ve leveraged Express.js as a nginx substitute, creating a reverse proxy to divert traffic to my machine to multiple locally hosted services.',
+            'Since then I\'ve gone the way of the cloud and don\'t use it much anymore.'
+        ]
     },
     AWS: {
         id: 'AWS', name: 'AWS',
@@ -178,15 +187,16 @@ export const Tools: Record<string, Tool> = {
     },
     Terraform: {
         id: 'Terraform', name: 'Terraform',
-        projects: ['ScrapStack'], notes: [
-            'With only scattered experience with Terraform, I am not an expert.',
-            'Stil, I created a CLI to automate the editing of Terraform files. You provide a series of template files with blanks, put specially formatted markers in your code, and then run the CLI with whatever you want filled in the blanks. It could add new blocks or edit existing ones.',
-            'It saved not only a ton of time for myself, but also meant the other contributors on my project were able to use Terraform without any Terraform/cloud knowledge.'
+        projects: ['Scrapstack'], notes: [
+            'A unique part of IaC is its ability to be automated.',
+            'I created a CLI to automate the editing of Terraform files. You provide a series of template files with blanks, put specially formatted markers in your code, and then run the CLI with whatever you want filled in the blanks. It could add new blocks or edit existing ones.',
+            'Granted, this was before I realized a "module" could be used multiple times, but it still saved me time when editing common files was unavoidable.',
+            'Either way, it meant the other contributors on my project were able to use Terraform without any Terraform/cloud knowledge.'
         ]
     },
     PostgreSQL: {
         id: 'PostgreSQL', name: 'PostgreSQL',
-        projects: ['ScrapStack', 'Chat App'], notes: []
+        projects: ['Scrapstack', 'Chat App'], notes: []
     },
     MySQL: {
         id: 'MySQL', name: 'MySQL',
@@ -206,7 +216,10 @@ export const Tools: Record<string, Tool> = {
     },
     Git: {
         id: 'Git', name: 'Git',
-        projects: [], notes: ['I\'m proud of my profciency with Git! I\'ve heard its an undervalued skill, but like with a lot of things, it\'s worth getting to know.']
+        projects: [], notes: [
+            'There\'s far too much to know about Git for me to claim im good at it, but what I can say is that I can use Git to make my coworkers\' lives a lot easier through hunk/single-line commits.',
+            'But, don\'t look at my personal projects. Their commit histories are... unsavory.'
+        ]
     },
     Figma: {
         id: 'Figma', name: 'Figma',

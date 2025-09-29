@@ -57,7 +57,7 @@ export const PortfolioData: Record<Category, Record<string, PortfolioItem>> = {
         'Apps Script': Tools.AppsScript,
     },
     [Category.Backend]: {
-        'ScrapStack Beta': Projects.ScrapstackBeta,
+        'Scrapstack Beta': Projects.ScrapstackBeta,
         'YoLink Center': Projects.YoLinkCenter,
         'Python': Tools.Python,
     },
