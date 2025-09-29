@@ -165,7 +165,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 <p style={lexendGiga.style} className="pb-1 border-b-3 text-2xl 2xl:text-3xl">
                     {project.name}
                 </p>
-                <div className="bg-orange-200/40 p-4 max-h-50 xl:h-2/5 2xl:max-h-100 overflow-auto rounded-b-xl w-1/1">
+                <div className="bg-orange-200/40 p-4 max-h-50 xl:max-h-2/5 2xl:max-h-100 h-fit overflow-auto rounded-b-xl w-1/1">
                     {project.description.map((description) => (
                         <p className="m-4" key={description}>
                             {description}
@@ -181,7 +181,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                         ))}
                     </div>
                 </div>
-                <div className="flex h-4/5 3xl:h-460">
+                <div className="flex h-4/5 2xl:h-280 3xl:h-460">
                     <div className="relative bg-orange-200/40 mt-4 mr-2 p-1 rounded-xl w-2/3 h-2/7 aspect-auto overflow-hidden flex justify-center items-center">
                         {project.image && <img src={project.image} alt={project.image} className="max-h-full w-auto rounded-2xl" />}
                     </div>
