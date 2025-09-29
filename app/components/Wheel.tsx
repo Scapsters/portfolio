@@ -41,9 +41,14 @@ export default function Wheel() {
     // Set scroll since selection
     useEffect(() => {
         const ref = wheelHoverRef.current
+        const circleScrollRef = circleRef.current
         const scrollHandler = () => setScrollSinceSelection(true)
         ref?.addEventListener("wheel", scrollHandler)
-        return () => ref?.removeEventListener("wheel", scrollHandler)
+        circleScrollRef?.addEventListener("wheel", scrollHandler)
+        return () => {
+            ref?.removeEventListener("wheel", scrollHandler)
+            circleScrollRef?.removeEventListener("wheel", scrollHandler)
+        }
     })
     
     // Store item refs for central handling of rotation
