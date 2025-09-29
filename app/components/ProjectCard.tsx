@@ -221,7 +221,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                     {project.name}
                 </p>
                 <div className="h-1/1 overflow-y-auto">
-                    <div className="bg-orange-200/40 p-4 rounded-b-xl w-1/1">
+                    <div className="bg-orange-200/40 p-4 max-h-50 xl:max-h-80 2xl:max-h-100 overflow-auto rounded-b-xl w-1/1">
                         {project.description.map((description) => (
                             <p className="m-4" key={description}>
                                 {description}
@@ -238,8 +238,8 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                         </div>
                     </div>
                     <div className="flex">
-                        <div className="relative bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3 h-80 aspect-auto overflow-hidden flex items-center">
-                            {project.image && <img src={project.image} alt={project.image} className="p-2 h-min rounded-2xl" />}
+                        <div className="relative bg-orange-200/40 mt-4 mr-2 p-4 rounded-xl w-2/3 h-80 aspect-auto overflow-hidden flex justify-center items-center">
+                            {project.image && <img src={project.image} alt={project.image} className="p-2 max-h-80 w-auto rounded-2xl" />}
                         </div>
                         <TechStackList technologies={project.technologies} onTechClick={handleTechClick} />
                     </div>
@@ -270,7 +270,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
             z-2
             top-40
             left-10
-            w-230
+            w-180 xl:w-220 2xl:w-7/10
             "
         >{card}</div>
     }
