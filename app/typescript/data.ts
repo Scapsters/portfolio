@@ -120,9 +120,9 @@ export const Projects = {
 export const Tools: Record<string, Tool> = {
     TypeScript: {
         id: 'TypeScript', name: 'TypeScript',
-        projects: ['ScrapStack', 'JSThread', 'Portfolio'], notes: [
+        projects: ['Scrapstack', 'JSThread', 'Portfolio'], notes: [
             'I\'ve had several months of professional TypeScript experience and it is my go-to language for personal projects.',
-            "Sometimes, when I write .toArray(), I close my eyes and imagine I'm using Java Streams. Just kidding who want to imagine that."
+            "Sometimes, when I write .toArray(), I close my eyes and imagine I'm using Java Streams. Just kidding who wants to imagine that."
         ]
     },
     Java: {
@@ -148,9 +148,9 @@ export const Tools: Record<string, Tool> = {
     React: {
         id: 'React', name: 'React',
         notes: [
-            "There's a lot to learn about Git, but as of recently, there are two guiding principals that made improved my ability to use React:",
+            "There's a lot to learn about React, but as of recently, there are two guiding principals that made improved my ability to use React:",
             " - Only split components when there is a meaningful chance of reuse",
-            " - Think really hard any time you want to use a useEffect"
+            " - Think really hard any time you want to use a useEffect",
         ],
         projects: ['Scrapstack', 'Portfolio', 'Chess App'],
     },
@@ -164,7 +164,7 @@ export const Tools: Record<string, Tool> = {
     },
     Bootstrap: {
         id: 'Bootstrap', name: 'Bootstrap',
-        projects: ['Nightclub Tracker'], notes: [],
+        projects: ['Club Tracker'], notes: [],
     },
     Expressjs: {
         id: 'Express.js', name: 'Express.js',
@@ -218,7 +218,7 @@ export const Tools: Record<string, Tool> = {
         id: 'Git', name: 'Git',
         projects: [], notes: [
             'There\'s far too much to know about Git for me to claim im good at it, but what I can say is that I can use Git to make my coworkers\' lives a lot easier through hunk/single-line commits.',
-            'But, don\'t look at my personal projects. Their commit histories are... unsavory.'
+            'It\'s not always worth it to take the time to use Git nicely, but in team environments its usually preferrable.'
         ]
     },
     Figma: {
@@ -229,7 +229,7 @@ export const Tools: Record<string, Tool> = {
         id: 'Apps Script', name: 'Apps Script',
         projects: [], notes: [
             'While not a conventional technology, I was introduced to spreadsheet scripting by Apps Script.',
-            'I used it to create a visualizer for a mood tracker-style Sheet. It was mostly a fancy formatter, parsing words and numbers to decide what colors to shade cells with, but it was context aware, allowing it to shade in regions between two specifically formatted cells.'
+            'I used it to create a visualizer for a mood tracker-style Sheet. It was mostly a fancy formatter, parsing words and numbers to decide what colors to shade cells with, but it was context aware, allowing it to shade in regions between two specifically formatted cells in order to fill in gaps created by sleep.'
         ]
     }
 };
