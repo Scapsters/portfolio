@@ -21,7 +21,6 @@ export default function Home() {
             }
         )
     )
-    console.log(groupVisibilities)
 
     const projectContext = {
         selected, setSelected,
@@ -31,16 +30,14 @@ export default function Home() {
         groupVisibilities, setGroupVisibilities
     }
 
-    return (
-        <>
-            <Infocard></Infocard>
-            <div className="flex">
-                <ProjectContext value={projectContext}>
-                    <ProjectCard isPrevious={false} current={selected}/>
-                    <ProjectCard isPrevious={true} current={previousSelected}/>
-                    <Wheel/>
-                </ProjectContext>
-            </div>
-        </>
-    )
+    return (<>
+        <Infocard></Infocard>
+        <div className="flex">
+            <ProjectContext value={projectContext}>
+                <ProjectCard key={selected?.id} isPrevious={false} current={selected}/>
+                <ProjectCard key={previousSelected?.id} isPrevious={true} current={previousSelected}/>
+                <Wheel/>
+            </ProjectContext>
+        </div>
+    </>)
 }
