@@ -15,7 +15,7 @@ export function Group({
         }, 
         groupVisibilities?: React.RefObject<Visibility[]>
     }>) {
-    console.log('render')
+    
     return (<>
         <ItemWrapper ref={itemRefs.headerRef} isHeader={true}>
             <Header text={header} toggleSection={() => {
