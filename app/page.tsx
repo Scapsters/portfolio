@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import Wheel from './components/Wheel'
 import { ProjectCard } from './components/ProjectCard'
 import Infocard from './components/Infocard'
@@ -10,25 +10,24 @@ import { ProjectContext, Visibility } from './contexts'
 export default function Home() {
     const [selected, setSelected] = useState<Project | Tool | null | undefined>(undefined)
     const [selectedIndex, setSelectedIndex] = useState<number | null>(0)
-    const [scrollSinceSelection, setScrollSinceSelection] = useState(false)
+    const scrollSinceSelection = useRef(false)
 
     const [previousSelected, setPreviousSelected] = useState<Project | Tool | null | undefined>(undefined)
 
-    const [groupVisibilities, setGroupVisibilities] = useState<Visibility[]>(
+    const groupVisibilities = useRef<Visibility[]>(
         new Array(Object.keys(PortfolioData).length).fill(null).map(
             (_, index) => {
                 return { visible: index === 0, timeSet: performance.now() }
             }
         )
     )
-    console.log(groupVisibilities)
 
     const projectContext = {
         selected, setSelected,
         selectedIndex, setSelectedIndex,
-        scrollSinceSelection, setScrollSinceSelection,
+        scrollSinceSelection,
         previousSelected, setPreviousSelected,
-        groupVisibilities, setGroupVisibilities
+        groupVisibilities
     }
 
     return (

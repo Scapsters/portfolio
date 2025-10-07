@@ -1,4 +1,4 @@
-import React, { createRef, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { circular_rotate, isVisible } from '../typescript/math_helpers'
 import { PortfolioData } from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
@@ -10,11 +10,11 @@ const FRICTION = 0.992
 const DEFAULT_FRAME_RATE = 60
 const EASING_DURATION = 7000
 
-function rotate(ref: HTMLDivElement, angle: number) { ref.style.setProperty('transform', `rotate(${angle}deg)`)}
+function rotate(ref: HTMLDivElement, angle: number) { ref.style.setProperty('transform', `rotate(${angle}deg)`) }
 function opacity(ref: HTMLDivElement, value: number) { ref.style.setProperty('opacity', value.toString()) }
 function width(ref: HTMLDivElement, value: number) { (ref.children[0] as HTMLDivElement).style.setProperty('width', `${600 + value}px`) }
 
-const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start 
+const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start
 const lerpRoot = (start: number, end: number, t: number) => lerp(start, end, Math.sqrt(t))
 const lerpOvershoot = (start: number, end: number, t: number) => {
     if (t < 0.5) return lerp(start, end * 2, t * 2)
@@ -26,42 +26,45 @@ export default function Wheel() {
     //eslint-disable-next-line
     const [frameRate, setFrameRate] = useState(DEFAULT_FRAME_RATE)
 
-    const [xOffset, setxOffset] = useState(700)
     const parentRef = useRef<HTMLDivElement>(null)
     const circleRef = useRef<HTMLDivElement>(null)
-    
-    // Shift items to xOffset
+
+    const projectContext = useContext(ProjectContext) 
+    const { scrollSinceSelection, groupVisibilities } = projectContext
+
+    const selectedIndexRef = useRef(projectContext.selectedIndex)
+    useEffect(() => {
+        selectedIndexRef.current = projectContext.selectedIndex
+    }, [projectContext.selectedIndex])
+
     useEffect(() => {
         const mainRefs = [parentRef, circleRef]
         mainRefs.forEach(ref => {
             if (!ref.current) return
-            ref.current.style.setProperty('transform', `translateX(-${xOffset}px)`)
+            ref.current.style.setProperty('transform', `translateX(-${projectContext.selected ? 550 : 700}px)`)
         })
-    }, [xOffset])
-    
-    const { selected, selectedIndex, scrollSinceSelection, setScrollSinceSelection , groupVisibilities, setGroupVisibilities} = useContext(ProjectContext)
-
-    useEffect(() => setxOffset(selected ? 550: 700), [selected])
+    }, [projectContext.selected])
 
     // Track hover
     const wheelHoverRef = useRef<HTMLDivElement>(null)
-    //eslint-disable-next-line
-    const [isHovered, setIsHovered] = useState(false)
-    useHoverOverWheel(wheelHoverRef, setIsHovered)
-    
+    // Thes two dont do anything
+    // const [isHovered, setIsHovered] = useState(false)
+    // useHoverOverWheel(wheelHoverRef, setIsHovered)
+
     // Set scroll since selection
     useEffect(() => {
+        if (!scrollSinceSelection) return
         const ref = wheelHoverRef.current
         const circleScrollRef = circleRef.current
-        const scrollHandler = () => setScrollSinceSelection(true)
+        const scrollHandler = () => scrollSinceSelection.current = true
         ref?.addEventListener("wheel", scrollHandler)
         circleScrollRef?.addEventListener("wheel", scrollHandler)
         return () => {
             ref?.removeEventListener("wheel", scrollHandler)
             circleScrollRef?.removeEventListener("wheel", scrollHandler)
         }
-    }, [setScrollSinceSelection])
-    
+    }, [scrollSinceSelection])
+
     // Store item refs for central handling of rotation
     const itemRefs = useRef( // Organized per section with header, main items, and a gap between
         Object.entries(PortfolioData).map((entry) => {
@@ -74,11 +77,11 @@ export default function Wheel() {
         })
     )
     const flatItemRefs = useMemo(() => // Just flattened the original array
-        itemRefs.current.flatMap(item => [item.headerRef, ...item.itemRefs, item.blankRef]), 
+        itemRefs.current.flatMap(item => [item.headerRef, ...item.itemRefs, item.blankRef]),
         [itemRefs]
     )
 
-    const totalTime = useRef(0) 
+    const totalTime = useRef(0)
 
     const hasSetTransition = useRef(false)
     if (!hasSetTransition.current && totalTime.current > 1200) { // For some reason
@@ -100,91 +103,9 @@ export default function Wheel() {
 
     const effectiveSelectedIndex = useRef(0)
 
-    let extraItems = 0
-    let absoluteIndex = 0
-    const updateEverything = (
-        ref: HTMLDivElement, 
-        timeSinceChange: number,
-        groupIndex: number,
-        isHeader: boolean = false
-    ) => {
-        const isSelectedIndex = selectedIndex === absoluteIndex
-        if (isSelectedIndex) effectiveSelectedIndex.current = extraItems + groupIndex
-
-        // Opacity
-        const nextOpacity = lerpRoot(
-            currentOpacities.current[absoluteIndex], 
-            groupVisibilities[groupIndex].visible || isHeader ? 1 : 0, 
-            Math.min(timeSinceChange / EASING_DURATION, 1)
-        )
-        currentOpacities.current[absoluteIndex] = nextOpacity
-        opacity(ref, nextOpacity)
-        
-        // Rotation
-        const offset = lerpRoot(
-            currentOffsets.current[absoluteIndex], 
-            extraItems, 
-            Math.min(timeSinceChange / EASING_DURATION, 1)
-        )
-        currentOffsets.current[absoluteIndex] = offset
-        const angle = -circular_rotate(groupIndex + offset, position.current)
-        rotate(ref, angle)
-
-        // X Offset
-        const nextXOffset = lerpOvershoot(
-            currentXOffsets.current[absoluteIndex],
-            groupVisibilities[groupIndex].visible || isHeader ? 0 : 400,
-            Math.min(timeSinceChange / EASING_DURATION, 1)
-        )
-        currentXOffsets.current[absoluteIndex] = nextXOffset
-        width(ref, nextXOffset)
-
-        // Visibility
-        if (isVisible(groupIndex + offset, position.current)) {
-        } else {
-            opacity(ref, .1)
-        }
-
-        // Indices
-        if (groupVisibilities[groupIndex].visible) 
-            extraItems++
-
-        absoluteIndex++
-    }
-    
-    itemRefs.current.forEach((group, groupIndex) => {
-        const timeSet = groupVisibilities[groupIndex].timeSet
-        const timeSinceSet = performance.now() - timeSet
-
-        if (group.headerRef.current) updateEverything(group.headerRef.current, timeSinceSet, groupIndex, true)
-        
-        group.itemRefs.forEach(item => {
-            if (item.current) updateEverything(item.current, timeSinceSet, groupIndex)
-        })
-        absoluteIndex++ // idk why
-        if (group.blankRef.current) updateEverything(group.blankRef.current, timeSinceSet, groupIndex)
-    })
-
     const tabRef1 = useRef<HTMLDivElement>(null)
     const tabRef2 = useRef<HTMLDivElement>(null)
     const tabRef3 = useRef<HTMLDivElement>(null)
-    if (tabRef1.current && tabRef2.current && tabRef3.current) {
-        rotate(tabRef1.current, -circular_rotate(0, position.current))
-        rotate(tabRef2.current, -circular_rotate(0, position.current))
-        rotate(tabRef3.current, -circular_rotate(0, position.current))
-    }
-
-    // Physics loop
-    if (!scrollSinceSelection && effectiveSelectedIndex) { // Move wheel to selected item
-        const current_angle = circular_rotate(effectiveSelectedIndex.current ?? 0, position.current)
-        const target_angle = circular_rotate(0, 0)
-        const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
-        velocity.current = velocity.current 
-            + Math.pow(Math.tanh(delta_angle), 3) // Main function
-            * .001 // Scale for funsies 
-            * ((deltaTime.current + lag.current)/ 6) // Scale for scaries
-    }
-    velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
 
     // Scrolling
     const deltaScroll = useRef(0)
@@ -193,7 +114,7 @@ export default function Wheel() {
             deltaScroll.current += e.deltaY
         }
         const wheelHover = wheelHoverRef.current
-        const circle =  circleRef.current
+        const circle = circleRef.current
         wheelHover?.addEventListener('wheel', wheelHandler)
         circle?.addEventListener('wheel', wheelHandler)
         return () => {
@@ -201,25 +122,31 @@ export default function Wheel() {
             circle?.removeEventListener('wheel', wheelHandler)
         }
     }, [])
-    velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR 
-    deltaScroll.current = 0
+    const doScrolling = useCallback(() => {
+        velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR
+        deltaScroll.current = 0
+    }, [])
 
     // Dragging
     const deltaDrag = useRef(0)
-    useAccumulateDragging([parentRef, circleRef], deltaDrag, setScrollSinceSelection)
+    useAccumulateDragging([parentRef, circleRef], deltaDrag, scrollSinceSelection)
     const isDragging = useRef(false)
-    if (isDragging.current) {
-        if (deltaDrag.current === 0) isDragging.current = false
-        velocity.current += deltaDrag.current * DRAG_VELOCITY_FACTOR 
-        deltaDrag.current = 0
-    } else if (Math.abs(deltaDrag.current) > 1) isDragging.current = true // Only start dragging if the user drags fast enough
+    const doDragging = useCallback(() => {
+        if (isDragging.current) {
+            if (deltaDrag.current === 0) isDragging.current = false
+            velocity.current += deltaDrag.current * DRAG_VELOCITY_FACTOR
+            deltaDrag.current = 0
+        } else if (Math.abs(deltaDrag.current) > 1) isDragging.current = true // Only start dragging if the user drags fast enough
 
-    position.current += velocity.current * (deltaTime.current + lag.current) / 16
+        position.current += velocity.current * (deltaTime.current + lag.current) / 16
+    }, [])
 
-    const [, setFrame] = useState(0)
     const lastRender = useRef<number>(performance.now())
     const animationId = useRef<number | null>(null)
     useEffect(() => {
+        if (!scrollSinceSelection) return
+        if (!groupVisibilities) return
+
         let running = true
 
         let accumulator = 0
@@ -232,11 +159,98 @@ export default function Wheel() {
 
             accumulator += timeSinceAnimationFrame
             if (accumulator > deltaTime.current) {
-                setFrame(f => f + 1)
+                // Manage rendering metadata
                 totalTime.current += deltaTime.current
-                lag.current = timestamp - lastRender.current - deltaTime.current 
+                lag.current = timestamp - lastRender.current - deltaTime.current
                 lastRender.current = timestamp
                 accumulator -= deltaTime.current
+
+                // Do physics
+                if (!scrollSinceSelection.current && effectiveSelectedIndex) { // Move wheel to selected item
+                    const current_angle = circular_rotate(effectiveSelectedIndex.current ?? 0, position.current)
+                    const target_angle = circular_rotate(0, 0)
+                    const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
+                    velocity.current = velocity.current
+                        + Math.pow(Math.tanh(delta_angle), 3) // Main function
+                        * .001 // Scale for funsies 
+                        * ((deltaTime.current + lag.current) / 6) // Scale for scaries
+                }
+                velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
+
+                doDragging()
+                doScrolling()
+
+                // Move things
+                let extraItems = 0
+                let absoluteIndex = 0
+                const updateEverything = (
+                    ref: HTMLDivElement,
+                    timeSinceChange: number,
+                    groupIndex: number,
+                    isHeader: boolean = false
+                ) => {
+                    const isSelectedIndex = selectedIndexRef.current === absoluteIndex
+                    if (isSelectedIndex) effectiveSelectedIndex.current = extraItems + groupIndex
+
+                    // Opacity
+                    const nextOpacity = lerpRoot(
+                        currentOpacities.current[absoluteIndex],
+                        groupVisibilities.current[groupIndex].visible || isHeader ? 1 : 0,
+                        Math.min(timeSinceChange / EASING_DURATION, 1)
+                    )
+                    currentOpacities.current[absoluteIndex] = nextOpacity
+                    opacity(ref, nextOpacity)
+
+                    // Rotation
+                    const offset = lerpRoot(
+                        currentOffsets.current[absoluteIndex],
+                        extraItems,
+                        Math.min(timeSinceChange / EASING_DURATION, 1)
+                    )
+                    currentOffsets.current[absoluteIndex] = offset
+                    const angle = -circular_rotate(groupIndex + offset, position.current)
+                    rotate(ref, angle)
+
+                    // X Offset
+                    const nextXOffset = lerpOvershoot(
+                        currentXOffsets.current[absoluteIndex],
+                        groupVisibilities.current[groupIndex].visible || isHeader ? 0 : 400,
+                        Math.min(timeSinceChange / EASING_DURATION, 1)
+                    )
+                    currentXOffsets.current[absoluteIndex] = nextXOffset
+                    width(ref, nextXOffset)
+
+                    // Visibility
+                    if (isVisible(groupIndex + offset, position.current)) {
+                    } else {
+                        opacity(ref, .1)
+                    }
+
+                    // Indices
+                    if (groupVisibilities.current[groupIndex].visible)
+                        extraItems++
+
+                    absoluteIndex++
+                }
+
+                if (tabRef1.current && tabRef2.current && tabRef3.current) {
+                    rotate(tabRef1.current, -circular_rotate(0, position.current))
+                    rotate(tabRef2.current, -circular_rotate(0, position.current))
+                    rotate(tabRef3.current, -circular_rotate(0, position.current))
+                }
+
+                itemRefs.current.forEach((group, groupIndex) => {
+                    const timeSet = groupVisibilities.current[groupIndex].timeSet
+                    const timeSinceSet = performance.now() - timeSet
+
+                    if (group.headerRef.current) updateEverything(group.headerRef.current, timeSinceSet, groupIndex, true)
+
+                    group.itemRefs.forEach(item => {
+                        if (item.current) updateEverything(item.current, timeSinceSet, groupIndex)
+                    })
+                    absoluteIndex++ // idk why
+                    if (group.blankRef.current) updateEverything(group.blankRef.current, timeSinceSet, groupIndex)
+                })
             }
             timeOfLastAnimationFrame = timestamp
             animationId.current = requestAnimationFrame(frameLoop)
@@ -261,32 +275,32 @@ export default function Wheel() {
             document.removeEventListener('visibilitychange', tabOutHandler)
         }
 
-    }, [])
-
+    }, [doDragging, doScrolling, groupVisibilities, scrollSinceSelection])
+    
     const items = useMemo(() => {
         let globalIndex = 0
         return Object.entries(PortfolioData).map((entry, index) => {
 
             const items = Object.values(entry[1])
             const sectionLength = items.length + 2 // One for header, one for gap between sections
-            
+
             const section = (
-                <Group 
-                    key={entry[0]} 
-                    header={entry[0]} 
+                <Group
+                    key={entry[0]}
+                    header={entry[0]}
                     groupIndex={index}
                     items={Object.values(entry[1])}
                     startingIndex={globalIndex}
                     itemRefs={itemRefs.current[index]}
-                    setGroupVisibilities={setGroupVisibilities}
-                    >
+                    groupVisibilities={groupVisibilities}
+                >
                 </Group>
             )
-            
+
             globalIndex += sectionLength
             return section
         })
-    }, [setGroupVisibilities])
+    }, [groupVisibilities])
 
     return (<>
         <div
@@ -312,7 +326,7 @@ export default function Wheel() {
                 ref={parentRef}
                 className="top-1/2 absolute transition-transform translate-x-140 duration-1000 ease-in-out"
             >
-                {items} 
+                {items}
             </div>
         </div>
     </>)
@@ -365,6 +379,7 @@ function FrameRateSelector({
     )
 }
 
+//eslint-disable-next-line
 function useHoverOverWheel(
     wheelHoverRef: React.RefObject<HTMLDivElement | null>,
     setIsHovered: React.Dispatch<React.SetStateAction<boolean>>,
@@ -386,12 +401,14 @@ function useHoverOverWheel(
 function useAccumulateDragging(
     refs: React.RefObject<HTMLDivElement | null>[],
     deltaDrag: React.RefObject<number>,
-    setScrollSinceSelection: React.Dispatch<React.SetStateAction<boolean>>,
+    scrollSinceSelection?: React.RefObject<boolean>,
 ) {
     const isDragging = useRef(false)
     const lastDragY = useRef(0)
 
     useEffect(() => {
+        if (!scrollSinceSelection) return
+
         const onMouseDown = (e: MouseEvent | TouchEvent) => {
             isDragging.current = true
             lastDragY.current = 'touches' in e ? e.touches[0].clientY : e.clientY
@@ -404,7 +421,7 @@ function useAccumulateDragging(
 
             if (isDragging.current) {
                 deltaDrag.current -= deltaY
-                setScrollSinceSelection(true)
+                scrollSinceSelection.current = true
             }
         }
 
@@ -441,5 +458,5 @@ function useAccumulateDragging(
             window.removeEventListener('touchend', onMouseUp)
             window.removeEventListener('touchcancel', onMouseUp)
         }
-    }, [deltaDrag, setScrollSinceSelection, refs])
+    }, [deltaDrag, scrollSinceSelection, refs])
 }
