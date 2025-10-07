@@ -34,8 +34,8 @@ export default function Home() {
         <Infocard></Infocard>
         <div className="flex">
             <ProjectContext value={projectContext}>
-                <ProjectCard key={selected?.id} isPrevious={false} current={selected}/>
-                <ProjectCard key={previousSelected?.id} isPrevious={true} current={previousSelected}/>
+                <ProjectCard isPrevious={false} current={selected}/>
+                <ProjectCard isPrevious={true} current={previousSelected}/>
                 <Wheel/>
             </ProjectContext>
         </div>
