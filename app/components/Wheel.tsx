@@ -10,6 +10,17 @@ const FRICTION = 0.992
 const DEFAULT_FRAME_RATE = 60
 const EASING_DURATION = 7000
 
+function rotate(ref: HTMLDivElement, angle: number) { ref.style.setProperty('transform', `rotate(${angle}deg)`)}
+function opacity(ref: HTMLDivElement, value: number) { ref.style.setProperty('opacity', value.toString()) }
+function width(ref: HTMLDivElement, value: number) { (ref.children[0] as HTMLDivElement).style.setProperty('width', `${600 + value}px`) }
+
+const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start 
+const lerpRoot = (start: number, end: number, t: number) => lerp(start, end, Math.sqrt(t))
+const lerpOvershoot = (start: number, end: number, t: number) => {
+    if (t < 0.5) return lerp(start, end * 2, t * 2)
+    return lerp(end * 2, end, t * 2 - 1)
+}
+
 export default function Wheel() {
 
     //eslint-disable-next-line
@@ -49,7 +60,7 @@ export default function Wheel() {
             ref?.removeEventListener("wheel", scrollHandler)
             circleScrollRef?.removeEventListener("wheel", scrollHandler)
         }
-    })
+    }, [setScrollSinceSelection])
     
     // Store item refs for central handling of rotation
     const itemRefs = useRef( // Organized per section with header, main items, and a gap between
@@ -80,17 +91,6 @@ export default function Wheel() {
     const currentOpacities = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
     const currentXOffsets = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
 
-    function rotate(ref: HTMLDivElement, angle: number) { ref.style.setProperty('transform', `rotate(${angle}deg)`)}
-    function opacity(ref: HTMLDivElement, value: number) { ref.style.setProperty('opacity', value.toString()) }
-    function width(ref: HTMLDivElement, value: number) { (ref.children[0] as HTMLDivElement).style.setProperty('width', `${600 + value}px`) }
-    
-    const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start 
-    const lerpRoot = (start: number, end: number, t: number) => lerp(start, end, Math.sqrt(t))
-    const lerpOvershoot = (start: number, end: number, t: number) => {
-        if (t < 0.5) return lerp(start, end * 2, t * 2)
-        return lerp(end * 2, end, t * 2 - 1)
-    }
-
     // Frame data
     const lag = useRef(0)
     const velocity = useRef(0)
@@ -102,12 +102,12 @@ export default function Wheel() {
 
     let extraItems = 0
     let absoluteIndex = 0
-    function updateEverything(
+    const updateEverything = (
         ref: HTMLDivElement, 
         timeSinceChange: number,
         groupIndex: number,
         isHeader: boolean = false
-    ) {
+    ) => {
         const isSelectedIndex = selectedIndex === absoluteIndex
         if (isSelectedIndex) effectiveSelectedIndex.current = extraItems + groupIndex
 
@@ -200,7 +200,7 @@ export default function Wheel() {
             wheelHover?.removeEventListener('wheel', wheelHandler)
             circle?.removeEventListener('wheel', wheelHandler)
         }
-    })
+    }, [])
     velocity.current += deltaScroll.current * SCROLL_VELOCITY_FACTOR 
     deltaScroll.current = 0
 
