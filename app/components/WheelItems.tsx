@@ -3,7 +3,7 @@ import { getItemColor, Project, Tool } from "@/typescript/wheel_info";
 import { useContext, useEffect, useMemo, useRef } from "react";
 
 export function Group({
-    header, items, groupIndex, startingIndex, itemRefs, setGroupVisibilities
+    header, items, groupIndex, startingIndex, itemRefs, groupVisibilities
 }: Readonly<{ 
         header: string, 
         items: (Tool | Project)[], 
@@ -13,16 +13,19 @@ export function Group({
             headerRef: React.RefObject<HTMLDivElement | null>, 
             itemRefs: (React.RefObject<HTMLDivElement | null>)[] 
         }, 
-        setGroupVisibilities: React.Dispatch<React.SetStateAction<Visibility[]>>
+        groupVisibilities?: React.RefObject<Visibility[]>
     }>) {
+    
     return (<>
         <ItemWrapper ref={itemRefs.headerRef} isHeader={true}>
             <Header text={header} toggleSection={() => {
-                setGroupVisibilities(prev => [
-                    ...prev.slice(0, groupIndex).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
-                    { visible: !prev[groupIndex].visible, timeSet: performance.now() },
-                    ...prev.slice(groupIndex + 1).map(prev => ({ visible: prev.visible, timeSet: performance.now() })),
-                ]);
+                if (!groupVisibilities) return
+
+                const array = groupVisibilities.current
+                if (!array || !array[groupIndex]) return
+
+                array.forEach(item => item.timeSet = performance.now())
+                array[groupIndex].visible = !array[groupIndex].visible
             }}/>
         </ItemWrapper>
         {items.map((item, index) => {
@@ -51,7 +54,7 @@ function Item({ tool, index }: Readonly<{ tool: Tool | Project; index: number }>
         selected,
         setSelected,
         setSelectedIndex,
-        setScrollSinceSelection, 
+        scrollSinceSelection,
         setPreviousSelected, 
     } = useContext(ProjectContext)
 
@@ -73,7 +76,7 @@ function Item({ tool, index }: Readonly<{ tool: Tool | Project; index: number }>
             style={{color: getItemColor(tool.id)}}
             className="left-0 p-3 w-max h-max text-[var(--dark-text)] cursor-pointer text-right transition-[padding-right, color] duration-200 ease-out"
             onClick={() => {
-                setScrollSinceSelection(false)
+                if (scrollSinceSelection) scrollSinceSelection.current = false
 
                 setPreviousSelected(selected)
 
@@ -91,7 +94,7 @@ function Item({ tool, index }: Readonly<{ tool: Tool | Project; index: number }>
             onMouseLeave={handleItemUnhover}
         >{tool.id}</button>
         ,
-        [tool, setScrollSinceSelection, setPreviousSelected, selected, setSelected, setSelectedIndex, index]
+        [tool, scrollSinceSelection, setPreviousSelected, selected, setSelected, setSelectedIndex, index]
     )
 
     return itemMemo

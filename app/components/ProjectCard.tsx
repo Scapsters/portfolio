@@ -97,7 +97,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
     const handleTechClick = useCallback(
         (technology: string) => {
 
-            prjctx.setScrollSinceSelection(false)
+            if (prjctx.scrollSinceSelection) prjctx.scrollSinceSelection.current = false
             prjctx.setPreviousSelected(selected)
 
 
@@ -115,14 +115,12 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 }
             }
 
-            if (foundTool && groupIndex !== -1) {
+            if (foundTool && groupIndex !== -1 && prjctx.groupVisibilities) {
                 const index = all_items_with_gaps.findIndex((item) => item === foundTool.id)
                 prjctx.setSelectedIndex(index)
-                prjctx.setGroupVisibilities((prev) => {
-                    const newVisibilities = [...prev]
+                const newVisibilities = [...prjctx.groupVisibilities.current]
                     newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() }
-                    return newVisibilities
-                })
+                    prjctx.groupVisibilities.current = newVisibilities
                 prjctx.setSelected(foundTool)
             }
         }, [prjctx, selected],
@@ -130,7 +128,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
 
     const handleProjectClick = useCallback(
         (project: string) => {
-            prjctx.setScrollSinceSelection(false)
+            if (prjctx.scrollSinceSelection) prjctx.scrollSinceSelection.current = false
             prjctx.setPreviousSelected(selected)
 
 
@@ -140,12 +138,10 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 const index = all_items_with_gaps.indexOf(projectItem.id)
                 prjctx.setSelectedIndex(index)
                 const groupIndex = (Object.keys(PortfolioData) as (keyof typeof PortfolioData)[]).indexOf(Category.Projects)
-                if (groupIndex !== -1) {
-                    prjctx.setGroupVisibilities((prev) => {
-                        const newVisibilities = [...prev]
-                        newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() }
-                        return newVisibilities
-                    })
+                if (groupIndex !== -1 && prjctx.groupVisibilities) {
+                    const newVisibilities = [...prjctx.groupVisibilities.current]
+                    newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() }
+                    prjctx.groupVisibilities.current = newVisibilities
                 }
             }
         },
