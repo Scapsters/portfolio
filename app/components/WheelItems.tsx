@@ -21,11 +21,11 @@ export function Group({
             <Header text={header} toggleSection={() => {
                 if (!groupVisibilities) return
 
-                const visArray = groupVisibilities.current
-                if (!visArray || !visArray[groupIndex]) return
+                const array = groupVisibilities.current
+                if (!array || !array[groupIndex]) return
 
-                visArray[groupIndex].visible = !visArray[groupIndex].visible
-                visArray[groupIndex].timeSet = performance.now()
+                array.forEach(item => item.timeSet = performance.now())
+                array[groupIndex].visible = !array[groupIndex].visible
             }}/>
         </ItemWrapper>
         {items.map((item, index) => {
