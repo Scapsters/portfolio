@@ -1,12 +1,13 @@
 
 export type Item = {
-    id: string;
-    name: string;
-    description: string[];
-    links: string[];
-    date?: string;
-    github?: string;
-    demo?: string;
+    id: string
+    name: string
+    description: string[]
+    links: string[]
+    images?: string[]
+    date?: string
+    github?: string
+    demo?: string
 };
 
 export const Projects: Record<string, Item> = {
@@ -19,6 +20,7 @@ export const Projects: Record<string, Item> = {
         ],
         links: ['React', 'TypeScript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB Atlas', 'Terraform', 'Cloudflare Wrangler', 'Cloudflare Workers', 'AWS Lambda'],
         date: 'July 2025 - Present',
+        images: ['scrapstack/banner.png', 'furryslop/preview.png', 'portfolio/portfolio.png'],
         demo: 'https://scrapstack.net',
         github: 'https://github.com/Scapsters/ScrapStack',
     },

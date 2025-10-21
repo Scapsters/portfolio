@@ -1,9 +1,10 @@
 import 'react-image-gallery/styles/css/image-gallery.css'
-import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { PortfolioData, Category } from '@/typescript/wheel_info'
 import { CursorContext, ProjectContext } from '@/contexts'
 import { all_items_with_gaps } from '../typescript/wheel_info'
 import { Item } from '@/typescript/data'
+import { AiFillCaretLeft, AiFillCaretRight } from "react-icons/ai";
 
 type ProjectCardProps = {
     current: Item | null | undefined
@@ -25,8 +26,8 @@ function TechStackButton({ technology, onClick }: Readonly<{ technology: string;
     )
 }
 
-function ExternalLink({ href, children }: { href: string, children: ReactNode }) {
-    return <a href={href} className="text-stone-200 hover:underline hover:bg-white/20 active:bg-black/10 bg-white/40 p-2 transition-colors duration-200" target="_blank" rel="noopener noreferrer">{children}</a>
+function ExternalLink({ href, children }: { href?: string, children: ReactNode }) {
+    return <a href={href} className="text-stone-200 hover:underline hover:bg-black/10 active:bg-black/30 bg-white/40 p-2 transition-colors duration-200" target="_blank" rel="noopener noreferrer">{children}</a>
 }
 
 export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps) {
@@ -68,23 +69,16 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
 
     const [opacity, setOpacity] = useState(0) // Prevent flash on loading
 
-    const cardRef0 = useRef<HTMLDivElement>(null)
-    const cardRef1 = useRef<HTMLDivElement>(null)
-    const cardRef2 = useRef<HTMLDivElement>(null)
-    const currentCardRefs = useMemo(() => [cardRef0, cardRef1, cardRef2], [])
-
-    const cardRef3 = useRef<HTMLDivElement>(null)
-    const cardRef4 = useRef<HTMLDivElement>(null)
-    const cardRef5 = useRef<HTMLDivElement>(null)
-    const previousCardRefs = useMemo(() => [cardRef3, cardRef4, cardRef5], [])
+    const currentCardRefs = useRef<(HTMLDivElement | null)[]>(new Array(7).fill(null))
+    const previousCardRefs = useRef<(HTMLDivElement | null)[]>(new Array(7).fill(null))
 
     useEffect(() => {
-        currentCardRefs.forEach((cardRef, index) => {
-            cardRef.current?.getAnimations().forEach((anim) => anim.cancel())
-            cardRef.current?.animate(
+        currentCardRefs.current.forEach((cardRef, index) => {
+            cardRef?.getAnimations().forEach((anim) => anim.cancel())
+            cardRef?.animate(
                 [
-                    { transform: 'translate(-25%, 0%)', opacity: 0 },
-                    { transform: 'translate(0%, 0%)', opacity: 1 },
+                    { opacity: 0 },
+                    { opacity: 1 },
                 ],
                 {
                     duration: 800,
@@ -93,14 +87,26 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                     fill: 'both',
                 },
             )
-        })
-        setOpacity(1) // Change from 0 to not override the animation
-        previousCardRefs.forEach((cardRef, index) => {
-            cardRef.current?.getAnimations().forEach((anim) => anim.cancel())
-            cardRef.current?.animate(
+            cardRef?.animate(
                 [
-                    { transform: 'translate(0%, 0%)', opacity: 1 },
-                    { transform: 'translate(0%, 200px)', opacity: 0 },
+                    { transform: 'translate(-25%, 0%)' },
+                    { transform: 'translate(0%, 0%)' },
+                ],
+                {
+                    duration: 800,
+                    delay: index * 300 + 800,
+                    easing: 'ease-out',
+                    fill: 'both',
+                    composite: 'add'
+                },
+            )
+        })
+        previousCardRefs.current.forEach((cardRef, index) => {
+            cardRef?.getAnimations().forEach((anim) => anim.cancel())
+            cardRef?.animate(
+                [
+                    { opacity: 1 },
+                    { opacity: 0 },
                 ],
                 {
                     duration: 500,
@@ -109,10 +115,25 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                     fill: 'both',
                 },
             )
+            cardRef?.animate(
+                [
+                    { transform: 'translate(0%, 0%)' },
+                    { transform: 'translate(0%, 200px)'  },
+                ],
+                {
+                    duration: 500,
+                    delay: index * 150,
+                    easing: 'cubic-bezier(0.42, 0, 1, 1)',
+                    fill: 'both',
+                    composite: 'add'
+                },
+            )
         })
+        setOpacity(1) // Change from 0 to not override the animation
     }, [selected, isPrevious, currentCardRefs, previousCardRefs])
 
-    const createCard = (selected: ProjectCardProps["current"], isPrevious: boolean, cardRefs: React.RefObject<HTMLDivElement | null>[]) => {
+    const [imageScroll, setImageScroll] = useState(0)
+    const createCard = (selected: ProjectCardProps["current"], isPrevious: boolean, cardRefs: React.RefObject<(HTMLDivElement | null)[]>) => {
         return (
             <div
                 className={`
@@ -122,8 +143,8 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
             >
                 <div>
                     <div className="flex gap-20 items-center flex-row-reverse">
-                        <div className="flex gap-20 flex-col">
-                            <div ref={cardRefs[1]}>
+                        <div className="flex gap-8 flex-col">
+                            <div ref={el => void (cardRefs.current[1] = el)}>
                                 {selected ? (
                                     <ProjectCardCard className="w-fit py-2">
                                         <div className="flex items-center gap-2 justify-between pr-4 flex-wrap pl-1">
@@ -140,7 +161,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                     </ProjectCardCard>
                                 )}
                             </div>
-                            <div ref={cardRefs[0]}>
+                            <div ref={el => void (cardRefs.current[0] = el)}>
                                 {selected ? (
                                     <ProjectCardCard className="p-2">
                                         {selected.description.map(line => <p className="pb-2" key={line}>{line}</p>)}
@@ -151,9 +172,56 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                     </ProjectCardCard>
                                 )}
                             </div>
+                            {selected?.images
+                                ? <>
+                                <div
+                                    className={`relative`}
+                                    ref={el => void (cardRefs.current[3] = el)}
+                                    style={{
+                                        height: selected.images.length * 6 + "rem"
+                                    }}
+                                >
+                                    {selected.images.map((image, index) => (
+                                        <div
+                                            key={image}
+                                            className={`absolute transition-transform duration-500 ease-in-out`}
+                                            style={{
+                                                transform: `
+                                                    translateY(${mod(index + imageScroll, selected.images!.length) * 4}rem) 
+                                                    translateX(${((index: number) => {
+                                                        if (index == 2) return 3
+                                                        else if (index == 1) return 12
+                                                        return 0
+                                                    })(mod(index + imageScroll, selected.images!.length))}rem
+                                                `,
+                                                zIndex: mod(index + imageScroll, selected.images!.length)
+                                            }}
+                                        >
+                                            <ProjectCardCard className="w-fit">
+                                                <img className="h-50 w-auto aspect-auto" src={image}></img>
+                                            </ProjectCardCard>
+                                        </div>
+                                    ))}
+                                    </div>
+                                    {selected.images.length > 1
+                                        ? <div
+                                            ref={el => void (cardRefs.current[4] = el)} 
+                                            className='w-full flex justify-center' 
+                                            style={{ transform: `translateY(${selected.images.length * .5 + 4}rem)` }}
+                                        >
+                                            <ProjectCardCard className="flex gap-2">
+                                                <AiFillCaretLeft size={24} className="hover:text-white hover:cursor-pointer hover:-translate-x-1 transition-all duration-150" onClick={() => setImageScroll(prev => prev + 1)}/>
+                                                <AiFillCaretRight size={24} className="hover:text-white hover:cursor-pointer hover:translate-x-1 transition-all duration-150" onClick={() => setImageScroll(prev => prev - 1)}/>
+                                            </ProjectCardCard>
+                                        </div>
+                                        : <></>
+                                    }
+                                </>
+                                : <></>
+                            }
                         </div>
                         <div className="mt-10">
-                            <div ref={cardRefs[2]}>
+                            <div ref={el => void (cardRefs.current[2] = el)}>
                                 {selected ? (
                                     <ProjectCardCard className="h-fit overflow-auto">
                                         <div className="pr-4">
@@ -229,7 +297,7 @@ function ProjectCardCard({ className, children }: { className?: string, children
             className={`${className ?? ""} bg-foreground text-stone-200 p-3`}
             style={{
                 transform: `
-                    rotateY(${Math.sin(1 / transformed[1]) * transformed[1]}deg) rotateX(${Math.sin(1 / transformed[0]) * transformed[0]}deg)
+                    rotateY(${Math.sin(1 / transformed[1]) * transformed[1] * 6}deg) rotateX(${Math.sin(1 / transformed[0]) * transformed[0] * 6}deg)
                     translateX(${transformed[0]}px) translateY(${transformed[1]}px)
                 `,
                 transformStyle: "preserve-3d",
@@ -278,4 +346,8 @@ function getElementViewportPosition(el: HTMLElement) {
     }
 
     return { x, y }
+}
+
+function mod(x: number, modulo: number) {
+    return (x % modulo + modulo) % modulo
 }

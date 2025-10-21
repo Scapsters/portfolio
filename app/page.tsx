@@ -9,7 +9,7 @@ import { ProjectContext, Visibility, CursorContext } from './contexts';
 import { Item } from './typescript/data'
 
 export default function Home() {
-    
+
     const [selected, setSelected] = useState<Item | null | undefined>(undefined)
     const [selectedIndex, setSelectedIndex] = useState<number | null>(0)
     const [previousSelected, setPreviousSelected] = useState<Item | null | undefined>(undefined)
@@ -31,9 +31,19 @@ export default function Home() {
     }
 
     const isBrowser = typeof window !== "undefined"
+    const [bypassMobile, setBypassMobile] = useState(false)
     if (isBrowser) { // Avoid messing up SSR (even if there is likely no effect)
         const isViewportWideEnough = window.innerWidth > 1100
-        if (!isViewportWideEnough) return <div className="flex items-center w-screen h-screen justify-center p-8">This portfolio does not support mobile. Please use a larger screen.</div>
+        if (!isViewportWideEnough && !bypassMobile) return (
+            <div className="flex flex-col w-screen h-screen px-12 items-center justify-center gap-10">
+                <div className="flex">
+                    This portfolio does not support mobile. Please use a larger screen.
+                </div>
+                <div onClick={() => setBypassMobile(true)} className="bg-foreground text-background p-2">
+                    View Site Anyways
+                </div>
+            </div>
+        )
     }
         
     return (<>
@@ -41,7 +51,7 @@ export default function Home() {
             <Infocard />
         </div>
         <ProjectContext value={projectContext}>
-            <div className="flex flex-row-reverse items-center h-screen">
+            <div className={`flex flex-row-reverse items-center h-screen ${bypassMobile ? "overflow-x-auto" : ""}`}>
                     <Wheel/>
                     <ProjectCards />
             </div>
@@ -50,7 +60,6 @@ export default function Home() {
 }
 
 function ProjectCards() {
-
     const [cursorPosition, setCursorPosition] = useState<[number, number]>([0, 0])
     useEffect(() => {
         const handleMove = (e: PointerEvent) => setCursorPosition([e.pageX, e.pageY])
