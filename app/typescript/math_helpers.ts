@@ -14,7 +14,7 @@ function theta(index: number, scroll: number): number {
 export const circular_rotate = (index: number, scroll: number) => theta(index, scroll) + phase
 export const isVisible = (index: number, scroll: number) => theta(index, scroll) < 180
 
-function mod(n: number, m: number) {
+export function mod(n: number, m: number) {
     return ((n % m) + m) % m
 }
 

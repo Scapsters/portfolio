@@ -5,6 +5,7 @@ import { CursorContext, ProjectContext } from '@/contexts'
 import { all_items_with_gaps } from '../typescript/wheel_info'
 import { Item } from '@/typescript/data'
 import { AiFillCaretLeft, AiFillCaretRight } from "react-icons/ai";
+import { mod } from '@/typescript/math_helpers'
 
 type ProjectCardProps = {
     current: Item | null | undefined
@@ -101,7 +102,10 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                 },
             )
         })
-        previousCardRefs.current.forEach((cardRef, index) => {
+        let cardsAnimated = 0
+        previousCardRefs.current.toReversed().forEach((cardRef) => {
+            const delay = cardsAnimated * 150
+            if (cardRef) cardsAnimated++
             cardRef?.getAnimations().forEach((anim) => anim.cancel())
             cardRef?.animate(
                 [
@@ -110,7 +114,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                 ],
                 {
                     duration: 500,
-                    delay: index * 150,
+                    delay,
                     easing: 'cubic-bezier(0.42, 0, 1, 1)',
                     fill: 'both',
                 },
@@ -122,7 +126,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                 ],
                 {
                     duration: 500,
-                    delay: index * 150,
+                    delay,
                     easing: 'cubic-bezier(0.42, 0, 1, 1)',
                     fill: 'both',
                     composite: 'add'
@@ -144,7 +148,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                 <div>
                     <div className="flex gap-20 items-center flex-row-reverse">
                         <div className="flex gap-8 flex-col">
-                            <div ref={el => void (cardRefs.current[1] = el)}>
+                            <div ref={el => void (cardRefs.current[0] = el)}>
                                 {selected ? (
                                     <ProjectCardCard className="w-fit py-2">
                                         <div className="flex items-center gap-2 justify-between pr-4 flex-wrap pl-1">
@@ -161,7 +165,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                     </ProjectCardCard>
                                 )}
                             </div>
-                            <div ref={el => void (cardRefs.current[0] = el)}>
+                            <div ref={el => void (cardRefs.current[1] = el)}>
                                 {selected ? (
                                     <ProjectCardCard className="p-2">
                                         {selected.description.map(line => <p className="pb-2" key={line}>{line}</p>)}
@@ -173,9 +177,9 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                 )}
                             </div>
                             {selected?.images
-                                ? <>
+                                ? <div className="w-full flex flex-col justify-center items-center">
                                 <div
-                                    className={`relative`}
+                                    className={`relative w-130`}
                                     ref={el => void (cardRefs.current[3] = el)}
                                     style={{
                                         height: selected.images.length * 6 + "rem"
@@ -197,8 +201,10 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                                 zIndex: mod(index + imageScroll, selected.images!.length)
                                             }}
                                         >
-                                            <ProjectCardCard className="w-fit">
-                                                <img className="h-50 w-auto aspect-auto" src={image}></img>
+                                            <ProjectCardCard className="">
+                                                <Expandable>
+                                                    <img className="h-50 w-auto aspect-auto" src={image}></img>
+                                                </Expandable>
                                             </ProjectCardCard>
                                         </div>
                                     ))}
@@ -209,14 +215,14 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                             className='w-full flex justify-center' 
                                             style={{ transform: `translateY(${selected.images.length * .5 + 4}rem)` }}
                                         >
-                                            <ProjectCardCard className="flex gap-2">
-                                                <AiFillCaretLeft size={24} className="hover:text-white hover:cursor-pointer hover:-translate-x-1 transition-all duration-150" onClick={() => setImageScroll(prev => prev + 1)}/>
-                                                <AiFillCaretRight size={24} className="hover:text-white hover:cursor-pointer hover:translate-x-1 transition-all duration-150" onClick={() => setImageScroll(prev => prev - 1)}/>
+                                            <ProjectCardCard className="flex p-0!">
+                                                <AiFillCaretLeft size={16} className="hover:text-white hover:cursor-pointer hover:pr-3 transition-all duration-150 w-14 h-14 p-2 py-3" onClick={() => setImageScroll(prev => prev + 1)}/>
+                                                <AiFillCaretRight size={16} className="hover:text-white hover:cursor-pointer hover:pl-3 transition-all duration-150 w-14 h-14 p-2 py-3" onClick={() => setImageScroll(prev => prev - 1)}/>
                                             </ProjectCardCard>
                                         </div>
                                         : <></>
                                     }
-                                </>
+                                </div>
                                 : <></>
                             }
                         </div>
@@ -330,12 +336,12 @@ function convertToRelative(
     target: HTMLDivElement
 ): Point {
     const elementPosition = getElementViewportPosition(target)
-    const x = cursorPageX - (elementPosition.x + target.offsetWidth / 2)
-    const y = cursorPageY - (elementPosition.y + target.offsetHeight / 2)
+    const x = cursorPageX - (elementPosition[0] + target.offsetWidth / 2)
+    const y = cursorPageY - (elementPosition[1] + target.offsetHeight / 2)
     return [x, y]
 }
 
-function getElementViewportPosition(el: HTMLElement) {
+function getElementViewportPosition(el: HTMLElement): Point {
     let x = 0, y = 0
     let current: HTMLElement | null = el
 
@@ -345,9 +351,37 @@ function getElementViewportPosition(el: HTMLElement) {
         current = current.offsetParent as HTMLElement | null
     }
 
-    return { x, y }
+    return [x, y]
 }
 
-function mod(x: number, modulo: number) {
-    return (x % modulo + modulo) % modulo
+function Expandable({ children }: { children: ReactNode }) {
+    const imageRef = useRef<HTMLDivElement>(null)
+    
+    const [baseSize, setBaseSize] = useState<Point>([0, 0])
+    const [baseLocation, setBaseLocation] = useState<Point>([0, 0])
+    useEffect(() => {
+        const observer = new ResizeObserver((entries) => {
+            setBaseLocation([...getElementViewportPosition(entries[0].target as HTMLElement)])
+            setBaseSize([entries[0].borderBoxSize[0].inlineSize, entries[0].borderBoxSize[0].blockSize])
+        })
+        const ref = imageRef.current
+        if (ref) observer.observe(ref)
+        return () => { if (ref) observer.unobserve(ref) }
+    }, [])
+
+    console.log(baseSize)
+    console.log(baseLocation)
+    const [isExpanded, setIsExpanded] = useState(false)
+    return (<>
+        <div className="absolute top-0 w-screen h-screen bg-stone-800/5">
+
+        </div>
+        <div 
+            onClick={() => setIsExpanded(!isExpanded)}
+            ref={imageRef}
+            className="h-50"
+        >
+            {children}
+        </div>
+    </>)
 }

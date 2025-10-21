@@ -77,6 +77,7 @@ export const Projects: Record<string, Item> = {
             'Semester-long group UX design project, including all sorts of design artifacts and feedback cycles.',
             'Our product: A social media platform, but for food. Quickly share recipies with your friends and view engaging content from home chefs.',
         ],
+        images: ["dindin/main.png", "dindin/profile.png", "dindin/waad.png"],
         links: ['Figma', 'Draw.io', 'Agile'],
     }
 }
