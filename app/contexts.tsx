@@ -1,5 +1,5 @@
-import { Project, Tool } from "@/typescript/wheel_info";
-import { createContext } from "react";
+import { createContext, SetStateAction } from "react";
+import { Item } from "./typescript/data"
 
 export type Visibility = {
     visible: boolean,
@@ -7,13 +7,13 @@ export type Visibility = {
 }
 
 export const ProjectContext = createContext<{
-    selected: Project | Tool | null | undefined
-    setSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
+    selected: Item | null | undefined
+    setSelected: React.Dispatch<React.SetStateAction<Item | null | undefined>>
     selectedIndex: number | null,
     setSelectedIndex: React.Dispatch<React.SetStateAction<number | null>>,
     scrollSinceSelection?: React.RefObject<boolean>
-    previousSelected: Project | Tool | null | undefined
-    setPreviousSelected: React.Dispatch<React.SetStateAction<Project | Tool | null | undefined>>
+    previousSelected: Item | null | undefined
+    setPreviousSelected: React.Dispatch<React.SetStateAction<Item | null | undefined>>
     groupVisibilities?: React.RefObject<Visibility[]>
 }>({
     selected: undefined,
@@ -23,4 +23,12 @@ export const ProjectContext = createContext<{
     previousSelected: undefined,
     setPreviousSelected: () => {},
     groupVisibilities: undefined,
+})
+
+export const CursorContext = createContext<{
+    cursorPosition: [number, number]
+    setCursorPosition: React.Dispatch<SetStateAction<[number, number]>>
+}>({
+    cursorPosition: [0, 0],
+    setCursorPosition: () => {},
 })

@@ -1,4 +1,4 @@
-import React, { createRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createRef, useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 import { circular_rotate, isVisible } from '../typescript/math_helpers'
 import { PortfolioData } from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
@@ -7,7 +7,7 @@ import { Group } from './WheelItems'
 const SCROLL_VELOCITY_FACTOR = 0.00008
 const DRAG_VELOCITY_FACTOR = 0.00015
 const FRICTION = 0.992
-const DEFAULT_FRAME_RATE = 60
+const FRAME_RATE = 60
 const EASING_DURATION = 7000
 
 function rotate(ref: HTMLDivElement, angle: number) { ref.style.setProperty('transform', `rotate(${angle}deg)`) }
@@ -23,13 +23,11 @@ const lerpOvershoot = (start: number, end: number, t: number) => {
 
 export default function Wheel() {
 
-    //eslint-disable-next-line
-    const [frameRate, setFrameRate] = useState(DEFAULT_FRAME_RATE)
-
     const parentRef = useRef<HTMLDivElement>(null)
     const circleRef = useRef<HTMLDivElement>(null)
+    const hoverRef = useRef<HTMLDivElement>(null)
 
-    const projectContext = useContext(ProjectContext) 
+    const projectContext = useContext(ProjectContext)
     const { scrollSinceSelection, groupVisibilities } = projectContext
 
     const selectedIndexRef = useRef(projectContext.selectedIndex)
@@ -38,18 +36,15 @@ export default function Wheel() {
     }, [projectContext.selectedIndex])
 
     useEffect(() => {
-        const mainRefs = [parentRef, circleRef]
+        const mainRefs = [circleRef, hoverRef]
         mainRefs.forEach(ref => {
             if (!ref.current) return
-            ref.current.style.setProperty('transform', `translateX(-${projectContext.selected ? 550 : 700}px)`)
+            ref.current.style.setProperty('transform', `translateX(-${projectContext.selected ? 500 : 750}px)`)
         })
     }, [projectContext.selected])
 
     // Track hover
     const wheelHoverRef = useRef<HTMLDivElement>(null)
-    // Thes two dont do anything
-    // const [isHovered, setIsHovered] = useState(false)
-    // useHoverOverWheel(wheelHoverRef, setIsHovered)
 
     // Set scroll since selection
     useEffect(() => {
@@ -97,8 +92,8 @@ export default function Wheel() {
     // Frame data
     const lag = useRef(0)
     const velocity = useRef(0)
-    const deltaTime = useRef(1000 / frameRate)
-    deltaTime.current = 1000 / frameRate
+    const deltaTime = useRef(1000 / FRAME_RATE)
+    deltaTime.current = 1000 / FRAME_RATE
     const position = useRef(-.7)
 
     const effectiveSelectedIndex = useRef(0)
@@ -112,14 +107,18 @@ export default function Wheel() {
     useEffect(() => {
         const wheelHandler = (e: WheelEvent) => {
             deltaScroll.current += e.deltaY
+            if (scrollSinceSelection) scrollSinceSelection.current = true
         }
         const wheelHover = wheelHoverRef.current
         const circle = circleRef.current
+        const hoverElement = hoverRef.current
         wheelHover?.addEventListener('wheel', wheelHandler)
         circle?.addEventListener('wheel', wheelHandler)
+        hoverElement?.addEventListener('wheel', wheelHandler)
         return () => {
             wheelHover?.removeEventListener('wheel', wheelHandler)
             circle?.removeEventListener('wheel', wheelHandler)
+            hoverElement?.addEventListener('wheel', wheelHandler)
         }
     }, [])
     const doScrolling = useCallback(() => {
@@ -276,7 +275,7 @@ export default function Wheel() {
         }
 
     }, [doDragging, doScrolling, groupVisibilities, scrollSinceSelection])
-    
+
     const items = useMemo(() => {
         let globalIndex = 0
         return Object.entries(PortfolioData).map((entry, index) => {
@@ -302,100 +301,38 @@ export default function Wheel() {
         })
     }, [groupVisibilities])
 
-    return (<>
+    return (<div className="flex relative">
+
         <div
             ref={circleRef}
-            className="z-3 cursor-grab active:cursor-grabbing top-1/2 right-0 absolute bg-[var(--foreground)] rounded-[50%] w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform -translate-y-1/2 translate-x-300 duration-1000 ease-in-out"
+            className="z-3 align-middle cursor-grab relative active:cursor-grabbing -ml-30 -right-300 min-w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform duration-1000 ease-in-out"
         >
-            <div ref={tabRef1} className='text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 -rotate-2 left-3 text-[var(--background)]'>
+            <div className="z-10 absolute w-full h-full bg-foreground rounded-full"></div>
+            <div ref={tabRef1} className='z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 -rotate-2 left-3 text-[var(--background)]'>
                 -
             </div>
-            <div ref={tabRef2} className='text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 left-3 text-[var(--background)]'>
+            <div ref={tabRef2} className='z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 left-3 text-[var(--background)]'>
                 -
             </div>
-            <div ref={tabRef3} className='text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 rotate-2 left-3 text-[var(--background)]'>
+            <div ref={tabRef3} className='z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 rotate-2 left-3 text-[var(--background)]'>
                 -
             </div>
-        </div>
-        {/* <FrameRateSelector frameRate={frameRate} setFrameRate={setFrameRate}></FrameRateSelector> */}
-        <div
-            ref={wheelHoverRef}
-            className="-z-1 -right-300 absolute w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
-        >
             <div
-                ref={parentRef}
-                className="top-1/2 absolute transition-transform translate-x-140 duration-1000 ease-in-out"
+                ref={wheelHoverRef}
+                className="-z-1 absolute pointer-events-none -translate-x-[calc(0.75*var(--wheel-size)+40px)] translate-y-[calc(0.5*var(--wheel-size))] w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
             >
-                {items}
+                <div
+                    ref={parentRef}
+                    className="transition-transform duration-1000 ease-in-out"
+                >
+                    {items}
+                </div>
             </div>
         </div>
-    </>)
-}
+        <div ref={hoverRef} className="absolute w-100 h-200 -right-120">
 
-//eslint-disable-next-line
-function FrameRateSelector({
-    frameRate,
-    setFrameRate,
-}: Readonly<{
-    frameRate: number
-    setFrameRate: React.Dispatch<React.SetStateAction<number>>
-}>) {
-    const options = [15, 30, 60, 120]
-    return (
-        <div className="absolute top-3 left-240 flex gap-4 items-center bg-[var(--background)] px-4 py-2 rounded shadow">
-            <span className="ml-2 text-sm text-[var(--foreground)]">FPS</span>
-            {options.map(option => {
-                const isSelected = frameRate === option
-                const baseStyle = {
-                    background: isSelected ? 'var(--foreground)' : 'transparent',
-                    color: isSelected ? 'white' : 'var(--foreground)',
-                    fontWeight: isSelected ? 'bold' : 'normal',
-                    borderRadius: '0.375rem',
-                    padding: '0.25rem 0.75rem',
-                    transition: 'background 0.2s, color 0.2s',
-                    cursor: 'pointer',
-                }
-                return (
-                    <button
-                        key={option}
-                        onClick={() => setFrameRate(option)}
-                        style={baseStyle}
-                        onMouseEnter={e => {
-                            if (!isSelected) {
-                                e.currentTarget.style.background = 'rgba(0,0,0,0.08)'
-                            }
-                        }}
-                        onMouseLeave={e => {
-                            if (!isSelected) {
-                                e.currentTarget.style.background = 'transparent'
-                            }
-                        }}
-                    >
-                        {option}
-                    </button>
-                )
-            })}
         </div>
-    )
-}
-
-//eslint-disable-next-line
-function useHoverOverWheel(
-    wheelHoverRef: React.RefObject<HTMLDivElement | null>,
-    setIsHovered: React.Dispatch<React.SetStateAction<boolean>>,
-) {
-    useEffect(() => {
-        const element = wheelHoverRef.current
-        const mouseEnterHandler = () => setIsHovered(true)
-        const mouseLeaveHandler = () => setIsHovered(false)
-
-        element?.addEventListener('mouseenter', mouseEnterHandler)
-        element?.addEventListener('mouseleave', mouseLeaveHandler)
-        return () => {
-            element?.removeEventListener('mouseenter', mouseEnterHandler)
-            element?.removeEventListener('mouseleave', mouseLeaveHandler)
-        }
-    }, [setIsHovered, wheelHoverRef])
+    </div>)
 }
 
 function useAccumulateDragging(

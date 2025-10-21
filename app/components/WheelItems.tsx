@@ -1,21 +1,22 @@
-import { ProjectContext, Visibility } from "@/contexts";
-import { getItemColor, Project, Tool } from "@/typescript/wheel_info";
-import { useContext, useEffect, useMemo, useRef } from "react";
+import { ProjectContext, Visibility } from "@/contexts"
+import { Item } from "@/typescript/data"
+import { getItemColor } from "@/typescript/wheel_info"
+import { useContext, useEffect, useMemo, useRef } from "react"
 
 export function Group({
     header, items, groupIndex, startingIndex, itemRefs, groupVisibilities
-}: Readonly<{ 
-        header: string, 
-        items: (Tool | Project)[], 
-        groupIndex: number
-        startingIndex: number, 
-        itemRefs: { 
-            headerRef: React.RefObject<HTMLDivElement | null>, 
-            itemRefs: (React.RefObject<HTMLDivElement | null>)[] 
-        }, 
-        groupVisibilities?: React.RefObject<Visibility[]>
-    }>) {
-    
+}: Readonly<{
+    header: string,
+    items: Item[],
+    groupIndex: number
+    startingIndex: number,
+    itemRefs: {
+        headerRef: React.RefObject<HTMLDivElement | null>,
+        itemRefs: (React.RefObject<HTMLDivElement | null>)[]
+    },
+    groupVisibilities?: React.RefObject<Visibility[]>
+}>) {
+
     return (<>
         <ItemWrapper ref={itemRefs.headerRef} isHeader={true}>
             <Header text={header} toggleSection={() => {
@@ -26,12 +27,12 @@ export function Group({
 
                 array.forEach(item => item.timeSet = performance.now())
                 array[groupIndex].visible = !array[groupIndex].visible
-            }}/>
+            }} />
         </ItemWrapper>
         {items.map((item, index) => {
             return (
                 <ItemWrapper ref={itemRefs.itemRefs[index]} key={item.id + index}>
-                    <Item tool={item} index={startingIndex + index + 1}></Item>
+                    <ItemButton tool={item} index={startingIndex + index + 1}></ItemButton>
                 </ItemWrapper>
             )
         })}
@@ -43,19 +44,31 @@ function Header({
 }: Readonly<{ text: string, toggleSection: () => void }>) {
     return (
         <button
-            className="font-light cursor-pointer text-[var(--light-text)] hover:underline text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
+            className="font-light pointer-events-auto cursor-pointer text-[var(--light-text)] hover:underline text-right transition-[padding-right] duration-200 ease-out wheel-item wheel-text"
             onClick={toggleSection}
         >{text}</button>
     )
 }
 
-function Item({ tool, index }: Readonly<{ tool: Tool | Project; index: number }>) {
-    const { 
+function ItemWrapper({ ref, children, isHeader }: Readonly<{ ref: React.RefObject<HTMLDivElement | null>, children: React.ReactNode, isHeader?: boolean }>) {
+    return <div
+        ref={ref}
+        style={isHeader ? { 'zIndex': 2 } : {}}
+        className={`relative w-[var(--item-width)] h-0 text-2xl`}
+    >
+        <div className="flex w-[600px] -rotate-2 select-none justify-end transition-[padding-right] duration-200 ease-out pointer-events-none">
+            {children}
+        </div>
+    </div>
+}
+
+function ItemButton({ tool, index }: Readonly<{ tool: Item; index: number }>) {
+    const {
         selected,
         setSelected,
         setSelectedIndex,
         scrollSinceSelection,
-        setPreviousSelected, 
+        setPreviousSelected,
     } = useContext(ProjectContext)
 
     const handleItemHover = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -67,14 +80,27 @@ function Item({ tool, index }: Readonly<{ tool: Tool | Project; index: number }>
         (target as HTMLElement).style.setProperty('padding-right', '0px')
     }
 
+    // Bold text
     const buttonRef = useRef<HTMLButtonElement>(null)
-    useBoldSelected(buttonRef, selected)
+    useEffect(() => {
+        const element = buttonRef?.current
+        if (!element)
+            return
 
-    const itemMemo = useMemo(() => 
+        if (selected?.id == element.textContent) {
+            element.style.setProperty('text-decoration', 'underline')
+            element.style.setProperty('font-weight', 'bold')
+        } else {
+            element.style.setProperty('text-decoration', 'none')
+            element.style.setProperty('font-weight', 'normal')
+        }
+    }, [selected])
+
+    const itemMemo = useMemo(() =>
         <button
             ref={buttonRef}
-            style={{color: getItemColor(tool.id)}}
-            className="left-0 p-3 w-max h-max text-[var(--dark-text)] cursor-pointer text-right transition-[padding-right, color] duration-200 ease-out"
+            style={{ color: getItemColor(tool.id) }}
+            className="left-0 p-3 pointer-events-auto w-max h-max text-[var(--dark-text)] cursor-pointer text-right transition-[padding-right, color] duration-200 ease-out"
             onClick={() => {
                 if (scrollSinceSelection) scrollSinceSelection.current = false
 
@@ -98,32 +124,4 @@ function Item({ tool, index }: Readonly<{ tool: Tool | Project; index: number }>
     )
 
     return itemMemo
-}
-
-function ItemWrapper({ ref, children, isHeader }: Readonly<{ ref: React.RefObject<HTMLDivElement | null>, children: React.ReactNode, isHeader?: boolean }>) {
-    return <div
-        ref={ref}
-        style={isHeader ? { 'zIndex': 2 } : {}}
-        className={`relative w-[var(--item-width)] h-0 text-2xl`}
-    >
-        <div className="flex w-[600px] -rotate-2 select-none justify-end transition-[padding-right] duration-200 ease-out">
-            {children}
-        </div>
-    </div>
-}
-
-function useBoldSelected(itemRef: React.RefObject<HTMLButtonElement | null>, selected: Project | Tool | null | undefined) {
-    useEffect(() => {
-        const element = itemRef?.current
-        if (!element)
-            return
-
-        if (selected?.id == element.textContent) {
-            element.style.setProperty('text-decoration', 'underline')
-            element.style.setProperty('font-weight', 'bold')
-        } else {
-            element.style.setProperty('text-decoration', 'none')
-            element.style.setProperty('font-weight', 'normal')
-        }
-    }, [itemRef, selected])
 }

@@ -1,107 +1,47 @@
-import { lexendExa, lexendGiga, lexendPeta } from '../typescript/css_constants'
 import 'react-image-gallery/styles/css/image-gallery.css'
-import React, { ReactElement, useCallback, useContext, useEffect, useRef } from 'react'
-import { Project, Tool, PortfolioData, Category } from '@/typescript/wheel_info'
-import { ProjectContext } from '@/contexts'
+import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { PortfolioData, Category } from '@/typescript/wheel_info'
+import { CursorContext, ProjectContext } from '@/contexts'
 import { all_items_with_gaps } from '../typescript/wheel_info'
+import { Item } from '@/typescript/data'
 
 type ProjectCardProps = {
-    current: Project | Tool | null | undefined
+    current: Item | null | undefined
+    previous: Item | null | undefined
     isPrevious: boolean
-}
-
-function DemoLink({ link }: Readonly<{ link?: string }>) {
-    if (!link) return null
-    return (
-        <a className="flex text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" href={link}>
-            View Live Project <span className="mx-4 text-[var(--light-text)] opacity-0 lg:opacity-100">|</span>
-        </a>
-    )
-}
-
-function GithubLink({ link }: Readonly<{ link?: string }>) {
-    if (!link) return null
-    return (
-        <a className="flex text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" href={link}>
-            GitHub
-        </a>
-    )
-}
-
-function DateText({ date }: Readonly<{ date?: string }>) {
-    if (!date) return null
-    return <p className="justify-end text-left lg:text-right grow">{date}</p>
 }
 
 function TechStackButton({ technology, onClick }: Readonly<{ technology: string; onClick: () => void }>) {
     return (
         <button
             key={technology + 'container'}
-            className="flex items-center bg-orange-200/40 hover:bg-orange-200 m-2 p-2 rounded-xl w-full text-xl text-right duration-200"
+            className="flex items-center bg-white/40 hover:bg-black/10 cursor-pointer m-2 p-2 w-full text-left duration-200"
             onClick={onClick}
         >
-            <div className="flex justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    key={technology + ' logo'}
-                    alt={technology}
-                    src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
-                    className={'h-10 aspect-auto'}
-                />
-            </div>
-            <li className="grow ml-3" key={technology}>
+            <p className="grow ml-1 mr-1 w-max" key={technology}>
                 {technology} ↗
-            </li>
+            </p>
         </button>
     )
 }
 
-function UsedInProjectsList({
-    projects,
-    onProjectClick,
-}: Readonly<{
-    projects: string[]
-    onProjectClick: (project: string) => void
-}>) {
-    return (
-        <div>
-            {projects.length > 0 && <p className="m-4 text-3xl"> Used in: </p>}
-            <div>
-                {projects.map((project) =>
-                    PortfolioData.Projects[project] ? (
-                        <button
-                            className="block bg-orange-200/40 hover:bg-orange-200 m-2 p-4 rounded-xl text-xl hover:underline duration-200"
-                            key={project}
-                            onClick={() => onProjectClick(project)}
-                        >
-                            <span className="text-2xl">↗</span> {PortfolioData.Projects[project].name}
-                        </button>
-                    ) : (
-                        <button className="block m-2 p-4 rounded-xl text-xl duration-200" key={project} disabled>
-                            - {project}
-                        </button>
-                    ),
-                )}
-            </div>
-        </div>
-    )
+function ExternalLink({ href, children }: { href: string, children: ReactNode }) {
+    return <a href={href} className="text-stone-200 hover:underline hover:bg-white/20 active:bg-black/10 bg-white/40 p-2 transition-colors duration-200" target="_blank" rel="noopener noreferrer">{children}</a>
 }
 
-export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
+export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps) {
     const selected = current
 
     const prjctx = useContext(ProjectContext)
 
-    const cardRef = useRef<HTMLDivElement>(null)
-
-    const handleTechClick = useCallback(
+    const handleItemClick = useCallback(
         (technology: string) => {
 
             if (prjctx.scrollSinceSelection) prjctx.scrollSinceSelection.current = false
             prjctx.setPreviousSelected(selected)
 
 
-            let foundTool: Tool | undefined
+            let foundTool: Item | undefined
             let groupIndex = -1
 
             const categories = Object.keys(PortfolioData) as Category[]
@@ -109,7 +49,7 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 const categoryName = categories[i]
                 const category = PortfolioData[categoryName]
                 if (Object.prototype.hasOwnProperty.call(category, technology)) {
-                    foundTool = category[technology] as Tool
+                    foundTool = category[technology] as Item
                     groupIndex = i
                     break
                 }
@@ -119,205 +59,223 @@ export function ProjectCard({ isPrevious, current }: ProjectCardProps) {
                 const index = all_items_with_gaps.findIndex((item) => item === foundTool.id)
                 prjctx.setSelectedIndex(index)
                 const newVisibilities = [...prjctx.groupVisibilities.current]
-                    newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() }
-                    prjctx.groupVisibilities.current = newVisibilities
+                newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() }
+                prjctx.groupVisibilities.current = newVisibilities
                 prjctx.setSelected(foundTool)
             }
         }, [prjctx, selected],
     )
 
-    const handleProjectClick = useCallback(
-        (project: string) => {
-            if (prjctx.scrollSinceSelection) prjctx.scrollSinceSelection.current = false
-            prjctx.setPreviousSelected(selected)
+    const [opacity, setOpacity] = useState(0) // Prevent flash on loading
 
+    const cardRef0 = useRef<HTMLDivElement>(null)
+    const cardRef1 = useRef<HTMLDivElement>(null)
+    const cardRef2 = useRef<HTMLDivElement>(null)
+    const currentCardRefs = useMemo(() => [cardRef0, cardRef1, cardRef2], [])
 
-            const projectItem = PortfolioData.Projects[project] as Project
-            if (projectItem) {
-                prjctx.setSelected(projectItem)
-                const index = all_items_with_gaps.indexOf(projectItem.id)
-                prjctx.setSelectedIndex(index)
-                const groupIndex = (Object.keys(PortfolioData) as (keyof typeof PortfolioData)[]).indexOf(Category.Projects)
-                if (groupIndex !== -1 && prjctx.groupVisibilities) {
-                    const newVisibilities = [...prjctx.groupVisibilities.current]
-                    newVisibilities[groupIndex] = { visible: true, timeSet: performance.now() }
-                    prjctx.groupVisibilities.current = newVisibilities
-                }
-            }
-        },
-        [prjctx, selected],
-    )
-
-    let card: ReactElement | null = null
-    if (selected) {
-        if ('description' in selected) {
-            const project = selected as Project
-            card = (<>
-                <div className="flex flex-col lg:flex-row">
-                    <DemoLink link={project.demo} />
-                    <GithubLink link={project.github} />
-                    <DateText date={project.date} />
-                </div>
-                <p style={lexendGiga.style} className="pb-1 border-b-3 text-2xl 2xl:text-3xl">
-                    {project.name}
-                </p>
-                <div className="bg-orange-200/40 p-4 max-h-50 xl:max-h-2/5 2xl:max-h-100 h-fit overflow-auto rounded-b-xl w-1/1">
-                    {project.description.map((description) => (
-                        <p className="m-4" key={description}>
-                            {description}
-                        </p>
-                    ))}
-                    <p className="m-4 text-xl"> Features </p>
-                    <div>
-                        {project.features?.map((feature) => (
-                            <p className="m-2" key={feature}>
-                                {' '}
-                                - {feature}{' '}
-                            </p>
-                        ))}
-                    </div>
-                </div>
-                <div className="flex h-4/5 2xl:h-280 3xl:h-460">
-                    <div className="relative bg-orange-200/40 mt-4 mr-2 p-1 rounded-xl w-2/3 h-2/7 aspect-auto overflow-hidden flex justify-center items-center">
-                        {project.image && <img src={project.image} alt={project.image} className="max-h-full w-auto rounded-2xl" />}
-                    </div>
-                    <ul className=" bg-orange-200/40 mt-4 ml-2 p-4 pr-8 rounded-xl h-2/7 overflow-y-scroll overflow-x-clip w-1/2">
-                        <p className="p-2 text-[var(--foreground)] text-3xl">Stack</p>
-                        {project.technologies.map((technology) => {
-                            let foundTool: Tool | undefined
-                            for (const category of Object.values(PortfolioData)) {
-                                if (Object.prototype.hasOwnProperty.call(category, technology)) {
-                                    foundTool = category[technology] as Tool
-                                    break
-                                }
-                            }
-
-                            if (foundTool) {
-                                return (
-                                    <TechStackButton
-                                        key={technology}
-                                        technology={technology}
-                                        onClick={() => handleTechClick(technology)}
-                                    />
-                                )
-                            }
-                            // fallback: just show the technology name
-                            return (
-                                <button
-                                    key={technology + ' container'}
-                                    className="flex items-center p-4 rounded-lg w-full text-xl text-right duration-200"
-                                    tabIndex={-1}
-                                    disabled
-                                >
-                                    <div className="flex justify-center">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            key={technology + ' logo'}
-                                            alt={technology}
-                                            src={'/logos/' + technology.replace('.', '').toLowerCase() + '.png'}
-                                            className={'h-10 aspect-auto'}
-                                        />
-                                    </div>
-                                    <li className="grow ml-3" key={technology}>
-                                        {technology}
-                                    </li>
-                                </button>
-                            )
-                        })}
-                    </ul>
-                </div>
-            </>)
-        }
-        else {
-            const tool = selected as Tool
-            card = (<>
-                <div className="flex items-end gap-10 border-b-3">
-                    <p style={lexendGiga.style} className="pb-1 text-2xl 2xl:text-4xl">
-                        {tool.name}
-                    </p>
-                </div>
-                <div className="h-1/1 overflow-y-auto">
-                    <div className="bg-orange-200/40 p-4 rounded-b-xl w-1/1">
-                        {tool.notes.map((note) => (
-                            <p className="p-2 pt-4 pb-4" key={note}>
-                                {note}
-                            </p>
-                        ))}
-                        <UsedInProjectsList projects={tool.projects} onProjectClick={handleProjectClick} />
-                    </div>
-                </div>
-            </>)
-        }
-        card = <div ref={cardRef} className={`absolute
-            ${isPrevious ? "-z-10" : "z-10"}
-            top-40
-            h-full
-            left-10 xl:left-1/24 3xl:left-1/12 4xl:left-1/6
-            max-w-400 w-180 xl:w-220 2xl:w-7/10
-            `}
-        >{card}</div>
-    }
-
-
-    if (!selected) {
-        card = (
-            <div ref={cardRef} className="top-1/3 left-1/7 absolute">
-                <p style={lexendPeta.style} className="mb-4 text-5xl">
-                    Welcome <span className="text-2xl">to</span>
-                </p>
-                <p style={lexendGiga.style} className="mb-4 text-2xl">
-                    Scott Happy&apos;s Portfolio
-                </p>
-                <p style={lexendExa.style} className="mb-2 text-l">
-                    Yes, that&apos;s my name [:
-                </p>
-            </div>
-        )
-    }
+    const cardRef3 = useRef<HTMLDivElement>(null)
+    const cardRef4 = useRef<HTMLDivElement>(null)
+    const cardRef5 = useRef<HTMLDivElement>(null)
+    const previousCardRefs = useMemo(() => [cardRef3, cardRef4, cardRef5], [])
 
     useEffect(() => {
-        cardRef.current?.getAnimations().forEach((anim) => anim.cancel())
-
-        let cardMove: Animation | undefined = undefined
-        if (!isPrevious)
-            cardMove = cardRef.current?.animate(
+        currentCardRefs.forEach((cardRef, index) => {
+            cardRef.current?.getAnimations().forEach((anim) => anim.cancel())
+            cardRef.current?.animate(
                 [
                     { transform: 'translate(-25%, 0%)', opacity: 0 },
                     { transform: 'translate(0%, 0%)', opacity: 1 },
                 ],
                 {
-                    duration: 700,
-                    delay: 500,
-                    easing: 'ease-in-out',
+                    duration: 800,
+                    delay: index * 300 + 800,
+                    easing: 'ease-out',
                     fill: 'both',
                 },
             )
-        else
-            cardMove = cardRef.current?.animate(
+        })
+        setOpacity(1) // Change from 0 to not override the animation
+        previousCardRefs.forEach((cardRef, index) => {
+            cardRef.current?.getAnimations().forEach((anim) => anim.cancel())
+            cardRef.current?.animate(
                 [
                     { transform: 'translate(0%, 0%)', opacity: 1 },
-                    { transform: 'translate(0%, 125%)', opacity: 0 },
+                    { transform: 'translate(0%, 200px)', opacity: 0 },
                 ],
                 {
-                    duration: 1000,
-                    easing: 'ease-in-out',
+                    duration: 500,
+                    delay: index * 150,
+                    easing: 'cubic-bezier(0.42, 0, 1, 1)',
                     fill: 'both',
                 },
             )
+        })
+    }, [selected, isPrevious, currentCardRefs, previousCardRefs])
 
-        if (cardMove) {
-            cardMove.play()
-        }
-    }, [selected, isPrevious])
+    const createCard = (selected: ProjectCardProps["current"], isPrevious: boolean, cardRefs: React.RefObject<HTMLDivElement | null>[]) => {
+        return (
+            <div
+                className={`
+                    w-full h-0 opacity-${opacity} flex items-center
+                    ${isPrevious ? "absolute top-0 left-0 pointer-events-none" : ""}
+                `}
+            >
+                <div>
+                    <div className="flex gap-20 items-center flex-row-reverse">
+                        <div className="flex gap-20 flex-col">
+                            <div ref={cardRefs[1]}>
+                                {selected ? (
+                                    <ProjectCardCard className="w-fit py-2">
+                                        <div className="flex items-center gap-2 justify-between pr-4 flex-wrap pl-1">
+                                            <p className="text-3xl pr-8">{selected.name}</p>
+                                            <div className="flex gap-10">
+                                                {selected.demo ? <ExternalLink href={selected.demo}>View Live</ExternalLink> : <></>}
+                                                {selected.github ? <ExternalLink href={selected.github}>GitHub</ExternalLink> : <></>}
+                                            </div>
+                                        </div>
+                                    </ProjectCardCard>
+                                ) : (
+                                    <ProjectCardCard className="w-fit">
+                                        Hello. I&apos;m Scott, a software engineer.
+                                    </ProjectCardCard>
+                                )}
+                            </div>
+                            <div ref={cardRefs[0]}>
+                                {selected ? (
+                                    <ProjectCardCard className="p-2">
+                                        {selected.description.map(line => <p className="pb-2" key={line}>{line}</p>)}
+                                    </ProjectCardCard>
+                                ) : (
+                                    <ProjectCardCard className="-translate-x-15">
+                                        Projects and tools are viewable on the right. You can also drag the wheel.
+                                    </ProjectCardCard>
+                                )}
+                            </div>
+                        </div>
+                        <div className="mt-10">
+                            <div ref={cardRefs[2]}>
+                                {selected ? (
+                                    <ProjectCardCard className="h-fit overflow-auto">
+                                        <div className="pr-4">
+                                            <p className="text-xl pl-2">Tools</p>
+                                            {selected.links.map((technology) => {
+                                                let foundTool: Item | undefined
+                                                for (const category of Object.values(PortfolioData)) {
+                                                    if (Object.prototype.hasOwnProperty.call(category, technology)) {
+                                                        foundTool = category[technology] as Item
+                                                        break
+                                                    }
+                                                }
 
-    if (!isPrevious) card = <div className='z-2'>
-        {card}
-    </div>
+                                                if (foundTool) {
+                                                    return (
+                                                        <TechStackButton
+                                                            key={technology}
+                                                            technology={technology}
+                                                            onClick={() => handleItemClick(technology)}
+                                                        />
+                                                    )
+                                                }
 
-    //Dont show 2 on initial load
-    if (isPrevious && selected === undefined) {
-        card = <></>
+                                                return (
+                                                    <button
+                                                        key={technology + ' container'}
+                                                        className="flex items-center p-2 w-max duration-200"
+                                                        tabIndex={-1}
+                                                        disabled
+                                                    >
+                                                        <p className="grow ml-3 w-max" key={technology}>
+                                                            {technology}
+                                                        </p>
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
+                                    </ProjectCardCard>
+                                ) : <></>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
-    return card
+    return <>
+        {createCard(current, false, currentCardRefs)}
+        {previous || current ? createCard(previous, true, previousCardRefs) : <></>}
+    </>
+}
+
+type Point = [number, number]
+function ProjectCardCard({ className, children }: { className?: string, children: ReactNode }) {
+    const ref = useRef<HTMLDivElement>(null)
+
+    const softMFunction = (x: number): number => ((1 / (3 + (x / 100 - 1) ** 2)) + (1 / (3 + (x / 100 + 1) ** 2))) * x * .001
+    const distanceFromOrigin = (p1: Point): number => Math.sqrt(p1[0] ** 2 + p1[1] ** 2)
+    const applyTransform = (p1: Point): Point => {
+        return [
+            p1[0] * softMFunction(distanceFromOrigin(p1)),
+            p1[1] * softMFunction(distanceFromOrigin(p1))
+        ]
+    }
+
+    const relativeCursorPosition = useRelativeCursor(ref)
+    const transformed = applyTransform(relativeCursorPosition)
+    return (
+        <div
+            ref={ref}
+            className={`${className ?? ""} bg-foreground text-stone-200 p-3`}
+            style={{
+                transform: `
+                    rotateY(${Math.sin(1 / transformed[1]) * transformed[1]}deg) rotateX(${Math.sin(1 / transformed[0]) * transformed[0]}deg)
+                    translateX(${transformed[0]}px) translateY(${transformed[1]}px)
+                `,
+                transformStyle: "preserve-3d",
+                transformOrigin: "center",
+            }}
+        >
+            {children}
+        </div>
+    )
+}
+
+function useRelativeCursor(target: React.RefObject<HTMLDivElement | null>) {
+
+    const { cursorPosition } = useContext(CursorContext)
+    const [relativeCursorPosition, setRelativeCursorPosition] = useState<Point>([950, 0])
+    useEffect(() => {
+        const handler = () => {
+            if (target.current) setRelativeCursorPosition(convertToRelative(cursorPosition, target.current))
+        }
+        handler()
+        document.addEventListener('pointermove', handler)
+        return () => document.removeEventListener('pointermove', handler)
+    }, [cursorPosition, target])
+
+    return relativeCursorPosition
+}
+
+function convertToRelative(
+    [cursorPageX, cursorPageY]: Point,
+    target: HTMLDivElement
+): Point {
+    const elementPosition = getElementViewportPosition(target)
+    const x = cursorPageX - (elementPosition.x + target.offsetWidth / 2)
+    const y = cursorPageY - (elementPosition.y + target.offsetHeight / 2)
+    return [x, y]
+}
+
+function getElementViewportPosition(el: HTMLElement) {
+    let x = 0, y = 0
+    let current: HTMLElement | null = el
+
+    while (current) {
+        x += current.offsetLeft
+        y += current.offsetTop
+        current = current.offsetParent as HTMLElement | null
+    }
+
+    return { x, y }
 }

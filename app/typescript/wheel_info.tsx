@@ -1,8 +1,4 @@
-import { Projects, Tools, Project, Tool } from "./data";
-
-export type { Project, Tool };
-
-export type PortfolioItem = Project | Tool;
+import { Item, Projects, Tools } from "./data";
 
 export enum Category {
     Projects = 'Projects',
@@ -14,7 +10,7 @@ export enum Category {
     Backend = 'Backend',
 }
 
-export const PortfolioData: Record<Category, Record<string, PortfolioItem>> = {
+export const PortfolioData: Record<Category, Record<string, Item>> = {
     [Category.Projects]: {
         'Scrapstack': Projects.Scrapstack,
         'Portfolio': Projects.Portfolio,
