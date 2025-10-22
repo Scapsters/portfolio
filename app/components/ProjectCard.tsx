@@ -202,9 +202,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                             }}
                                         >
                                             <ProjectCardCard className="">
-                                                <Expandable>
-                                                    <img className="h-50 w-auto aspect-auto" src={image}></img>
-                                                </Expandable>
+                                                <img className="h-50 w-auto" src={image}></img>
                                             </ProjectCardCard>
                                         </div>
                                     ))}
@@ -354,7 +352,9 @@ function getElementViewportPosition(el: HTMLElement): Point {
     return [x, y]
 }
 
+//eslint-disable-next-line
 function Expandable({ children }: { children: ReactNode }) {
+    // Unfinished
     const imageRef = useRef<HTMLDivElement>(null)
     
     const [baseSize, setBaseSize] = useState<Point>([0, 0])
