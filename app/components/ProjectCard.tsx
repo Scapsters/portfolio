@@ -284,12 +284,11 @@ type Point = [number, number]
 function ProjectCardCard({ className, children, cacheKey }: { className?: string, children: ReactNode, cacheKey: string }) {
     const ref = useRef<HTMLDivElement>(null)
 
-    const softMFunction = (x: number): number => ((1 / (3 + (x / 100 - 1) ** 2)) + (1 / (3 + (x / 100 + 1) ** 2))) * x * .001
     const distanceFromOrigin = (p1: Point): number => Math.sqrt(p1[0] ** 2 + p1[1] ** 2)
     const applyTransform = (p1: Point): Point => {
         return [
-            p1[0] * softMFunction(distanceFromOrigin(p1)),
-            p1[1] * softMFunction(distanceFromOrigin(p1))
+            p1[0] * bumpFunction(distanceFromOrigin(p1)),
+            p1[1] * bumpFunction(distanceFromOrigin(p1))
         ]
     }
 
@@ -316,6 +315,7 @@ function ProjectCardCard({ className, children, cacheKey }: { className?: string
 function useRelativeCursor(target: React.RefObject<HTMLDivElement | null>, cacheKey: string) {
 
     const { cursorPosition, relativeCursorPositions } = useContext(CursorContext)
+    console.log(relativeCursorPositions?.current[cacheKey])
     const [relativeCursorPosition, setRelativeCursorPosition] = useState<Point>(relativeCursorPositions?.current[cacheKey] ?? [950, 0])
     useEffect(() => {
         const handler = () => {
@@ -387,4 +387,13 @@ function Expandable({ children }: { children: ReactNode }) {
             {children}
         </div>
     </>)
+}
+
+// Adapted from https://www.johndcook.com/blog/2022/06/23/bump-functions/
+function bumpFunction(x: number) {
+    const f = (x: number) => Math.pow(x, 7)
+    const g = (x: number) => x > 0 ? (1 / f(1/x)) : 0
+    const h = (x: number) => g(x + 1) * g(1 - x)
+    const scale = (x: number) => h(x/800) * .1
+    return scale(x)
 }
