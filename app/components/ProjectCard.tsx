@@ -154,7 +154,11 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                         <div className="flex items-center gap-2 justify-between pr-4 flex-wrap pl-1">
                                             <p className="text-3xl pr-8">{selected.name}</p>
                                             <div className="flex gap-10">
-                                                {selected.demo ? <ExternalLink href={selected.demo}>View Live</ExternalLink> : <></>}
+                                                <div className="bg-blue-700 px-1">
+                                                    <div className="translate-y-2">
+                                                        {selected.demo ? <ExternalLink href={selected.demo}>View Live</ExternalLink> : <></>}
+                                                    </div>
+                                                </div>
                                                 {selected.github ? <ExternalLink href={selected.github}>GitHub</ExternalLink> : <></>}
                                             </div>
                                         </div>
@@ -315,7 +319,7 @@ function ProjectCardCard({ className, children, cacheKey }: { className?: string
 function useRelativeCursor(target: React.RefObject<HTMLDivElement | null>, cacheKey: string) {
 
     const { cursorPosition, relativeCursorPositions } = useContext(CursorContext)
-    console.log(relativeCursorPositions?.current[cacheKey])
+    if (!relativeCursorPositions?.current[cacheKey]) console.log(cacheKey, relativeCursorPositions?.current[cacheKey])
     const [relativeCursorPosition, setRelativeCursorPosition] = useState<Point>(relativeCursorPositions?.current[cacheKey] ?? [950, 0])
     useEffect(() => {
         const handler = () => {
