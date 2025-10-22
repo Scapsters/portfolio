@@ -233,7 +233,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                 {selected ? (
                                     <ProjectCardCard className="h-fit overflow-auto" cacheKey={selected.id + "2"}>
                                         <div className="pr-4">
-                                            <p className="text-xl pl-2">Tools</p>
+                                            <p className="text-xl pl-2">{selected.date ? 'Tools' : 'Related'}</p>
                                             {selected.links.map((technology) => {
                                                 let foundTool: Item | undefined
                                                 for (const category of Object.values(PortfolioData)) {
@@ -297,15 +297,35 @@ function ProjectCardCard({ className, children, cacheKey }: { className?: string
     }
 
     const relativeCursorPosition = useRelativeCursor(ref, cacheKey)
-    const transformed = applyTransform(relativeCursorPosition)
+    const transformed_point = applyTransform(relativeCursorPosition)
+
+    // rotateX, rotateY, translateX, translateY
+    const target_transforms = [
+        transformed_point[1],
+        transformed_point[0] * -1,
+        transformed_point[0],
+        transformed_point[1]
+    ]
+    const current_transforms = ref.current
+        ? [
+            parseFloat(ref.current.style.transform.split("(")[1].split("deg")[0]),
+            parseFloat(ref.current.style.transform.split("(")[2].split("deg")[0]),
+            parseFloat(ref.current.style.transform.split("(")[3].split("px")[0]),
+            parseFloat(ref.current.style.transform.split("(")[4].split("px")[0]),
+        ]
+        : [0, 0, 0, 0]
+    const next_transforms = current_transforms.map((current, index) => {
+        const target = target_transforms[index]
+        return current + (target - current) / 10
+    })
     return (
         <div
             ref={ref}
             className={`${className ?? ""} bg-foreground text-stone-200 p-3`}
             style={{
                 transform: `
-                    rotateX(${transformed[1]}deg) rotateY(${transformed[0] * -1}deg)
-                    translateX(${transformed[0]}px) translateY(${transformed[1]}px)
+                    rotateX(${next_transforms[0]}deg) rotateY(${next_transforms[1]}deg)
+                    translateX(${next_transforms[2]}px) translateY(${next_transforms[3]}px)
                 `,
                 transformStyle: "preserve-3d",
                 transformOrigin: "center",
