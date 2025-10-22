@@ -20,7 +20,7 @@ export const Projects: Record<string, Item> = {
         ],
         links: ['React', 'TypeScript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB Atlas', 'Terraform', 'Cloudflare Wrangler', 'Cloudflare Workers', 'AWS Lambda'],
         date: 'July 2025 - Present',
-        images: ['scrapstack/banner.png', 'furryslop/preview.png', 'portfolio/portfolio.png'],
+        images: ['scrapstack/banner.png', 'scrapstack/post.png', 'scrapstack/stacks.png'],
         demo: 'https://scrapstack.net',
         github: 'https://github.com/Scapsters/ScrapStack',
     },
@@ -33,6 +33,7 @@ export const Projects: Record<string, Item> = {
         ],
         links: ['React', 'TypeScript', 'Tailwind', 'Express.js', 'PostgreSQL'],
         date: 'December 2024 - June 2025',
+        images: ['furryslop/preview.png', 'furryslop/componentuml.png', 'furryslop/sequence.png'],
         github: 'https://github.com/Scapsters/Furry-Slop',
     },
     JSThread: {
@@ -44,6 +45,7 @@ export const Projects: Record<string, Item> = {
         date: 'February 2025 - February 2025',
         github: 'https://github.com/Scapsters/swen_342_github',
         demo: 'https://scapsters.github.io/swen_342_github/JSThread/dist/',
+        images: ['jsthread/console.png'],
         links: ['TypeScript', 'Node.js', 'Vite.js', 'Tailwind'],
     },
     YoLinkCenter: {
@@ -54,6 +56,7 @@ export const Projects: Record<string, Item> = {
             'While I gained much experience in this python-based tech stack, this project is mostly incomplete and lacks a public demo.',
         ],
         date: 'November 2024 - December 2024',
+        images: ['yolink/sensors.png', 'yolink/thsensors.png'],
         github: 'https://github.com/Scapsters/YoLink',
         links: ['Python', 'Flask', 'MySQL'],
     },
@@ -67,6 +70,7 @@ export const Projects: Record<string, Item> = {
         ],
         demo: 'https://scotthappy.com',
         github: 'https://github.com/Scapsters/portfolio',
+        images: ['portfolio/portfolio.png', 'portfolio/portfolio_10-2025.png'],
         links: ['Figma', 'Next.js', 'TypeScript', 'Tailwind', 'AWS', 'Amplify'],
     },
     DinDin: {
