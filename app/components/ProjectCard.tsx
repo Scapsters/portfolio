@@ -300,7 +300,7 @@ function ProjectCardCard({ className, children, cacheKey }: { className?: string
             className={`${className ?? ""} bg-foreground text-stone-200 p-3`}
             style={{
                 transform: `
-                    rotateY(${Math.sin(1 / transformed[1]) * transformed[1] * 6}deg) rotateX(${Math.sin(1 / transformed[0]) * transformed[0] * 6}deg)
+                    rotateX(${transformed[1]}deg) rotateY(${transformed[0] * -1}deg)
                     translateX(${transformed[0]}px) translateY(${transformed[1]}px)
                 `,
                 transformStyle: "preserve-3d",
