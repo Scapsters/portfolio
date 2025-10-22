@@ -15,7 +15,7 @@ export const Projects: Record<string, Item> = {
         id: 'Scrapstack',
         name: 'Scrapstack',
         description: [
-            'The second version of a social media post viewer, rebuilt entirely from the ground up, or should I say from the cloud up?',
+            'Cloud-based social media-like app providing users a way to effectively search, browse, and share their liked posts from other social media sites.',
             'This redesign revolved around user experience and extensibility, with a conventional infinite scroll layout and support for multiple feeds.',
         ],
         links: ['React', 'TypeScript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB Atlas', 'Terraform', 'Cloudflare Wrangler', 'Cloudflare Workers', 'AWS Lambda'],
@@ -53,7 +53,7 @@ export const Projects: Record<string, Item> = {
         name: 'YoLink Center: Leveraging an IoT API',
         description: [
             "A framework for interacting with YoLink IoT devices through their API. Enables users to read more data from their sensors than possible through YoLink's app.",
-            'While I gained much experience in this python-based tech stack, this project is mostly incomplete and lacks a public demo.',
+            'Featured standard CRUD endpoints and a denormalized database schema, with data analysis guidance given by multiple professional data analysts.',
         ],
         date: 'November 2024 - December 2024',
         images: ['yolink/sensors.png', 'yolink/thsensors.png'],
@@ -65,8 +65,8 @@ export const Projects: Record<string, Item> = {
         name: 'Portfolio',
         date: 'March 22, 2025 - Present',
         description: [
-            'In rushing to complete this for a live demo, I learned important lessons on technical debt. Or more accurately, I learned those lessons afterwards. It was worth it!',
-            'My biggest mistake here was using Next.js. There\'s practically no reason to do that for a static site like this. But, here I am.'
+            'Personalized developer portfolio for myself. Features a physics-bsaed scrollwheel that runs on its own frame cycle and manipulates the dom directly to optimize performance.',
+            'This visuals-based site required in-depth knowledge regarding CSS, JS Animations, and React Effects and rendering.'
         ],
         demo: 'https://scotthappy.com',
         github: 'https://github.com/Scapsters/portfolio',
@@ -91,49 +91,51 @@ export const Tools: Record<string, Item> = {
         id: 'TypeScript', name: 'TypeScript',
         links: ['Scrapstack', 'JSThread', 'Portfolio'], description: [
             'I\'ve had several months of professional TypeScript experience and it is my go-to language for personal projects.',
-            "Sometimes, when I write .toArray(), I close my eyes and imagine I'm using Java Streams. Just kidding who wants to imagine that."
+            "Experienced in component-based frontend frameworks and REST APIs, with experience with server and client routers.",
+            'Well-versed in typing to aid in developer experience across the board, from API calls to object-oriented.'
         ]
     },
     Java: {
         id: 'Java', name: 'Java',
-        links: ['NutriApp', 'Bowling App Refactor'], description: []
+        links: ['NutriApp', 'RatFund', 'Bowling App Refactor'], description: [
+            'I have experience using Java, Spring Boot, and Maven to create and maintain REST APIs.',
+            'Nutriapp featured a heavy emphasis on code quality through design patterns with both a CLI and web-based frontend.',
+            'RatFund included heavy Spring Boot usage to build out a CRUD API.'
+        ]
     },
     Python: {
         id: 'Python', name: 'Python',
         links: ['YoLink Center', 'Chat App'], description: [
             'I\'ve had several months of working with python professionally, with my experience lying in a couple key regions.',
-            '- Pytest, where I am comfortable managing contexts and mocks in order to mock external apis, internal apis, and databases.',
-            '- Typing with Pyright, where I have handled complex decorator signatures to ensure type safety',
+            'Pytest, where I am comfortable managing contexts and mocks in order to mock external apis, internal apis, and databases.',
+            'Typing with Pyright, where I have handled complex decorator signatures and modified foundaitonal code to bring type safety to messy codebases.',
         ]
-    },
-    CSS: {
-        id: 'CSS', name: 'CSS',
-        links: ['Scrapstack', 'Portfolio'], description: []
     },
     HTML: {
         id: 'HTML', name: 'HTML',
-        links: ['Scrapstack', 'JSThread', 'Portfolio'], description: []
+        links: ['Scrapstack', 'JSThread', 'Portfolio'], description: [
+            'I have experience using plain HTML/JS/CSS apps, HTMX, JSQuery, and AJAX requests to develop and maintain basic HTML-based webpages.'
+        ]
     },
     React: {
         id: 'React', name: 'React',
         description: [
-            "There's a lot to learn about React, but as of recently, there are two guiding principals that made improved my ability to use React:",
-            " - Only split components when there is a meaningful chance of reuse",
-            " - Think really hard any time you want to use a useEffect",
+            'A considerable amount of professional and personal experience with React has enabled me to build full-scale interactive apps.',
+            'My expertise lies in not only maintaining but improving outdated and unstable codebases, integrating lessons from modern tools to non-invasively improve code quality and developer experience.'
         ],
         links: ['Scrapstack', 'Portfolio', 'Chess App'],
     },
     Tailwind: {
         id: 'Tailwind', name: 'Tailwind',
-        links: ['Scrapstack', 'JSThread', 'Portfolio'], description: [],
+        links: ['Scrapstack', 'JSThread', 'Portfolio'], description: [
+            'I have experience using Tailwind, CSS, and SCSS to effectively style web pages from tech demos to social media sites.'
+        ],
     },
     Nextjs: {
         id: 'Next.js', name: 'Next.js',
-        links: ['Portfolio'], description: [],
-    },
-    Bootstrap: {
-        id: 'Bootstrap', name: 'Bootstrap',
-        links: ['Club Tracker'], description: [],
+        links: ['Portfolio'], description: [
+            'While its usage can be debated, I used Next.js to develop this portfolio, gaining experience with more batteries-included routers.'
+        ],
     },
     Expressjs: {
         id: 'Express.js', name: 'Express.js',
@@ -157,10 +159,7 @@ export const Tools: Record<string, Item> = {
     Terraform: {
         id: 'Terraform', name: 'Terraform',
         links: ['Scrapstack'], description: [
-            'A unique part of IaC is its ability to be automated.',
-            'I created a CLI to automate the editing of Terraform files. You provide a series of template files with blanks, put specially formatted markers in your code, and then run the CLI with whatever you want filled in the blanks. It could add new blocks or edit existing ones.',
-            'Granted, this was before I realized a "module" could be used multiple times, but it still saved me time when editing common files was unavoidable.',
-            'Either way, it meant the other contributors on my project were able to use Terraform without any Terraform/cloud knowledge.'
+            'Terraform lends well to usage in multi-cloud scenarios. I have experience using Terraform alongside with Cloudflare Wrangler to provision AWS, Cloudflare, and MongoDB Atlas resources.',
         ]
     },
     PostgreSQL: {
