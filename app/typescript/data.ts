@@ -18,7 +18,7 @@ export const Projects: Record<string, Item> = {
             'Cloud-based social media-like app providing users a way to effectively search, browse, and share their liked posts from other social media sites.',
             'This redesign revolved around user experience and extensibility, with a conventional infinite scroll layout and support for multiple feeds.',
         ],
-        links: ['React', 'TypeScript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB Atlas', 'Terraform', 'Cloudflare Wrangler', 'Cloudflare Workers', 'AWS Lambda'],
+        links: ['React', 'TypeScript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB Atlas', 'Terraform', 'Cloudflare', 'AWS'],
         date: 'July 2025 - Present',
         images: ['scrapstack/post.png', 'scrapstack/stacks.png', 'scrapstack/banner.png'],
         demo: 'https://scrapstack.net',
@@ -89,7 +89,7 @@ export const Projects: Record<string, Item> = {
 export const Tools: Record<string, Item> = {
     TypeScript: {
         id: 'TypeScript', name: 'TypeScript',
-        links: ['Scrapstack', 'JSThread', 'Portfolio'], description: [
+        links: ['Scrapstack', 'JSThread', 'Portfolio', 'tRPC', 'Tanstack Query', 'Express.js', 'Chart.js', 'Colors.js'], description: [
             'I\'ve had several months of professional TypeScript experience and it is my go-to language for personal projects.',
             "Experienced in component-based frontend frameworks and REST APIs, with experience with server and client routers.",
             'Well-versed in typing to aid in developer experience across the board, from API calls to object-oriented.'
@@ -97,7 +97,7 @@ export const Tools: Record<string, Item> = {
     },
     Java: {
         id: 'Java', name: 'Java',
-        links: ['NutriApp', 'RatFund', 'Bowling App Refactor'], description: [
+        links: ['NutriApp', 'RatFund', 'Bowling App Refactor', 'Spring Boot', 'Maven'], description: [
             'I have experience using Java, Spring Boot, and Maven to create and maintain REST APIs.',
             'Nutriapp featured a heavy emphasis on code quality through design patterns with both a CLI and web-based frontend.',
             'RatFund included heavy Spring Boot usage to build out a CRUD API.'
@@ -105,7 +105,7 @@ export const Tools: Record<string, Item> = {
     },
     Python: {
         id: 'Python', name: 'Python',
-        links: ['YoLink Center', 'Chat App'], description: [
+        links: ['YoLink Center', 'Chat App', 'Pytest', 'Pyright', 'SQLAlchemy', 'Flask'], description: [
             'I\'ve had several months of working with python professionally, with my experience lying in a couple key regions.',
             'Pytest, where I am comfortable managing contexts and mocks in order to mock external apis, internal apis, and databases.',
             'Typing with Pyright, where I have handled complex decorator signatures and modified foundaitonal code to bring type safety to messy codebases.',
@@ -146,7 +146,17 @@ export const Tools: Record<string, Item> = {
     },
     AWS: {
         id: 'AWS', name: 'AWS',
-        links: ['Portfolio'], description: []
+        links: ['Portfolio', 'Scrapstack'], description: [
+            'Proficient in serverless and server-based architecture, across services like Lambda, DocumentDB, EC2, S3, and API Gateway.',
+            'Also experienced in multi-cloud DNS configuration through Route 53',
+            'Also unfortunately experienced in Amplify.'
+        ]
+    },
+    Cloudflare: {
+        id: "Cloudflare", name: "Cloudflare",
+        links: ['Scrapstack'], description: [
+            'Proficient in serverless web-hosting architecture, including Workers and Pages.'
+        ]
     },
     AWSConsole: {
         id: 'AWS Console', name: 'AWS Console',

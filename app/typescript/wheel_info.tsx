@@ -29,10 +29,17 @@ export const PortfolioData: Record<Category, Record<string, Item>> = {
         'Next.js': Tools.Nextjs,
         'TypeScript': Tools.TypeScript,
     },
+    [Category.Backend]: {
+        'Scrapstack Beta': Projects.ScrapstackBeta,
+        'YoLink Center': Projects.YoLinkCenter,
+        'Java': Tools.Java,
+        'Python': Tools.Python,
+    },
     [Category.Cloud]: {
         'Scrapstack': Projects.Scrapstack,
         'Portfolio': Projects.Portfolio,
-        'Amplify': Tools.Amplify,
+        'AWS': Tools.AWS,
+        'Cloudflare': Tools.Cloudflare,
         'Terraform': Tools.Terraform,
     },
     [Category.Languages]: {
@@ -47,15 +54,8 @@ export const PortfolioData: Record<Category, Record<string, Item>> = {
         'Express.js': Tools.Expressjs,
     },
     [Category.Tools]: {
-        'Amplify': Tools.Amplify,
-        'Terraform': Tools.Terraform,
         'Git': Tools.Git,
         'Apps Script': Tools.AppsScript,
-    },
-    [Category.Backend]: {
-        'Scrapstack Beta': Projects.ScrapstackBeta,
-        'YoLink Center': Projects.YoLinkCenter,
-        'Python': Tools.Python,
     },
 };
 
@@ -78,6 +78,8 @@ export function getItemColor(item: string) {
                     return 'oklch(0.55 0.1 300deg)';
                 case Category.Tools:
                     return 'oklch(0.6 0.1 10deg)';
+                case Category.Cloud:
+                    return 'oklch(0.6 0.1 140deg)'
             }
         }
     }
