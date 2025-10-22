@@ -28,6 +28,7 @@ export const ProjectContext = createContext<{
 export const CursorContext = createContext<{
     cursorPosition: [number, number]
     setCursorPosition: React.Dispatch<SetStateAction<[number, number]>>
+    relativeCursorPositions?: React.RefObject<{ [index: string]: [number, number] }>
 }>({
     cursorPosition: [0, 0],
     setCursorPosition: () => {},

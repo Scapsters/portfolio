@@ -20,7 +20,7 @@ export const Projects: Record<string, Item> = {
         ],
         links: ['React', 'TypeScript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB Atlas', 'Terraform', 'Cloudflare Wrangler', 'Cloudflare Workers', 'AWS Lambda'],
         date: 'July 2025 - Present',
-        images: ['scrapstack/banner.png', 'scrapstack/post.png', 'scrapstack/stacks.png'],
+        images: ['scrapstack/post.png', 'scrapstack/stacks.png', 'scrapstack/banner.png'],
         demo: 'https://scrapstack.net',
         github: 'https://github.com/Scapsters/ScrapStack',
     },
@@ -33,7 +33,7 @@ export const Projects: Record<string, Item> = {
         ],
         links: ['React', 'TypeScript', 'Tailwind', 'Express.js', 'PostgreSQL'],
         date: 'December 2024 - June 2025',
-        images: ['furryslop/preview.png', 'furryslop/componentuml.png', 'furryslop/sequence.png'],
+        images: ['furryslop/componentuml.png', 'furryslop/sequence.png', 'furryslop/preview.png'],
         github: 'https://github.com/Scapsters/Furry-Slop',
     },
     JSThread: {

@@ -66,10 +66,12 @@ function ProjectCards() {
         window.addEventListener("pointermove", handleMove)
         return () => window.removeEventListener("pointermove", handleMove)
     }, [])
+
+    const relativeCursorPositions = useRef({})
     
     const { selected, previousSelected } = useContext(ProjectContext)
     return (
-        <CursorContext value={{ cursorPosition, setCursorPosition }}>
+        <CursorContext value={{ cursorPosition, setCursorPosition, relativeCursorPositions }}>
             <div className="relative grow ml-10 sm:ml-1/10 -mr-50">
                 <ProjectCard isPrevious={false} current={selected} previous={previousSelected}/>
             </div>

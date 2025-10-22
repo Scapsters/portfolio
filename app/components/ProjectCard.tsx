@@ -150,7 +150,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                         <div className="flex gap-8 flex-col">
                             <div ref={el => void (cardRefs.current[0] = el)}>
                                 {selected ? (
-                                    <ProjectCardCard className="w-fit py-2">
+                                    <ProjectCardCard className="w-fit py-2" cacheKey={selected.id + "0"}>
                                         <div className="flex items-center gap-2 justify-between pr-4 flex-wrap pl-1">
                                             <p className="text-3xl pr-8">{selected.name}</p>
                                             <div className="flex gap-10">
@@ -160,18 +160,18 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                         </div>
                                     </ProjectCardCard>
                                 ) : (
-                                    <ProjectCardCard className="w-fit">
+                                    <ProjectCardCard className="w-fit" cacheKey={"title0"}>
                                         Hello. I&apos;m Scott, a software engineer.
                                     </ProjectCardCard>
                                 )}
                             </div>
                             <div ref={el => void (cardRefs.current[1] = el)}>
                                 {selected ? (
-                                    <ProjectCardCard className="p-2">
+                                    <ProjectCardCard className="p-2" cacheKey={selected.id + "1"}>
                                         {selected.description.map(line => <p className="pb-2" key={line}>{line}</p>)}
                                     </ProjectCardCard>
                                 ) : (
-                                    <ProjectCardCard className="-translate-x-15">
+                                    <ProjectCardCard className="-translate-x-15" cacheKey={"title1"}>
                                         Projects and tools are viewable on the right. You can also drag the wheel.
                                     </ProjectCardCard>
                                 )}
@@ -201,7 +201,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                                 zIndex: mod(index + imageScroll, selected.images!.length)
                                             }}
                                         >
-                                            <ProjectCardCard className="">
+                                            <ProjectCardCard className="" cacheKey={selected.id + "3"}>
                                                 <img className="h-50 w-auto" src={image}></img>
                                             </ProjectCardCard>
                                         </div>
@@ -213,7 +213,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                             className='w-full flex justify-center' 
                                             style={{ transform: `translateY(${selected.images.length * .5 + 4}rem)` }}
                                         >
-                                            <ProjectCardCard className="flex p-0!">
+                                            <ProjectCardCard className="flex p-0!" cacheKey={selected.id + "4"}>
                                                 <AiFillCaretLeft size={16} className="hover:text-white hover:cursor-pointer hover:pr-3 transition-all duration-150 w-14 h-14 p-2 py-3" onClick={() => setImageScroll(prev => prev + 1)}/>
                                                 <AiFillCaretRight size={16} className="hover:text-white hover:cursor-pointer hover:pl-3 transition-all duration-150 w-14 h-14 p-2 py-3" onClick={() => setImageScroll(prev => prev - 1)}/>
                                             </ProjectCardCard>
@@ -227,7 +227,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                         <div className="mt-10">
                             <div ref={el => void (cardRefs.current[2] = el)}>
                                 {selected ? (
-                                    <ProjectCardCard className="h-fit overflow-auto">
+                                    <ProjectCardCard className="h-fit overflow-auto" cacheKey={selected.id + "2"}>
                                         <div className="pr-4">
                                             <p className="text-xl pl-2">Tools</p>
                                             {selected.links.map((technology) => {
@@ -281,7 +281,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
 }
 
 type Point = [number, number]
-function ProjectCardCard({ className, children }: { className?: string, children: ReactNode }) {
+function ProjectCardCard({ className, children, cacheKey }: { className?: string, children: ReactNode, cacheKey: string }) {
     const ref = useRef<HTMLDivElement>(null)
 
     const softMFunction = (x: number): number => ((1 / (3 + (x / 100 - 1) ** 2)) + (1 / (3 + (x / 100 + 1) ** 2))) * x * .001
@@ -293,7 +293,7 @@ function ProjectCardCard({ className, children }: { className?: string, children
         ]
     }
 
-    const relativeCursorPosition = useRelativeCursor(ref)
+    const relativeCursorPosition = useRelativeCursor(ref, cacheKey)
     const transformed = applyTransform(relativeCursorPosition)
     return (
         <div
@@ -313,18 +313,21 @@ function ProjectCardCard({ className, children }: { className?: string, children
     )
 }
 
-function useRelativeCursor(target: React.RefObject<HTMLDivElement | null>) {
+function useRelativeCursor(target: React.RefObject<HTMLDivElement | null>, cacheKey: string) {
 
-    const { cursorPosition } = useContext(CursorContext)
-    const [relativeCursorPosition, setRelativeCursorPosition] = useState<Point>([950, 0])
+    const { cursorPosition, relativeCursorPositions } = useContext(CursorContext)
+    const [relativeCursorPosition, setRelativeCursorPosition] = useState<Point>(relativeCursorPositions?.current[cacheKey] ?? [950, 0])
     useEffect(() => {
         const handler = () => {
-            if (target.current) setRelativeCursorPosition(convertToRelative(cursorPosition, target.current))
+            if (!target.current) return
+            const relativeCursorPosition = convertToRelative(cursorPosition, target.current)
+            setRelativeCursorPosition(relativeCursorPosition)
+            if (relativeCursorPositions) relativeCursorPositions.current[cacheKey] = relativeCursorPosition
         }
         handler()
         document.addEventListener('pointermove', handler)
         return () => document.removeEventListener('pointermove', handler)
-    }, [cursorPosition, target])
+    }, [cacheKey, cursorPosition, relativeCursorPositions, target])
 
     return relativeCursorPosition
 }
