@@ -154,11 +154,14 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                         <div className="flex items-center gap-2 justify-between pr-4 flex-wrap pl-1">
                                             <p className="text-3xl pr-8">{selected.name}</p>
                                             <div className="flex gap-10">
-                                                <div className="bg-blue-700 px-1">
-                                                    <div className="translate-y-2">
-                                                        {selected.demo ? <ExternalLink href={selected.demo}>View Live</ExternalLink> : <></>}
+                                                {selected.demo 
+                                                    ? <div className="bg-blue-700 px-1">
+                                                        <div className="translate-y-2">
+                                                            <ExternalLink href={selected.demo}>View Live</ExternalLink>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                    : <></>
+                                                }
                                                 {selected.github ? <ExternalLink href={selected.github}>GitHub</ExternalLink> : <></>}
                                             </div>
                                         </div>
