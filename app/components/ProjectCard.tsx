@@ -291,6 +291,7 @@ type Point = [number, number]
 function ProjectCardCard({ className, children, cacheKey }: { className?: string, children: ReactNode, cacheKey: string }) {
     const ref = useRef<HTMLDivElement>(null)
 
+    // decide target
     const distanceFromOrigin = (p1: Point): number => Math.sqrt(p1[0] ** 2 + p1[1] ** 2)
     const applyTransform = (p1: Point): Point => {
         return [
@@ -298,37 +299,34 @@ function ProjectCardCard({ className, children, cacheKey }: { className?: string
             p1[1] * bumpFunction(distanceFromOrigin(p1))
         ]
     }
-
     const relativeCursorPosition = useRelativeCursor(ref, cacheKey)
-    const transformed_point = applyTransform(relativeCursorPosition)
-
+    const transformedPoint = applyTransform(relativeCursorPosition)
     // rotateX, rotateY, translateX, translateY
-    const target_transforms = [
-        transformed_point[1],
-        transformed_point[0] * -1,
-        transformed_point[0],
-        transformed_point[1]
+    const targetTransforms = [
+        transformedPoint[1],
+        transformedPoint[0] * -1,
+        transformedPoint[0],
+        transformedPoint[1]
     ]
-    const current_transforms = ref.current
-        ? [
-            parseFloat(ref.current.style.transform.split("(")[1].split("deg")[0]),
-            parseFloat(ref.current.style.transform.split("(")[2].split("deg")[0]),
-            parseFloat(ref.current.style.transform.split("(")[3].split("px")[0]),
-            parseFloat(ref.current.style.transform.split("(")[4].split("px")[0]),
-        ]
-        : [0, 0, 0, 0]
-    const next_transforms = current_transforms.map((current, index) => {
-        const target = target_transforms[index]
+
+    // get current
+    const { currentTransforms: currentTransformsSet } = useContext(CursorContext)
+    const currentTransforms = currentTransformsSet?.current[cacheKey] ?? [0, 0, 0, 0]
+    
+    // calculate, cache, and apply next
+    const nextTransforms = currentTransforms.map((current, index) => {
+        const target = targetTransforms[index]
         return current + (target - current) / 10
-    })
+    }) as [number, number, number, number]
+    if (currentTransformsSet?.current) currentTransformsSet.current[cacheKey] = nextTransforms
     return (
         <div
             ref={ref}
             className={`${className ?? ""} bg-foreground text-stone-200 p-3`}
             style={{
                 transform: `
-                    rotateX(${next_transforms[0]}deg) rotateY(${next_transforms[1]}deg)
-                    translateX(${next_transforms[2]}px) translateY(${next_transforms[3]}px)
+                    rotateX(${nextTransforms[0]}deg) rotateY(${nextTransforms[1]}deg)
+                    translateX(${nextTransforms[2]}px) translateY(${nextTransforms[3]}px)
                 `,
                 transformStyle: "preserve-3d",
                 transformOrigin: "center",

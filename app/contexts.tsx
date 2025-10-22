@@ -29,6 +29,7 @@ export const CursorContext = createContext<{
     cursorPosition: [number, number]
     setCursorPosition: React.Dispatch<SetStateAction<[number, number]>>
     relativeCursorPositions?: React.RefObject<{ [index: string]: [number, number] }>
+    currentTransforms?: React.RefObject<{ [index: string]: [number, number, number, number] }>
 }>({
     cursorPosition: [0, 0],
     setCursorPosition: () => {},

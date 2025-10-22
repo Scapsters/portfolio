@@ -68,10 +68,11 @@ function ProjectCards() {
     }, [])
 
     const relativeCursorPositions = useRef({})
+    const currentTransforms = useRef({})
     
     const { selected, previousSelected } = useContext(ProjectContext)
     return (
-        <CursorContext value={{ cursorPosition, setCursorPosition, relativeCursorPositions }}>
+        <CursorContext value={{ cursorPosition, setCursorPosition, relativeCursorPositions, currentTransforms }}>
             <div className="relative grow ml-10 sm:ml-1/10 -mr-50">
                 <ProjectCard isPrevious={false} current={selected} previous={previousSelected}/>
             </div>
