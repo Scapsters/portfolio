@@ -11,14 +11,14 @@ import { Item } from './typescript/data'
 export default function Home() {
 
     const [selected, setSelected] = useState<Item | null | undefined>(undefined)
-    const [selectedIndex, setSelectedIndex] = useState<number | null>(0)
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [previousSelected, setPreviousSelected] = useState<Item | null | undefined>(undefined)
     
     const scrollSinceSelection = useRef(false)
 
     const groupVisibilities = useRef<Visibility[]>(
         new Array(Object.keys(PortfolioData).length).fill(null).map(
-            (_, index) => ({ visible: index === 0, timeSet: performance.now() })
+            () => ({ visible: false, timeSet: performance.now() })
         )
     )
 

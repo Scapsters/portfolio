@@ -168,7 +168,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                     </ProjectCardCard>
                                 ) : (
                                     <ProjectCardCard className="w-fit" cacheKey={"title0"}>
-                                        Hello. I&apos;m Scott, a software engineer.
+                                        Hi, I&apos;m Scott, a software engineer.
                                     </ProjectCardCard>
                                 )}
                             </div>
@@ -178,8 +178,8 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                         {selected.description.map(line => <p className="pb-2" key={line}>{line}</p>)}
                                     </ProjectCardCard>
                                 ) : (
-                                    <ProjectCardCard className="-translate-x-15" cacheKey={"title1"}>
-                                        Projects and tools are viewable on the right. You can also drag the wheel.
+                                    <ProjectCardCard className="-translate-x-15 w-200" cacheKey={"title1"}>
+                                        This is my developer portfolio. Click on a section to view related projects, tools, and topics. You can also drag the wheel.
                                     </ProjectCardCard>
                                 )}
                             </div>
