@@ -340,7 +340,6 @@ function ProjectCardCard({ className, children, cacheKey }: { className?: string
 function useRelativeCursor(target: React.RefObject<HTMLDivElement | null>, cacheKey: string) {
 
     const { cursorPosition, relativeCursorPositions } = useContext(CursorContext)
-    if (!relativeCursorPositions?.current[cacheKey]) console.log(cacheKey, relativeCursorPositions?.current[cacheKey])
     const [relativeCursorPosition, setRelativeCursorPosition] = useState<Point>(relativeCursorPositions?.current[cacheKey] ?? [950, 0])
     useEffect(() => {
         const handler = () => {
