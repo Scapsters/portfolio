@@ -140,8 +140,9 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
     const createCard = (selected: ProjectCardProps["current"], isPrevious: boolean, cardRefs: React.RefObject<(HTMLDivElement | null)[]>) => {
         return (
             <div
+                style={{ opacity }}
                 className={`
-                    w-full h-0 opacity-${opacity} flex items-center
+                    w-full h-0 flex items-center
                     ${isPrevious ? "absolute top-0 left-0 pointer-events-none" : ""}
                 `}
             >
@@ -209,7 +210,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                             }}
                                         >
                                             <ProjectCardCard className="" cacheKey={selected.id + "3"}>
-                                                <img className="h-50 w-auto" src={image}></img>
+                                                <img alt={image} className="h-50 w-auto" src={image}></img>
                                             </ProjectCardCard>
                                         </div>
                                     ))}
