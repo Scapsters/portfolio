@@ -317,7 +317,7 @@ function ProjectCardCard({ className, children, cacheKey }: { className?: string
     // calculate, cache, and apply next
     const nextTransforms = currentTransforms.map((current, index) => {
         const target = targetTransforms[index]
-        return current + (target - current) / 10
+        return current + (target - current) / 50
     }) as [number, number, number, number]
     if (currentTransformsSet?.current) currentTransformsSet.current[cacheKey] = nextTransforms
     return (
