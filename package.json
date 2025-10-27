@@ -16,13 +16,15 @@
     "trailingComma": "all"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "cross-env": "^7.0.3",
     "my-app": "file:",
     "next": "^15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
-    "react-image-gallery": "^1.4.0"
+    "react-image-gallery": "^1.4.0",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

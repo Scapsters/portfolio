@@ -1,8 +1,9 @@
 import { lexendPeta } from '@/typescript/css_constants'
+import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 
 export default function Infocard() {
-    const divRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)]
+    const divRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)]
     const spanRefs = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)]
     const translate = useRef('-80px')
 
@@ -49,7 +50,7 @@ export default function Infocard() {
         )
     }
 
-    function makeAnchor(index: number, href: string, text: string) {
+    function makeAnchor(index: number, href: string, text: string, isInternalLink?: boolean) {
         return (
             <div
                 ref={divRefs[index]}
@@ -57,9 +58,13 @@ export default function Infocard() {
                 className={`transition duration-400 flex flex-col pl-5 pr-5 h-min hover:underline bg-background`}
             >
                 {Array.from({ length: 4 }).map((_, index) => (
-                    <a key={index + 'gh'} href={href} tabIndex={index == 3 ? 0 : -1}>
+                    isInternalLink
+                    ? <a key={index + 'gh'} href={href} tabIndex={index == 3 ? 0 : -1}>
                         {text}
                     </a>
+                    : <Link key={index + 'gh'} href={href} tabIndex={index == 3 ? 0 : -1}>
+                        {text}
+                    </Link>
                 ))}
             </div>
         )
@@ -72,6 +77,8 @@ export default function Infocard() {
             {makeAnchor(1, 'https://github.com/Scapsters', 'Github')}
             {makeSpan(1)}
             {makeAnchor(2, 'mailto:scotty.happy@gmail.com', 'Gmail')}
+            {makeSpan(2)}
+            {makeAnchor(3, '/blog', 'Blog', true)}
         </div>
     )
 
