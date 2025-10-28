@@ -5,11 +5,10 @@ export async function generateStaticParams() {
     return getPostShortFilenames().map(filename => ({ slug: filename }))
 }
 
-export default async function Post({
-    params: { postName },
-}: {
-    params: { postName: string }
-}) {
+export default async function Post({ params }: 
+    { params: Promise<{ postName: string }>}
+) {
+    const { postName } = await params
     return (
         <div className="
             w-screen h-full pt-20
