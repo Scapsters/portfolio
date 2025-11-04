@@ -5,24 +5,28 @@ export async function generateStaticParams() {
     return getPostShortFilenames().map(filename => ({ slug: filename }))
 }
 
-export default async function Post({ params }: 
-    { params: Promise<{ postName: string }>}
+export default async function Post({ params }:
+    { params: Promise<{ postName: string }> }
 ) {
     const { postName } = await params
     return (
-        <div className="
+        <div className="flex">
+            <div className="grow">fe</div>
+            <div className="grow">fe</div>
+            <div className="
             w-screen h-full pt-20
             flex justify-center
             dark:bg-foreground
-        ">
-            <article className="
+            ">
+                <article className="
                 prose
                 text-background dark:text-foreground
                 prose-li:marker:text-foreground prose-li:marker:dark:text-background
                 dark:prose-invert
-            ">
-                <Markdown>{getPostContent(postName)}</Markdown>
-            </article>
+                ">
+                    <Markdown>{getPostContent(postName)}</Markdown>
+                </article>
+            </div>
         </div>
     )
 }
