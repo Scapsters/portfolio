@@ -20,10 +20,12 @@ export default function BlogHome() {
             <div className="flex flex-col w-fit items-center">
                 <p className="text-3xl pb-20">Blog Posts</p>
                 {postInfo.map((info, index) =>
-                    <>
+                    <div
+                        className="flex flex-col w-full items-center"
+                        key={info.name}
+                    >
                         <Link
                             href={"blog/" + info.link}
-                            key={info.name}
                             className="
                                 w-full px-5 py-10
                                 text-left
@@ -35,7 +37,7 @@ export default function BlogHome() {
                         {index != postInfo.length - 1
                             && <div className="w-full h-[2px] bg-foreground dark:bg-background" />
                         }
-                    </>
+                    </div>
                 )}
             </div>
         </div>
