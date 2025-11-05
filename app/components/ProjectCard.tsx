@@ -67,12 +67,11 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
             }
         }, [prjctx, selected],
     )
-
-    const [opacity, setOpacity] = useState(0) // Prevent flash on loading
-
+    
     const currentCardRefs = useRef<(HTMLDivElement | null)[]>(new Array(7).fill(null))
     const previousCardRefs = useRef<(HTMLDivElement | null)[]>(new Array(7).fill(null))
-
+    
+    const [opacity, setOpacity] = useState(0) // 1st part of removing flash on load
     useEffect(() => {
         currentCardRefs.current.forEach((cardRef, index) => {
             cardRef?.getAnimations().forEach((anim) => anim.cancel())
@@ -104,7 +103,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
         })
         let cardsAnimated = 0
         previousCardRefs.current.toReversed().forEach((cardRef) => {
-            const delay = cardsAnimated * 150
+            const delay = cardsAnimated * 150 // The array is reversed, and we don't want to count empty elements. Only increase delay when the element at index exists
             if (cardRef) cardsAnimated++
             cardRef?.getAnimations().forEach((anim) => anim.cancel())
             cardRef?.animate(
@@ -133,7 +132,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                 },
             )
         })
-        setOpacity(1) // Change from 0 to not override the animation
+        setOpacity(1) // Overridden by animation opacity, 2nd part of removing flash on load.
     }, [selected, isPrevious, currentCardRefs, previousCardRefs])
 
     const [imageScroll, setImageScroll] = useState(0)
@@ -381,6 +380,11 @@ function useRelativeCursor(target: React.RefObject<HTMLDivElement | null>, cache
     return relativeCursorPosition
 }
 
+/**
+ * @param param0 absolute point of cursor 
+ * @param target element
+ * @returns distance from param0 to center of target
+ */
 function convertToRelative(
     [cursorPageX, cursorPageY]: Point,
     target: HTMLDivElement
@@ -391,6 +395,10 @@ function convertToRelative(
     return [x, y]
 }
 
+/**
+ * @param el element 
+ * @returns postion of element in viewport
+ */
 function getElementViewportPosition(el: HTMLElement): Point {
     let x = 0, y = 0
     let current: HTMLElement | null = el
@@ -438,7 +446,11 @@ function Expandable({ children }: { children: ReactNode }) {
     </>)
 }
 
-// Adapted from https://www.johndcook.com/blog/2022/06/23/bump-functions/
+/**
+ * Adapted from https://www.johndcook.com/blog/2022/06/23/bump-functions/
+ * @param x number
+ * @returns number mapped to "bump" function (infinitely differentiable, 0 when abs(x) > 1)
+ */
 function bumpFunction(x: number) {
     const f = (x: number) => Math.pow(x, 7)
     const g = (x: number) => x > 0 ? (1 / f(1 / x)) : 0
