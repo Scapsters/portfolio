@@ -53,7 +53,7 @@ export default async function Post({ params }:
                         "    
                         href="/blog"
                     >
-                        Back to Blog
+                        Back to Blog Home
                     </Link>
                 </div>
             </div>
