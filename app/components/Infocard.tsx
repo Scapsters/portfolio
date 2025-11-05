@@ -3,29 +3,35 @@ import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 
 export default function Infocard() {
-    const divRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)]
-    const spanRefs = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)]
+    const anchorRefs = useRef<(HTMLDivElement | null)[]>(new Array(4).fill(null))
+    const spanRefs = useRef<(HTMLSpanElement | null)[]>(new Array(7).fill(null))
     const translate = useRef('-80px')
 
     useEffect(() => {
-        const updateStyles = (e: MouseEvent, value: string) => {
-            const anchorIndex = divRefs.findIndex((ref) => ref.current === e.target)
-            const anchor = divRefs[anchorIndex].current
-            const spans = [spanRefs[anchorIndex], spanRefs[anchorIndex - 1]].map((ref) => ref?.current)
+        const shiftOnHover = (e: MouseEvent, value: string) => {
+            const anchorIndex = anchorRefs.current.findIndex((ref) => ref === e.target)
+            const anchor = anchorRefs.current[anchorIndex]
+            const spans = [spanRefs.current[anchorIndex], spanRefs.current[anchorIndex - 1]]
             const targetElements = [anchor, ...spans]
             for (const element of targetElements) {
-                // translate y to value
                 element?.style.setProperty('transform', `translateY(${value})`)
             }
         }
 
-        const mouseEnterHandler = (e: MouseEvent) => updateStyles(e, '0px')
-        const mouseExitHandler = (e: MouseEvent) => updateStyles(e, translate.current)
+        const mouseEnterHandler = (e: MouseEvent) => shiftOnHover(e, '0px')
+        const mouseExitHandler = (e: MouseEvent) => shiftOnHover(e, translate.current)
 
-        divRefs.forEach((anchor) => {
-            anchor.current?.addEventListener('mouseenter', mouseEnterHandler)
-            anchor.current?.addEventListener('mouseleave', mouseExitHandler)
+        const stableDivRefs = anchorRefs.current
+        stableDivRefs.forEach((div) => {
+            div?.addEventListener('mouseenter', mouseEnterHandler)
+            div?.addEventListener('mouseleave', mouseExitHandler)
         })
+        return () => {
+            stableDivRefs.forEach((div) => {
+                div?.removeEventListener('mouseenter', mouseEnterHandler)
+                div?.removeEventListener('mouseleave', mouseExitHandler)
+            })
+        }
     })
 
     const ref = useRef<HTMLDivElement>(null)
@@ -41,9 +47,10 @@ export default function Infocard() {
     }, [ref])
 
     function makeSpan(index: number) {
+        if (index > spanRefs.current.length) console.error('makeSpan given too high an index')
         return (
             <span
-                ref={spanRefs[index]}
+                ref={(el) => void (spanRefs.current[index] = el)}
                 style={{ transform: `translateY(${translate.current})` }}
                 className={`transition duration-400 border-l-2  h-28 border-[var(--dark-text)]`}
             ></span>
@@ -51,21 +58,24 @@ export default function Infocard() {
     }
 
     function makeAnchor(index: number, href: string, text: string, isInternalLink?: boolean) {
+        if (index > anchorRefs.current.length) console.error('makeAnchor given too high an index')
         return (
             <div
-                ref={divRefs[index]}
+                ref={(el) => void (anchorRefs.current[index] = el)}
                 style={{ transform: `translateY(${translate.current})` }}
                 className={`transition duration-400 flex flex-col pl-5 pr-5 h-min hover:underline bg-background`}
             >
-                {Array.from({ length: 4 }).map((_, index) => (
-                    isInternalLink
-                    ? <a key={index + 'gh'} href={href} tabIndex={index == 3 ? 0 : -1}>
-                        {text}
-                    </a>
-                    : <Link key={index + 'gh'} href={href} tabIndex={index == 3 ? 0 : -1}>
-                        {text}
-                    </Link>
-                ))}
+                {Array.from({ length: 4 }).map((_, index) =>
+                    isInternalLink ? (
+                        <a key={index + 'gh'} href={href} tabIndex={index == 3 ? 0 : -1}>
+                            {text}
+                        </a>
+                    ) : (
+                        <Link key={index + 'gh'} href={href} tabIndex={index == 3 ? 0 : -1}>
+                            {text}
+                        </Link>
+                    ),
+                )}
             </div>
         )
     }
