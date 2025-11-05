@@ -165,7 +165,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                         </div>
                                     </ProjectCardCard>
                                 ) : (
-                                    <ProjectCardCard className="w-fit" cacheKey={'title0'}>
+                                    <ProjectCardCard className="w-fit" cacheKey={'title0'}> {/* These nothing-selected cards are declared like this since all cards have to share a ref to prevent animations from being cut off */}
                                         Hi, I&apos;m Scott, a software engineer.
                                     </ProjectCardCard>
                                 )}
@@ -186,42 +186,45 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                     </ProjectCardCard>
                                 )}
                             </div>
-                            {!selected ? (
-                                <div ref={(el) => void (cardRefs.current[3] = el)} className="pl-80">
-                                    <ProjectCardCard className="flex flex-col items-center w-fit" cacheKey={'title2'}>
-                                        <p className="text-xl mb-1">Featured Items</p>
-                                        <div className="relative overflow-hidden w-full">
-                                            <div className="flex w-fit">
-                                                {['Scrapstack', 'AWS', 'Java'].map((name, i) => (
-                                                    <div key={i} className="mr-4">
-                                                        <TechStackButton
-                                                            key={name}
-                                                            technology={name}
-                                                            removeArrow
-                                                            textClassName="text-center"
-                                                            onClick={() => handleItemClick(name)}
-                                                        />
-                                                    </div>
-                                                ))}
+                            <div ref={(el) => void (cardRefs.current[3] = el)}>
+                                {!selected ? (
+                                    <div ref={(el) => void (cardRefs.current[3] = el)} className="pl-80">
+                                        <ProjectCardCard
+                                            className="flex flex-col items-center w-fit"
+                                            cacheKey={'title2'}
+                                        >
+                                            <p className="text-xl mb-1">Featured Items</p>
+                                            <div className="relative overflow-hidden w-full">
+                                                <div className="flex w-fit">
+                                                    {['Scrapstack', 'AWS', 'Java'].map((name, i) => (
+                                                        <div key={i} className="mr-4">
+                                                            <TechStackButton
+                                                                key={name}
+                                                                technology={name}
+                                                                removeArrow
+                                                                textClassName="text-center"
+                                                                onClick={() => handleItemClick(name)}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </ProjectCardCard>
-                                </div>
-                            ) : selected?.images ? (
-                                <div className="w-full flex flex-col justify-center items-center">
-                                    <div
-                                        className={`relative w-130`}
-                                        ref={(el) => void (cardRefs.current[3] = el)}
-                                        style={{
-                                            height: selected.images.length * 6 + 'rem',
-                                        }}
-                                    >
-                                        {selected.images.map((image, index) => (
-                                            <div
-                                                key={image}
-                                                className={`absolute transition-transform duration-500 ease-in-out`}
-                                                style={{
-                                                    transform: `
+                                        </ProjectCardCard>
+                                    </div>
+                                ) : selected?.images ? (
+                                    <div className="w-full flex flex-col justify-center items-center">
+                                        <div
+                                            className={`relative w-130`}
+                                            style={{
+                                                height: selected.images.length * 6 + 'rem',
+                                            }}
+                                        >
+                                            {selected.images.map((image, index) => (
+                                                <div
+                                                    key={image}
+                                                    className={`absolute transition-transform duration-500 ease-in-out`}
+                                                    style={{
+                                                        transform: `
                                                         translateY(${
                                                             mod(index + imageScroll, selected.images!.length) * 4
                                                         }rem) 
@@ -231,41 +234,44 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                                             return 0
                                                         })(mod(index + imageScroll, selected.images!.length))}rem
                                                     `,
-                                                    zIndex: mod(index + imageScroll, selected.images!.length),
+                                                        zIndex: mod(index + imageScroll, selected.images!.length),
+                                                    }}
+                                                >
+                                                    <ProjectCardCard className="" cacheKey={selected.id + '3'}>
+                                                        <img alt={image} className="h-50 w-auto" src={image}></img>
+                                                    </ProjectCardCard>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {selected.images.length > 1 ? (
+                                            <div
+                                                ref={(el) => void (cardRefs.current[4] = el)}
+                                                className="w-full flex justify-center"
+                                                style={{
+                                                    transform: `translateY(${selected.images.length * 0.5 + 4}rem)`,
                                                 }}
                                             >
-                                                <ProjectCardCard className="" cacheKey={selected.id + '3'}>
-                                                    <img alt={image} className="h-50 w-auto" src={image}></img>
+                                                <ProjectCardCard className="flex p-0!" cacheKey={selected.id + '4'}>
+                                                    <AiFillCaretLeft
+                                                        size={16}
+                                                        className="hover:text-white hover:cursor-pointer hover:pr-3 transition-all duration-150 w-14 h-14 p-2 py-3"
+                                                        onClick={() => setImageScroll((prev) => prev + 1)}
+                                                    />
+                                                    <AiFillCaretRight
+                                                        size={16}
+                                                        className="hover:text-white hover:cursor-pointer hover:pl-3 transition-all duration-150 w-14 h-14 p-2 py-3"
+                                                        onClick={() => setImageScroll((prev) => prev - 1)}
+                                                    />
                                                 </ProjectCardCard>
                                             </div>
-                                        ))}
+                                        ) : (
+                                            <></>
+                                        )}
                                     </div>
-                                    {selected.images.length > 1 ? (
-                                        <div
-                                            ref={(el) => void (cardRefs.current[4] = el)}
-                                            className="w-full flex justify-center"
-                                            style={{ transform: `translateY(${selected.images.length * 0.5 + 4}rem)` }}
-                                        >
-                                            <ProjectCardCard className="flex p-0!" cacheKey={selected.id + '4'}>
-                                                <AiFillCaretLeft
-                                                    size={16}
-                                                    className="hover:text-white hover:cursor-pointer hover:pr-3 transition-all duration-150 w-14 h-14 p-2 py-3"
-                                                    onClick={() => setImageScroll((prev) => prev + 1)}
-                                                />
-                                                <AiFillCaretRight
-                                                    size={16}
-                                                    className="hover:text-white hover:cursor-pointer hover:pl-3 transition-all duration-150 w-14 h-14 p-2 py-3"
-                                                    onClick={() => setImageScroll((prev) => prev - 1)}
-                                                />
-                                            </ProjectCardCard>
-                                        </div>
-                                    ) : (
-                                        <></>
-                                    )}
-                                </div>
-                            ) : (
-                                <></>
-                            )}
+                                ) : (
+                                    <></>
+                                )}
+                            </div>
                         </div>
                         <div className="mt-10">
                             <div ref={(el) => void (cardRefs.current[2] = el)}>
