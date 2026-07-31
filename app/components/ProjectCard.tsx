@@ -89,14 +89,14 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
         currentCardRefs.current.forEach((cardRef, index) => {
             cardRef?.getAnimations().forEach((anim) => anim.cancel())
             cardRef?.animate([{ opacity: 0 }, { opacity: 1 }], {
-                duration: 800,
-                delay: index * 300 + 800,
+                duration: 500,
+                delay: index * 200 + 400,
                 easing: 'ease-out',
                 fill: 'both',
             })
             cardRef?.animate([{ transform: 'translate(-25%, 0%)' }, { transform: 'translate(0%, 0%)' }], {
-                duration: 800,
-                delay: index * 300 + 800,
+                duration: 500,
+                delay: index * 200 + 400,
                 easing: 'ease-out',
                 fill: 'both',
                 composite: 'add',
@@ -104,19 +104,19 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
         })
         let cardsAnimated = 0
         previousCardRefs.current.toReversed().forEach((cardRef) => {
-            const delay = cardsAnimated * 150 // The array is reversed, and we don't want to count empty elements. Only increase delay when the element at index exists
+            const delay = cardsAnimated * 75 // The array is reversed, and we don't want to count empty elements. Only increase delay when the element at index exists
             if (cardRef) cardsAnimated++
             cardRef?.getAnimations().forEach((anim) => anim.cancel())
             cardRef?.animate([{ opacity: 1 }, { opacity: 0 }], {
-                duration: 500,
+                duration: 300,
                 delay,
-                easing: 'cubic-bezier(0.42, 0, 1, 1)',
+                easing: 'ease-in-out',
                 fill: 'both',
             })
             cardRef?.animate([{ transform: 'translate(0%, 0%)' }, { transform: 'translate(0%, 200px)' }], {
-                duration: 500,
+                duration: 300,
                 delay,
-                easing: 'cubic-bezier(0.42, 0, 1, 1)',
+                easing: 'ease-in-out',
                 fill: 'both',
                 composite: 'add',
             })
