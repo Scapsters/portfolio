@@ -333,6 +333,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
 }
 
 type Point = [number, number]
+const transformKeys = ['rotateX', 'rotateY', 'translateX', 'translateY'] as const
 function ProjectCardCard({
     className,
     children,
@@ -344,62 +345,65 @@ function ProjectCardCard({
 }) {
     const ref = useRef<HTMLDivElement>(null)
 
-    // decide target
-    const distanceFromOrigin = (p1: Point): number => Math.sqrt(p1[0] ** 2 + p1[1] ** 2)
-    const applyTransform = (p1: Point): Point => {
-        return [p1[0] * bumpFunction(distanceFromOrigin(p1)), p1[1] * bumpFunction(distanceFromOrigin(p1))]
-    }
-    const relativeCursorPosition = useRelativeCursor(ref, cacheKey)
-    const transformedPoint = applyTransform(relativeCursorPosition)
-    // rotateX, rotateY, translateX, translateY
-    const targetTransforms = [transformedPoint[1], transformedPoint[0] * -1, transformedPoint[0], transformedPoint[1]]
+    const { cursorPosition, currentTransforms } = useContext(CursorContext)
 
-    // get current
-    const { currentTransforms: currentTransformsSet } = useContext(CursorContext)
-    const currentTransforms = currentTransformsSet?.current[cacheKey] ?? [0, 0, 0, 0]
+    // tilt cards
+    useEffect(() => {
+        const distanceFromOrigin = (p1: Point): number => Math.sqrt(p1[0] ** 2 + p1[1] ** 2)
+        const applyTransform = (p1: Point): Point => {
+            return [p1[0] * bumpFunction(distanceFromOrigin(p1)), p1[1] * bumpFunction(distanceFromOrigin(p1))]
+        }
 
-    // calculate, cache, and apply next
-    const nextTransforms = currentTransforms.map((current, index) => {
-        const target = targetTransforms[index]
-        return current + (target - current) / 50
-    }) as [number, number, number, number]
-    if (currentTransformsSet?.current) currentTransformsSet.current[cacheKey] = nextTransforms
+        let raf: number
+        let last = performance.now()
+        const tick = (now: number) => {
+            raf = requestAnimationFrame(tick)
+            const dt = now - last
+            last = now
+            if (!ref.current || !cursorPosition) return
+
+            // get cursor relative to element
+            const transformedPoint = applyTransform(convertToRelative(cursorPosition.current, ref.current))
+            const targets = {
+                rotateX: transformedPoint[1],
+                rotateY: transformedPoint[0] * -1,
+                translateX: transformedPoint[0],
+                translateY: transformedPoint[1],
+            }
+
+            // get next targets
+            const ease = 1 - Math.exp(-dt / 200)
+            const current = currentTransforms?.current[cacheKey] ?? [0, 0, 0, 0]
+            const next = transformKeys.map((key, i) => {
+                const stepped = current[i] + (targets[key] - current[i]) * ease
+                return Math.abs(targets[key] - stepped) < 0.001 ? targets[key] : stepped
+            }) as [number, number, number, number]
+            if (currentTransforms?.current) currentTransforms.current[cacheKey] = next
+
+            // do math to find final operations
+            const a = (next[0] * Math.PI) / 180
+            const b = (next[1] * Math.PI) / 180
+            const m = [Math.cos(b), Math.sin(a) * Math.sin(b), 0, Math.cos(a)]
+            ref.current.style.transform = `matrix(
+                ${m[0]}, ${m[1]}, ${m[2]}, ${m[3]},
+                ${m[0] * next[2] + m[2] * next[3]}, ${m[1] * next[2] + m[3] * next[3]}
+            )`
+        }
+        raf = requestAnimationFrame(tick)
+        return () => cancelAnimationFrame(raf)
+    }, [cacheKey, cursorPosition, currentTransforms])
+
     return (
         <div
             ref={ref}
             className={`${className ?? ''} bg-foreground text-stone-200 p-3`}
             style={{
-                transform: `
-                    rotateX(${nextTransforms[0]}deg) rotateY(${nextTransforms[1]}deg)
-                    translateX(${nextTransforms[2]}px) translateY(${nextTransforms[3]}px)
-                `,
-                transformStyle: 'preserve-3d',
                 transformOrigin: 'center',
             }}
         >
             {children}
         </div>
     )
-}
-
-function useRelativeCursor(target: React.RefObject<HTMLDivElement | null>, cacheKey: string) {
-    const { cursorPosition, relativeCursorPositions } = useContext(CursorContext)
-    const [relativeCursorPosition, setRelativeCursorPosition] = useState<Point>(
-        relativeCursorPositions?.current[cacheKey] ?? [950, 0],
-    )
-    useEffect(() => {
-        const handler = () => {
-            if (!target.current) return
-            const relativeCursorPosition = convertToRelative(cursorPosition, target.current)
-            setRelativeCursorPosition(relativeCursorPosition)
-            if (relativeCursorPositions) relativeCursorPositions.current[cacheKey] = relativeCursorPosition
-        }
-        handler()
-        document.addEventListener('pointermove', handler)
-        return () => document.removeEventListener('pointermove', handler)
-    }, [cacheKey, cursorPosition, relativeCursorPositions, target])
-
-    return relativeCursorPosition
 }
 
 /**

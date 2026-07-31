@@ -18,7 +18,7 @@ export default function Home() {
 
     const groupVisibilities = useRef<Visibility[]>(
         new Array(Object.keys(PortfolioData).length).fill(null).map(
-            () => ({ visible: false, timeSet: performance.now() })
+            (_, index) => ({ visible: index === 0, timeSet: performance.now() })
         )
     )
 
@@ -60,19 +60,18 @@ export default function Home() {
 }
 
 function ProjectCards() {
-    const [cursorPosition, setCursorPosition] = useState<[number, number]>([0, 0])
+    const cursorPosition = useRef<[number, number]>([0, 0])
     useEffect(() => {
-        const handleMove = (e: PointerEvent) => setCursorPosition([e.pageX, e.pageY])
+        const handleMove = (e: PointerEvent) => void (cursorPosition.current = [e.pageX, e.pageY])
         window.addEventListener("pointermove", handleMove)
         return () => window.removeEventListener("pointermove", handleMove)
     }, [])
 
-    const relativeCursorPositions = useRef({})
     const currentTransforms = useRef({})
-    
+
     const { selected, previousSelected } = useContext(ProjectContext)
     return (
-        <CursorContext value={{ cursorPosition, setCursorPosition, relativeCursorPositions, currentTransforms }}>
+        <CursorContext value={{ cursorPosition, currentTransforms }}>
             <div className="relative grow ml-10 sm:ml-1/10 -mr-50">
                 <ProjectCard isPrevious={false} current={selected} previous={previousSelected}/>
             </div>
