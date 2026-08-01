@@ -3,6 +3,7 @@ import { circular_rotate, isVisible } from '../typescript/math_helpers'
 import { PortfolioData } from '@/typescript/wheel_info'
 import { ProjectContext } from '@/contexts'
 import { Group } from './WheelItems'
+import { ApplyForceFunction } from '@/page'
 
 const SCROLL_VELOCITY_FACTOR = 0.00008
 const DRAG_VELOCITY_FACTOR = 0.00015
@@ -10,9 +11,15 @@ const FRICTION = 0.992
 const FRAME_RATE = 60
 const EASING_DURATION = 7000
 
-function rotate(ref: HTMLDivElement, angle: number) { ref.style.setProperty('transform', `rotate(${angle}deg)`) }
-function opacity(ref: HTMLDivElement, value: number) { ref.style.setProperty('opacity', value.toString()) }
-function width(ref: HTMLDivElement, value: number) { (ref.children[0] as HTMLDivElement).style.setProperty('width', `${600 + value}px`) }
+function rotate(ref: HTMLDivElement, angle: number) {
+    ref.style.setProperty('transform', `rotate(${angle}deg)`)
+}
+function opacity(ref: HTMLDivElement, value: number) {
+    ref.style.setProperty('opacity', value.toString())
+}
+function width(ref: HTMLDivElement, value: number) {
+    ;(ref.children[0] as HTMLDivElement).style.setProperty('width', `${600 + value}px`)
+}
 
 const lerp = (start: number, end: number, t: number) => t * end + (1 - t) * start
 const lerpRoot = (start: number, end: number, t: number) => lerp(start, end, Math.sqrt(t))
@@ -36,7 +43,7 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
 
     useEffect(() => {
         const mainRefs = [circleRef, hoverRef]
-        mainRefs.forEach(ref => {
+        mainRefs.forEach((ref) => {
             if (!ref.current) return
             ref.current.style.setProperty('transform', `translateX(-${projectContext.selected ? 500 : 750}px)`)
         })
@@ -50,50 +57,54 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
         if (!scrollSinceSelection) return
         const ref = wheelHoverRef.current
         const circleScrollRef = circleRef.current
-        const scrollHandler = () => scrollSinceSelection.current = true
-        ref?.addEventListener("wheel", scrollHandler)
-        circleScrollRef?.addEventListener("wheel", scrollHandler)
+        const scrollHandler = () => (scrollSinceSelection.current = true)
+        ref?.addEventListener('wheel', scrollHandler)
+        circleScrollRef?.addEventListener('wheel', scrollHandler)
         return () => {
-            ref?.removeEventListener("wheel", scrollHandler)
-            circleScrollRef?.removeEventListener("wheel", scrollHandler)
+            ref?.removeEventListener('wheel', scrollHandler)
+            circleScrollRef?.removeEventListener('wheel', scrollHandler)
         }
     }, [scrollSinceSelection])
 
     // Store item refs for central handling of rotation
-    const itemRefs = useRef( // Organized per section with header, main items, and a gap between
+    const itemRefs = useRef(
+        // Organized per section with header, main items, and a gap between
         Object.entries(PortfolioData).map((entry) => {
             const numItems = Object.values(entry[1]).length
             return {
                 headerRef: createRef<HTMLDivElement>(),
                 itemRefs: Array.from({ length: numItems }, () => createRef<HTMLDivElement>()),
-                blankRef: createRef<HTMLDivElement>()
+                blankRef: createRef<HTMLDivElement>(),
             }
-        })
+        }),
     )
-    const flatItemRefs = useMemo(() => // Just flattened the original array
-        itemRefs.current.flatMap(item => [item.headerRef, ...item.itemRefs, item.blankRef]),
-        [itemRefs]
+    const flatItemRefs = useMemo(
+        () =>
+            // Just flattened the original array
+            itemRefs.current.flatMap((item) => [item.headerRef, ...item.itemRefs, item.blankRef]),
+        [itemRefs],
     )
 
     const totalTime = useRef(0)
 
     const hasSetTransition = useRef(false)
-    if (!hasSetTransition.current && totalTime.current > 1200) { // For some reason
+    if (!hasSetTransition.current && totalTime.current > 1200) {
+        // For some reason
         circleRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
         parentRef.current?.style.setProperty('transition', 'transform .5s ease-in-out')
         hasSetTransition.current = true
     }
 
-    const currentOffsets = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
-    const currentOpacities = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
-    const currentXOffsets = useRef<(number)[]>(new Array(flatItemRefs.length).fill(0))
+    const currentOffsets = useRef<number[]>(new Array(flatItemRefs.length).fill(0))
+    const currentOpacities = useRef<number[]>(new Array(flatItemRefs.length).fill(0))
+    const currentXOffsets = useRef<number[]>(new Array(flatItemRefs.length).fill(0))
 
     // Frame data
     const lag = useRef(0)
     const velocity = useRef(0)
     const deltaTime = useRef(1000 / FRAME_RATE)
     deltaTime.current = 1000 / FRAME_RATE
-    const position = useRef(-.7)
+    const position = useRef(-0.7)
 
     const effectiveSelectedIndex = useRef(0)
 
@@ -136,7 +147,7 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
             deltaDrag.current = 0
         } else if (Math.abs(deltaDrag.current) > 1) isDragging.current = true // Only start dragging if the user drags fast enough
 
-        position.current += velocity.current * (deltaTime.current + lag.current) / 16
+        position.current += (velocity.current * (deltaTime.current + lag.current)) / 16
     }, [])
 
     applyForceToWheel.current = () => {
@@ -191,14 +202,16 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
                 accumulator -= deltaTime.current
 
                 // Do physics
-                if (!scrollSinceSelection.current && effectiveSelectedIndex) { // Move wheel to selected item
+                if (!scrollSinceSelection.current && effectiveSelectedIndex) {
+                    // Move wheel to selected item
                     const current_angle = circular_rotate(effectiveSelectedIndex.current ?? 0, position.current)
                     const target_angle = circular_rotate(0, 0)
-                    const delta_angle = current_angle - target_angle - 20 // 20 is the magic number, 
-                    velocity.current = velocity.current
-                        + Math.pow(Math.tanh(delta_angle), 3) // Main function
-                        * .001 // Scale for funsies 
-                        * ((deltaTime.current + lag.current) / 6) // Scale for scaries
+                    const delta_angle = current_angle - target_angle - 20 // 20 is the magic number,
+                    velocity.current =
+                        velocity.current +
+                        Math.pow(Math.tanh(delta_angle), 3) * // Main function
+                            0.001 * // Scale for funsies
+                            ((deltaTime.current + lag.current) / 6) // Scale for scaries
                 }
                 velocity.current *= FRICTION ** (deltaTime.current + lag.current) // Friction
 
@@ -212,7 +225,7 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
                     ref: HTMLDivElement,
                     timeSinceChange: number,
                     groupIndex: number,
-                    isHeader: boolean = false
+                    isHeader: boolean = false,
                 ) => {
                     const isSelectedIndex = selectedIndexRef.current === absoluteIndex
                     if (isSelectedIndex) effectiveSelectedIndex.current = extraItems + groupIndex
@@ -221,7 +234,7 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
                     const nextOpacity = lerpRoot(
                         currentOpacities.current[absoluteIndex],
                         groupVisibilities.current[groupIndex].visible || isHeader ? 1 : 0,
-                        Math.min(timeSinceChange / EASING_DURATION, 1)
+                        Math.min(timeSinceChange / EASING_DURATION, 1),
                     )
                     currentOpacities.current[absoluteIndex] = nextOpacity
                     opacity(ref, nextOpacity)
@@ -230,7 +243,7 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
                     const offset = lerpRoot(
                         currentOffsets.current[absoluteIndex],
                         extraItems,
-                        Math.min(timeSinceChange / EASING_DURATION, 1)
+                        Math.min(timeSinceChange / EASING_DURATION, 1),
                     )
                     currentOffsets.current[absoluteIndex] = offset
                     const angle = -circular_rotate(groupIndex + offset, position.current)
@@ -240,7 +253,7 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
                     const nextXOffset = lerpOvershoot(
                         currentXOffsets.current[absoluteIndex],
                         groupVisibilities.current[groupIndex].visible || isHeader ? 0 : 400,
-                        Math.min(timeSinceChange / EASING_DURATION, 1)
+                        Math.min(timeSinceChange / EASING_DURATION, 1),
                     )
                     currentXOffsets.current[absoluteIndex] = nextXOffset
                     width(ref, nextXOffset)
@@ -248,12 +261,11 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
                     // Visibility
                     if (isVisible(groupIndex + offset, position.current)) {
                     } else {
-                        opacity(ref, .1)
+                        opacity(ref, 0.1)
                     }
 
                     // Indices
-                    if (groupVisibilities.current[groupIndex].visible)
-                        extraItems++
+                    if (groupVisibilities.current[groupIndex].visible) extraItems++
 
                     absoluteIndex++
                 }
@@ -268,9 +280,10 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
                     const timeSet = groupVisibilities.current[groupIndex].timeSet
                     const timeSinceSet = performance.now() - timeSet
 
-                    if (group.headerRef.current) updateEverything(group.headerRef.current, timeSinceSet, groupIndex, true)
+                    if (group.headerRef.current)
+                        updateEverything(group.headerRef.current, timeSinceSet, groupIndex, true)
 
-                    group.itemRefs.forEach(item => {
+                    group.itemRefs.forEach((item) => {
                         if (item.current) updateEverything(item.current, timeSinceSet, groupIndex)
                     })
                     absoluteIndex++ // idk why
@@ -299,13 +312,11 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
             if (animationId.current) cancelAnimationFrame(animationId.current)
             document.removeEventListener('visibilitychange', tabOutHandler)
         }
-
     }, [doDragging, doScrolling, groupVisibilities, scrollSinceSelection])
 
     const items = useMemo(() => {
         let globalIndex = 0
         return Object.entries(PortfolioData).map((entry, index) => {
-
             const items = Object.values(entry[1])
             const sectionLength = items.length + 2 // One for header, one for gap between sections
 
@@ -318,8 +329,7 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
                     startingIndex={globalIndex}
                     itemRefs={itemRefs.current[index]}
                     groupVisibilities={groupVisibilities}
-                >
-                </Group>
+                ></Group>
             )
 
             globalIndex += sectionLength
@@ -327,38 +337,43 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
         })
     }, [groupVisibilities])
 
-    return (<div className="flex relative">
-
-        <div
-            ref={circleRef}
-            className="z-3 align-middle cursor-grab relative active:cursor-grabbing -ml-30 -right-350 2xl:-right-300 min-w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform duration-1000 ease-in-out"
-        >
-            <div className="z-10 absolute w-full h-full bg-foreground rounded-full"></div>
-            <div ref={tabRef1} className='z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 -rotate-2 left-3 text-[var(--background)]'>
-                -
-            </div>
-            <div ref={tabRef2} className='z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 left-3 text-[var(--background)]'>
-                -
-            </div>
-            <div ref={tabRef3} className='z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 rotate-2 left-3 text-[var(--background)]'>
-                -
-            </div>
+    return (
+        <div className="flex relative">
             <div
-                ref={wheelHoverRef}
-                className="-z-1 absolute pointer-events-none -translate-x-[calc(0.75*var(--wheel-size)+40px)] translate-y-[calc(0.5*var(--wheel-size))] w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
+                ref={circleRef}
+                className="z-3 align-middle cursor-grab relative active:cursor-grabbing -ml-30 -right-350 2xl:-right-300 min-w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform duration-1000 ease-in-out"
             >
+                <div className="z-10 absolute w-full h-full bg-foreground rounded-full"></div>
                 <div
-                    ref={parentRef}
-                    className="transition-transform duration-1000 ease-in-out"
+                    ref={tabRef1}
+                    className="z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 -rotate-2 left-3 text-[var(--background)]"
                 >
-                    {items}
+                    -
+                </div>
+                <div
+                    ref={tabRef2}
+                    className="z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 left-3 text-[var(--background)]"
+                >
+                    -
+                </div>
+                <div
+                    ref={tabRef3}
+                    className="z-11 text-xl select-none absolute top-[calc(50%)] w-[var(--wheel-size)] -translate-y-1/2 rotate-2 left-3 text-[var(--background)]"
+                >
+                    -
+                </div>
+                <div
+                    ref={wheelHoverRef}
+                    className="-z-1 absolute pointer-events-none -translate-x-[calc(0.75*var(--wheel-size)+40px)] translate-y-[calc(0.5*var(--wheel-size))] w-500 h-screen transition-transform duration-1000 ease-in-out align-end"
+                >
+                    <div ref={parentRef} className="transition-transform duration-1000 ease-in-out">
+                        {items}
+                    </div>
                 </div>
             </div>
+            <div ref={hoverRef} className="absolute w-100 h-200 -right-120"></div>
         </div>
-        <div ref={hoverRef} className="absolute w-100 h-200 -right-120">
-
-        </div>
-    </div>)
+    )
 }
 
 function useAccumulateDragging(
@@ -392,7 +407,7 @@ function useAccumulateDragging(
             isDragging.current = false
         }
 
-        refs.forEach(ref => {
+        refs.forEach((ref) => {
             const element = ref.current
             if (!element) return
 
@@ -407,7 +422,7 @@ function useAccumulateDragging(
         window.addEventListener('touchcancel', onMouseUp)
 
         return () => {
-            refs.forEach(ref => {
+            refs.forEach((ref) => {
                 const element = ref.current
                 if (!element) return
 

@@ -7,6 +7,7 @@ import { Item } from '@/typescript/data'
 import { AiFillCaretLeft, AiFillCaretRight } from 'react-icons/ai'
 import { mod } from '@/typescript/math_helpers'
 import Markdown from 'react-markdown'
+import { createPortal } from 'react-dom'
 import { ApplyForceFunction } from '@/page'
 
 type ProjectCardProps = {
@@ -15,6 +16,8 @@ type ProjectCardProps = {
     isPrevious: boolean
 }
 
+export const techStackButtonStyle =
+    'flex items-center bg-white/40 hover:bg-black/10 cursor-pointer m-2 p-2 w-full text-left duration-200'
 function TechStackButton({
     technology,
     onClick,
@@ -22,11 +25,7 @@ function TechStackButton({
     textClassName,
 }: Readonly<{ technology: string; onClick: () => void; removeArrow?: boolean; textClassName?: string }>) {
     return (
-        <button
-            key={technology + 'container'}
-            className="flex items-center bg-white/40 hover:bg-black/10 cursor-pointer m-2 p-2 w-full text-left duration-200"
-            onClick={onClick}
-        >
+        <button key={technology + 'container'} className={techStackButtonStyle} onClick={onClick}>
             <p className={'grow ml-1 mr-1 w-max ' + textClassName} key={technology}>
                 {technology} {removeArrow ? '' : '↗'}
             </p>
@@ -190,7 +189,9 @@ export function ProjectCard({
                                         </div>
                                     </ProjectCardCard>
                                 ) : (
-                                    <ProjectCardCard className="w-fit" cacheKey={'title0'}> {/* These nothing-selected cards are declared like this since all cards have to share a ref to prevent animations from being cut off */}
+                                    <ProjectCardCard className="w-fit" cacheKey={'title0'}>
+                                        {' '}
+                                        {/* These nothing-selected cards are declared like this since all cards have to share a ref to prevent animations from being cut off */}
                                         Hi, I&apos;m Scott, a software engineer.
                                     </ProjectCardCard>
                                 )}
@@ -267,29 +268,38 @@ export function ProjectCard({
                                                 height: selected.images.length * 6 + 'rem',
                                             }}
                                         >
-                                            {selected.images.map((image, index) => (
-                                                <div
-                                                    key={image}
-                                                    className={`absolute transition-transform duration-500 ease-in-out`}
-                                                    style={{
-                                                        transform: `
-                                                        translateY(${
-                                                            mod(index + imageScroll, selected.images!.length) * 4
-                                                        }rem) 
+                                            {selected.images.map((image, index) => {
+                                                const stackPosition = mod(index + imageScroll, selected.images!.length)
+                                                const isFront = stackPosition === selected.images!.length - 1
+                                                return (
+                                                    <div
+                                                        key={image}
+                                                        className={`absolute transition-transform duration-500 ease-in-out`}
+                                                        style={{
+                                                            transform: `
+                                                        translateY(${stackPosition * 4}rem)
                                                         translateX(${((index: number) => {
                                                             if (index == 2) return 3
                                                             else if (index == 1) return 12
                                                             return 0
-                                                        })(mod(index + imageScroll, selected.images!.length))}rem
+                                                        })(stackPosition)}rem
                                                     `,
-                                                        zIndex: mod(index + imageScroll, selected.images!.length),
-                                                    }}
-                                                >
-                                                    <ProjectCardCard className="" cacheKey={selected.id + '3'}>
-                                                        <img alt={image} className="h-50 w-auto" src={image}></img>
-                                                    </ProjectCardCard>
-                                                </div>
-                                            ))}
+                                                            zIndex: stackPosition,
+                                                        }}
+                                                    >
+                                                        <Expandable jump={isFront ? 0 : stackPosition * 64 + 176}>
+                                                            {/* unique per image: stacked cards sharing a cache entry fight over the lerp */}
+                                                            <ProjectCardCard className="" cacheKey={selected.id + '3-' + index}>
+                                                                <img
+                                                                    alt={image}
+                                                                    className="h-50 w-auto"
+                                                                    src={image}
+                                                                ></img>
+                                                            </ProjectCardCard>
+                                                        </Expandable>
+                                                    </div>
+                                                )
+                                            })}
                                         </div>
                                         {selected.images.length > 1 ? (
                                             <div
@@ -382,6 +392,9 @@ export function ProjectCard({
 
 type Point = [number, number]
 const transformKeys = ['rotateX', 'rotateY', 'translateX', 'translateY'] as const
+
+// While an Expandable is open, cards inside it lerp their tilt to flat instead of following the cursor
+const TiltPausedContext = React.createContext(false)
 function ProjectCardCard({
     className,
     children,
@@ -394,6 +407,7 @@ function ProjectCardCard({
     const ref = useRef<HTMLDivElement>(null)
 
     const { cursorPosition, currentTransforms } = useContext(CursorContext)
+    const tiltPaused = useContext(TiltPausedContext)
 
     // tilt cards
     useEffect(() => {
@@ -410,8 +424,10 @@ function ProjectCardCard({
             last = now
             if (!ref.current || !cursorPosition) return
 
-            // get cursor relative to element
-            const transformedPoint = applyTransform(convertToRelative(cursorPosition.current, ref.current))
+            // get cursor relative to element; a paused card lerps back to flat
+            const transformedPoint = tiltPaused
+                ? ([0, 0] as Point)
+                : applyTransform(convertToRelative(cursorPosition.current, ref.current))
             const targets = {
                 rotateX: transformedPoint[1],
                 rotateY: transformedPoint[0] * -1,
@@ -439,7 +455,7 @@ function ProjectCardCard({
         }
         raf = requestAnimationFrame(tick)
         return () => cancelAnimationFrame(raf)
-    }, [cacheKey, cursorPosition, currentTransforms])
+    }, [cacheKey, cursorPosition, currentTransforms, tiltPaused])
 
     return (
         <div
@@ -484,35 +500,126 @@ function getElementViewportPosition(el: HTMLElement): Point {
     return [x, y]
 }
 
-//eslint-disable-next-line
-function Expandable({ children }: { children: ReactNode }) {
-    // Unfinished
-    const imageRef = useRef<HTMLDivElement>(null)
+/**
+ * Click-to-expand: the content first rises in place by `jump` px — still at its own z-index, so it
+ * slides through its group with correct stacking — then hands off to a portaled copy at the apex,
+ * which falls to the center of the screen while growing. With jump = 0 it skips the rise and just
+ * grows straight to the center. The portal keeps ancestor transforms/z-indexes from trapping it.
+ */
+function Expandable({ children, jump }: { children: ReactNode; jump?: number }) {
+    const baseRef = useRef<HTMLDivElement>(null)
+    const cloneRef = useRef<HTMLDivElement>(null)
+    const backdropRef = useRef<HTMLDivElement>(null)
+    const riseAnim = useRef<Animation | null>(null)
 
-    const [baseSize, setBaseSize] = useState<Point>([0, 0])
-    const [baseLocation, setBaseLocation] = useState<Point>([0, 0])
-    useEffect(() => {
-        const observer = new ResizeObserver((entries) => {
-            setBaseLocation([...getElementViewportPosition(entries[0].target as HTMLElement)])
-            setBaseSize([entries[0].borderBoxSize[0].inlineSize, entries[0].borderBoxSize[0].blockSize])
-        })
-        const ref = imageRef.current
-        if (ref) observer.observe(ref)
-        return () => {
-            if (ref) observer.unobserve(ref)
-        }
-    }, [])
-
-    console.log(baseSize)
-    console.log(baseLocation)
+    // baseRect mounts the portal (and hides the original); isExpanded picks the open/close animation.
+    // For jumping cards it's measured at the apex of the rise, not the resting position.
+    const [baseRect, setBaseRect] = useState<DOMRect | null>(null)
     const [isExpanded, setIsExpanded] = useState(false)
+
+    useEffect(() => {
+        if (!baseRect) return
+        const onKey = (e: KeyboardEvent) => void (e.key === 'Escape' && setIsExpanded(false))
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [baseRect])
+
+    useEffect(() => {
+        const clone = cloneRef.current
+        if (!baseRect || !clone) return
+
+        const scale = Math.min(
+            (window.innerWidth * 0.72) / baseRect.width,
+            (window.innerHeight * 0.72) / baseRect.height,
+        )
+        const dx = window.innerWidth / 2 - (baseRect.left + baseRect.width / 2)
+        const dy = window.innerHeight / 2 - (baseRect.top + baseRect.height / 2)
+        const expanded = `translate(${dx}px, ${dy}px) scale(${scale})`
+        const collapsed = 'translate(0px, 0px) scale(1)'
+
+        clone.getAnimations().forEach((anim) => anim.cancel())
+        backdropRef.current?.getAnimations().forEach((anim) => anim.cancel())
+        backdropRef.current?.animate([{ opacity: isExpanded ? 0 : 1 }, { opacity: isExpanded ? 1 : 0 }], {
+            duration: 300,
+            easing: 'ease-in-out',
+            fill: 'both',
+        })
+
+        if (!isExpanded) {
+            const anim = clone.animate([{ transform: expanded }, { transform: collapsed }], {
+                duration: 300,
+                easing: 'ease-in-out',
+                fill: 'both',
+            })
+            anim.onfinish = () => {
+                setBaseRect(null)
+                if (riseAnim.current) {
+                    riseAnim.current.onfinish = null // reversing replays the animation, and finishing it again would re-trigger the expand handoff
+                    riseAnim.current.reverse() // drop the original back down into the stack
+                    riseAnim.current = null
+                }
+            }
+            return
+        }
+
+        clone.animate([{ transform: collapsed }, { transform: expanded }], {
+            duration: 450,
+            easing: jump ? 'cubic-bezier(0.5, 0, 0.3, 1)' : 'ease-out', // jumping cards fall from the apex, others just rise
+            fill: 'both',
+        })
+    }, [baseRect, isExpanded, jump])
+
+    const open = () => {
+        const base = baseRef.current
+        if (!base) return
+        if (!jump) {
+            setBaseRect(base.getBoundingClientRect())
+            setIsExpanded(true)
+            return
+        }
+        const anim = base.animate([{ transform: 'translateY(0px)' }, { transform: `translateY(${-jump}px)` }], {
+            duration: 350,
+            easing: 'cubic-bezier(0.2, 0.7, 0.4, 1)', // decelerate up to the apex
+            fill: 'both',
+        })
+        riseAnim.current = anim
+        anim.onfinish = () => {
+            setBaseRect(base.getBoundingClientRect()) // measured at the apex, so the clone takes over from there
+            setIsExpanded(true)
+        }
+    }
+
     return (
-        <>
-            <div className="absolute top-0 w-screen h-screen bg-stone-800/5"></div>
-            <div onClick={() => setIsExpanded(!isExpanded)} ref={imageRef} className="h-50">
+        <TiltPausedContext.Provider value={baseRect !== null}>
+            <div
+                ref={baseRef}
+                onClick={open}
+                className="cursor-zoom-in"
+                style={{ visibility: baseRect ? 'hidden' : undefined }}
+            >
                 {children}
             </div>
-        </>
+            {baseRect
+                ? createPortal(
+                      <div className="fixed inset-0 z-40 cursor-zoom-out" onClick={() => setIsExpanded(false)}>
+                          <div ref={backdropRef} className="absolute inset-0 bg-stone-900/60 opacity-0" />
+                          <div
+                              ref={cloneRef}
+                              className="absolute"
+                              style={{
+                                  top: baseRect.top,
+                                  left: baseRect.left,
+                                  width: baseRect.width,
+                                  height: baseRect.height,
+                              }}
+                          >
+                              {children}
+                          </div>
+                      </div>,
+                      document.body,
+                  )
+                : null}
+        </TiltPausedContext.Provider>
     )
 }
 
