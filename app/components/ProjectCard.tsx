@@ -6,6 +6,7 @@ import { all_items_with_gaps } from '../typescript/wheel_info'
 import { Item } from '@/typescript/data'
 import { AiFillCaretLeft, AiFillCaretRight } from 'react-icons/ai'
 import { mod } from '@/typescript/math_helpers'
+import Markdown from 'react-markdown'
 
 type ProjectCardProps = {
     current: Item | null | undefined
@@ -174,9 +175,24 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                 {selected ? (
                                     <ProjectCardCard className="p-2" cacheKey={selected.id + '1'}>
                                         {selected.description.map((line) => (
-                                            <p className="pb-2" key={line}>
-                                                {line}
-                                            </p>
+                                            <div className="pb-2" key={line}>
+                                                <Markdown
+                                                    components={{
+                                                        a: ({ href, children }) => (
+                                                            <a
+                                                                href={href}
+                                                                className="underline hover:bg-black/10 active:bg-black/30 transition-colors duration-200"
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                {children}
+                                                            </a>
+                                                        ),
+                                                    }}
+                                                >
+                                                    {line}
+                                                </Markdown>
+                                            </div>
                                         ))}
                                     </ProjectCardCard>
                                 ) : (
