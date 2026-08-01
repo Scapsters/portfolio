@@ -12,6 +12,7 @@ export enum Category {
 
 export const PortfolioData: Record<Category, Record<string, Item>> = {
     [Category.Projects]: {
+        'Choob': Projects.Choob,
         'Scrapstack': Projects.Scrapstack,
         'Portfolio': Projects.Portfolio,
         'JSThread': Projects.JSThread,
@@ -24,7 +25,9 @@ export const PortfolioData: Record<Category, Record<string, Item>> = {
         'JSThread': Projects.JSThread,
         'Portfolio': Projects.Portfolio,
         'Scrapstack Beta': Projects.ScrapstackBeta,
+        'Choob': Projects.Choob,
         'React': Tools.React,
+        'Svelte': Tools.Svelte,
         'Tailwind': Tools.Tailwind,
         'Next.js': Tools.Nextjs,
         'TypeScript': Tools.TypeScript,
@@ -49,6 +52,7 @@ export const PortfolioData: Record<Category, Record<string, Item>> = {
     },
     [Category.Frameworks]: {
         'React': Tools.React,
+        'Svelte': Tools.Svelte,
         'Tailwind': Tools.Tailwind,
         'Next.js': Tools.Nextjs,
         'Express.js': Tools.Expressjs,
