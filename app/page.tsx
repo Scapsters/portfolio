@@ -8,6 +8,8 @@ import { PortfolioData } from './typescript/wheel_info'
 import { ProjectContext, Visibility, CursorContext } from './contexts';
 import { Item } from './typescript/data'
 
+export type ApplyForceFunction = (() => { id: number}) | null
+
 export default function Home() {
 
     const [selected, setSelected] = useState<Item | null | undefined>(undefined)
@@ -29,6 +31,8 @@ export default function Home() {
         previousSelected, setPreviousSelected,
         groupVisibilities
     }
+
+    const applyForceToWheel = useRef<ApplyForceFunction>(null)
 
     const isBrowser = typeof window !== "undefined"
     const [bypassMobile, setBypassMobile] = useState(false)
@@ -52,14 +56,14 @@ export default function Home() {
         </div>
         <ProjectContext value={projectContext}>
             <div className={`flex flex-row-reverse items-center h-screen ${bypassMobile ? "overflow-x-auto" : ""}`}>
-                    <Wheel/>
-                    <ProjectCards />
+                    <Wheel applyForceToWheel={applyForceToWheel} />
+                    <ProjectCards applyForceToWheel={applyForceToWheel} />
             </div>
         </ProjectContext>
     </>)
 }
 
-function ProjectCards() {
+function ProjectCards({ applyForceToWheel }: { applyForceToWheel: React.RefObject<ApplyForceFunction> }) {
     const cursorPosition = useRef<[number, number]>([0, 0])
     useEffect(() => {
         const handleMove = (e: PointerEvent) => void (cursorPosition.current = [e.pageX, e.pageY])
@@ -73,7 +77,7 @@ function ProjectCards() {
     return (
         <CursorContext value={{ cursorPosition, currentTransforms }}>
             <div className="relative grow ml-10 sm:ml-1/10 -mr-50">
-                <ProjectCard isPrevious={false} current={selected} previous={previousSelected}/>
+                <ProjectCard isPrevious={false} current={selected} previous={previousSelected} applyForceToWheel={applyForceToWheel}/>
             </div>
         </CursorContext>
     )

@@ -21,8 +21,7 @@ const lerpOvershoot = (start: number, end: number, t: number) => {
     return lerp(end * 2, end, t * 2 - 1)
 }
 
-export default function Wheel() {
-
+export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.RefObject<ApplyForceFunction> }) {
     const parentRef = useRef<HTMLDivElement>(null)
     const circleRef = useRef<HTMLDivElement>(null)
     const hoverRef = useRef<HTMLDivElement>(null)
@@ -140,6 +139,29 @@ export default function Wheel() {
         position.current += velocity.current * (deltaTime.current + lag.current) / 16
     }, [])
 
+    applyForceToWheel.current = () => {
+        let lastFrameTime = 0
+        const startTime = performance.now()
+        const animationId = { id: 0 }
+
+        const applyForce = (now: number) => {
+            const restart = () => (animationId.id = requestAnimationFrame(applyForce))
+            if (!lastFrameTime) {
+                lastFrameTime = now
+                restart()
+            } else {
+                const deltaTime = now - lastFrameTime
+                const timeSinceStart = now - startTime
+                lastFrameTime = now
+                velocity.current += deltaTime * 0.0000001 * timeSinceStart
+                restart()
+            }
+        }
+
+        animationId.id = requestAnimationFrame(applyForce)
+        return animationId
+    }
+
     const lastRender = useRef<number>(performance.now())
     const animationId = useRef<number | null>(null)
     useEffect(() => {
@@ -155,6 +177,10 @@ export default function Wheel() {
         const frameLoop = (timestamp: number) => {
             timeSinceAnimationFrame = timestamp - timeOfLastAnimationFrame
             if (!running) return
+
+            groupVisibilities.current.forEach((visibility, i) => {
+                visibility.visible = (velocity.current > .06 + i * .02) || visibility.visible
+            })
 
             accumulator += timeSinceAnimationFrame
             if (accumulator > deltaTime.current) {

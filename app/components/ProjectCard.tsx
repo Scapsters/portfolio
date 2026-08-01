@@ -7,6 +7,7 @@ import { Item } from '@/typescript/data'
 import { AiFillCaretLeft, AiFillCaretRight } from 'react-icons/ai'
 import { mod } from '@/typescript/math_helpers'
 import Markdown from 'react-markdown'
+import { ApplyForceFunction } from '@/page'
 
 type ProjectCardProps = {
     current: Item | null | undefined
@@ -46,7 +47,12 @@ function ExternalLink({ href, children }: { href?: string; children: ReactNode }
     )
 }
 
-export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps) {
+export function ProjectCard({
+    isPrevious,
+    current,
+    previous,
+    applyForceToWheel,
+}: ProjectCardProps & { applyForceToWheel: React.RefObject<ApplyForceFunction> }) {
     const selected = current
 
     const prjctx = useContext(ProjectContext)
@@ -126,6 +132,24 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
     }, [selected, isPrevious, currentCardRefs, previousCardRefs])
 
     const [imageScroll, setImageScroll] = useState(0)
+    const [isAcceleratingWheel, setIsAcceleratingWheel] = useState(false)
+    const wheelForceAnimationId = useRef({ id: 0 })
+    useEffect(() => {
+        if (!isAcceleratingWheel) {
+            const currentAnimationId = wheelForceAnimationId.current.id
+            if (currentAnimationId) {
+                cancelAnimationFrame(currentAnimationId)
+                wheelForceAnimationId.current.id = 0
+            }
+        } else {
+            if (wheelForceAnimationId.current.id) return
+            const applyForceToWheelFunction = applyForceToWheel.current
+            if (applyForceToWheelFunction) {
+                if (prjctx.scrollSinceSelection) prjctx.scrollSinceSelection.current = true
+                wheelForceAnimationId.current = applyForceToWheelFunction()
+            }
+        }
+    })
     const createCard = (
         selected: ProjectCardProps['current'],
         isPrevious: boolean,
@@ -212,7 +236,7 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                             <p className="text-xl mb-1">Featured Items</p>
                                             <div className="relative overflow-hidden w-full">
                                                 <div className="flex w-fit">
-                                                    {['Scrapstack', 'AWS', 'Java'].map((name, i) => (
+                                                    {['Scrapstack', 'Choob'].map((name, i) => (
                                                         <div key={i} className="mr-4">
                                                             <TechStackButton
                                                                 key={name}
@@ -223,6 +247,14 @@ export function ProjectCard({ isPrevious, current, previous }: ProjectCardProps)
                                                             />
                                                         </div>
                                                     ))}
+                                                    <button
+                                                        onClick={() => setIsAcceleratingWheel((v) => !v)}
+                                                        className={techStackButtonStyle}
+                                                    >
+                                                        {isAcceleratingWheel
+                                                            ? 'Stop Accelerating the wheel'
+                                                            : 'Accelerate the wheel'}
+                                                    </button>
                                                 </div>
                                             </div>
                                         </ProjectCardCard>
