@@ -52,7 +52,7 @@ export default function Infocard() {
             <span
                 ref={(el) => void (spanRefs.current[index] = el)}
                 style={{ transform: `translateY(${translate.current})` }}
-                className={`transition duration-400 border-l-2  h-28 border-[var(--dark-text)]`}
+                className={`transition duration-400 mt-1 border-l-2 h-27 border-[var(--dark-text)]`}
             ></span>
         )
     }
@@ -63,7 +63,7 @@ export default function Infocard() {
             <div
                 ref={(el) => void (anchorRefs.current[index] = el)}
                 style={{ transform: `translateY(${translate.current})` }}
-                className={`transition duration-400 flex flex-col pl-5 pr-5 h-min hover:underline bg-background`}
+                className={`transition duration-400 flex flex-col pl-5 pr-5 h-min hover:underline`}
             >
                 {Array.from({ length: 4 }).map((_, index) =>
                     isInternalLink ? (
@@ -93,9 +93,9 @@ export default function Infocard() {
     )
 
     return (
-        <div ref={ref} className="absolute transform translate-y-[-80px] z-2">
+        <div ref={ref} className="absolute transform translate-y-[-80px] z-0">
             <div className="w-240 absolute h-5 z-3 bg-[var(--background)]"></div>
-            <div className="w-max absolute z-2">{info}</div>
+            <div className="w-max absolute">{info}</div>
         </div>
     )
 }
