@@ -15,8 +15,9 @@ export const Projects: Record<string, Item> = {
         id: 'Scrapstack',
         name: 'Scrapstack',
         description: [
-            'Cloud-based social media-like app providing users a way to effectively search, browse, and share their liked posts from other social media sites.',
-            'This redesign revolved around user experience and extensibility, with a conventional infinite scroll layout and support for multiple feeds.',
+            'Twitter disabled public likes, causing a [minor outrage](https://www.reddit.com/r/OutOfTheLoop/comments/1dgl3ws/whats_going_on_with_the_miiverse_yeah_button/).',
+            'For the small price of giving me your login cookie, a web scraper will put every post youve ever liked onto this website, to be searched, sorted, and randomized for your viewing pleasure.',
+            'Currently, there are very few "users" and it exists largely because of my own desires to catalog art.'
         ],
         links: ['React', 'TypeScript', 'Tailwind', 'tRPC', 'Tanstack Query', 'MongoDB Atlas', 'Terraform', 'Cloudflare', 'AWS'],
         date: 'July 2025 - Present',
@@ -28,19 +29,34 @@ export const Projects: Record<string, Item> = {
         id: 'Scrapstack Beta',
         name: 'Scrapstack Beta',
         description: [
-            'First version of a social media post viewer, with data from an third party web scraper. Displays random posts from my at-the-time 6000 liked posts on twitter.',
-            'Formerly hosted on my local machine, but due to the newer version existing, this isnt live anymore.'
+            'Beta version of Scrapstack, which was file-based and ran on a server.',
+            'It had a much different ui, where you click and instantly see the next image. While there are some UX problems to fix there, its far more whimsical than my current infinite scroll. One day, I\'ll change it to be more fun.',
         ],
         links: ['React', 'TypeScript', 'Tailwind', 'Express.js', 'PostgreSQL'],
         date: 'December 2024 - June 2025',
         images: ['furryslop/componentuml.png', 'furryslop/sequence.png', 'furryslop/preview.png'],
         github: 'https://github.com/Scapsters/Furry-Slop',
     },
+    Choob: {
+        id: 'Choob',
+        name: 'Choob: An understanding-first Chess trainer',
+        description: [
+            'The current chess trainer market appeals to those seeking free elo by memorizing openings, or those who just want to face statistically likely moves over and over. ',
+            'Those products, in order to make money, are neccesarily designed to predate on users with quick feedback loops, meaning I don\'t believe that they have the user\'s best interests in mind.',
+            'The correct answer is often in the middle, and is often hard and not very marketable. Choob tries to be that.',
+            'It also leverages Lichess a lot; editing a study and getting in depth engine analysis is meant to happen on Lichess, not Choob.',
+        ],
+        links: ['Svelte', 'TypeScript', 'Tailwind', 'Azure'],
+        date: 'June 2026 - Present',
+        images: [],
+        demo: 'https://choobmoves.com',
+        github: 'https://github.com/Scapsters/Choob',
+    },
     JSThread: {
         id: 'JSThread',
         name: 'JSThread: Java-style threading in Node.js',
         description: [
-            'This is a recreation of Java multithreading inside of a single-threaded programming language. Design overview and documentation available in the demo.',
+            'This is a recreation of Java multithreading inside of a single-threaded programming language, done for a concurrent systems class. Design overview and documentation available in the demo.',
         ],
         date: 'February 2025 - February 2025',
         github: 'https://github.com/Scapsters/swen_342_github',
@@ -53,7 +69,7 @@ export const Projects: Record<string, Item> = {
         name: 'YoLink Center: Leveraging an IoT API',
         description: [
             "A framework for interacting with YoLink IoT devices through their API. Enables users to read more data from their sensors than possible through YoLink's app.",
-            'Featured standard CRUD endpoints and a denormalized database schema, with data analysis guidance given by multiple professional data analysts.',
+            'Featured standard CRUD endpoints and a denormalized database schema, with data analysis guidance given by multiple professional data analysts (my dad and his friend, who are genuinely data scientists and backend developers).',
         ],
         date: 'November 2024 - December 2024',
         images: ['yolink/sensors.png', 'yolink/thsensors.png'],
@@ -65,8 +81,7 @@ export const Projects: Record<string, Item> = {
         name: 'Portfolio',
         date: 'March 22, 2025 - Present',
         description: [
-            'Personalized developer portfolio for myself. Features a physics-bsaed scrollwheel that runs on its own frame cycle and manipulates the dom directly to optimize performance.',
-            'This visuals-based site required in-depth knowledge regarding CSS, JS Animations, and React Effects and rendering.'
+            'Personalized developer portfolio for myself. Wheel was done from scratch, optimized for performance. Only behaves slightly differently on different framerates.',
         ],
         demo: 'https://scotthappy.com',
         github: 'https://github.com/Scapsters/portfolio',
@@ -124,6 +139,14 @@ export const Tools: Record<string, Item> = {
             'My expertise lies in not only maintaining but improving outdated and unstable codebases, integrating lessons from modern tools to non-invasively improve code quality and developer experience.'
         ],
         links: ['Scrapstack', 'Portfolio', 'Chess App'],
+    },
+    Svelte: {
+        id: 'Svelte', name: "Svelte",
+        description: [
+            'Svelte is cool, it doesn\'t feel as robust as React, and its what I imagine a batteries-included framework would feel like. It\'s cool.',
+            'But, don\'t try to teach this to someone as their first framework. If you\'re coming from React, it will go worse than you think.'
+        ],
+        links: ['Choob'],
     },
     Tailwind: {
         id: 'Tailwind', name: 'Tailwind',
