@@ -76,7 +76,7 @@ function ProjectCards({ applyForceToWheel }: { applyForceToWheel: React.RefObjec
     const { selected, previousSelected } = useContext(ProjectContext)
     return (
         <CursorContext value={{ cursorPosition, currentTransforms }}>
-            <div className="relative grow ml-10 sm:ml-1/10 -mr-50">
+            <div className="relative grow ml-10 sm:ml-1/10 -mr-50 text-md">
                 <ProjectCard isPrevious={false} current={selected} previous={previousSelected} applyForceToWheel={applyForceToWheel}/>
             </div>
         </CursorContext>

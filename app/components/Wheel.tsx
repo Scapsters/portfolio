@@ -45,7 +45,10 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
         const mainRefs = [circleRef, hoverRef]
         mainRefs.forEach((ref) => {
             if (!ref.current) return
-            ref.current.style.setProperty('transform', `translateX(-${projectContext.selected ? 500 : 750}px)`)
+            ref.current.style.setProperty(
+                'transform',
+                `translateX(var(${projectContext.selected ? '--wheel-shift-selected' : '--wheel-shift-idle'}))`,
+            )
         })
     }, [projectContext.selected])
 
@@ -341,7 +344,7 @@ export default function Wheel({ applyForceToWheel }: { applyForceToWheel: React.
         <div className="flex relative">
             <div
                 ref={circleRef}
-                className="z-3 align-middle cursor-grab relative active:cursor-grabbing -ml-30 -right-350 2xl:-right-300 min-w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform duration-1000 ease-in-out"
+                className="z-3 align-middle cursor-grab relative active:cursor-grabbing -ml-30 -right-275 2xl:-right-300 min-w-[var(--wheel-size)] h-[var(--wheel-size)] transition-transform duration-1000 ease-in-out"
             >
                 <div className="z-10 absolute w-full h-full bg-foreground rounded-full"></div>
                 <div

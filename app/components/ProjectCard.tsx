@@ -200,7 +200,7 @@ export function ProjectCard({
                                 {selected ? (
                                     <ProjectCardCard className="p-2" cacheKey={selected.id + '1'}>
                                         {selected.description.map((line) => (
-                                            <div className="pb-2" key={line}>
+                                            <div className="pb-2 text-sm 2xl:text-md" key={line}>
                                                 <Markdown
                                                     components={{
                                                         a: ({ href, children }) => (
@@ -288,7 +288,6 @@ export function ProjectCard({
                                                         }}
                                                     >
                                                         <Expandable jump={isFront ? 0 : stackPosition * 64 + 176}>
-                                                            {/* unique per image: stacked cards sharing a cache entry fight over the lerp */}
                                                             <ProjectCardCard className="" cacheKey={selected.id + '3-' + index}>
                                                                 <img
                                                                     alt={image}
@@ -334,7 +333,7 @@ export function ProjectCard({
                         <div className="mt-10">
                             <div ref={(el) => void (cardRefs.current[2] = el)}>
                                 {selected ? (
-                                    <ProjectCardCard className="h-fit overflow-auto" cacheKey={selected.id + '2'}>
+                                    <ProjectCardCard className="h-fit translate-x-4 2xl:translate-x-0 overflow-auto" cacheKey={selected.id + '2'}>
                                         <div className="pr-4">
                                             <p className="text-xl pl-2">{selected.date ? 'Tools' : 'Related'}</p>
                                             {selected.links.map((technology) => {
